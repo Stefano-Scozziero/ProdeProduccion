@@ -2,12 +2,13 @@
   "expo": {
     "name": "Prode-React-Native",
     "slug": "Prode-React-Native",
+    "scheme": "ProdeSco",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -15,16 +16,33 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "runtimeVersion": "1.0.0",
+      "package": "com.krefrim.ProdeReactNative"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logo.png"
+    },
+    "plugins": [
+      "@react-native-google-signin/google-signin",
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "77834781-a9a9-4a5b-85ea-96badaaeff82"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/77834781-a9a9-4a5b-85ea-96badaaeff82"
     }
   }
 }

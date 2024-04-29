@@ -1,0 +1,25 @@
+{
+  "partido": {
+    "id": "0",
+    "Jornada":"Fecha 1",
+    "equipoA": {
+      "nombre": "Boca",
+      "imagen": "ruta/a/la/imagen/de/Boca.jpg"
+    },
+    "equipoB": {
+      "nombre": "River",
+      "imagen": "ruta/a/la/imagen/de/River.jpg"
+    },
+    "fecha": "2024-04-10",
+    "hora": "18:00",
+    "estadio": {
+      "nombre": "La Bombonera",
+      "ubicacion": "Buenos Aires, Argentina"
+    },
+    "prediccion": {
+      "ganador": "",
+      "golesEquipoA": "",
+      "golesEquipoB": ""
+    }
+  }
+}

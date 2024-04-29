@@ -1,0 +1,47 @@
+import { StyleSheet,View,Image, ImageBackground, Text, Pressable, TouchableOpacity } from 'react-native'
+import { OrientationContext } from '../../utils/globals/context'
+import { useContext } from 'react'
+import Categories from '../logical/Categories'
+
+
+const Competencies = ({navigation}) => {
+
+
+  const portrait = useContext(OrientationContext)
+
+
+
+  return (
+    <>
+        <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
+            <View style={styles.containerText}></View>
+            <Categories navigation={navigation}/>  
+        </ImageBackground>
+    </>
+    
+)}
+
+export default Competencies
+
+const styles = StyleSheet.create({
+    main:{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    mainLandScape:{
+        flexDirection: 'row'
+    },
+    containerText: {
+        width: '90%',
+        height: 20,
+        alignItems: 'center', 
+        justifyContent: 'center',
+        marginVertical: 10,
+    },
+    text: {
+        fontSize: 25,
+        textAlign: 'center',
+    }
+    
+})

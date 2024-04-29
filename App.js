@@ -1,20 +1,37 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import 'react-native-gesture-handler';
+import { useFonts } from 'expo-font'
+import { StatusBar } from 'expo-status-bar'
+import { fontsCollections } from './src/utils/globals/fonts'
+import { OrientationProvider} from './src/utils/globals/context'
+import { Provider } from 'react-redux'
+import { store } from './src/app/store'
+import MainNavigator from './src/navigation/MainNavigator'
+import colors from './src/utils/globals/colors'
+import { init } from './src/utils/db'
+import { configuration } from './src/app/services/authGoogle/config'
 
-export default function App() {
+
+init()
+configuration()
+
+const App = () => {
+
+  let [fontsLoaded] = useFonts(fontsCollections);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    <>
+      <OrientationProvider>
+        <StatusBar backgroundColor={colors.black} style='light'/>
+        <Provider store={store}>
+          <MainNavigator/>
+        </Provider>
+      </OrientationProvider>
+    </>
+  )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App
