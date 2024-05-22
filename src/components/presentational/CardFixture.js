@@ -6,7 +6,7 @@ import React from 'react'
 const Encuentro = React.memo(({ encuentro }) => (
   <View style={styles.encuentroContainer}>
     <View style={styles.teamContainer}>
-      <FastImage style={styles.teamImage} source={{ uri: encuentro.equipo1.imagen }} />
+      <FastImage style={styles.teamImage} source={{ uri: encuentro.equipo1.imagen }} resizeMode='contain'/>
       <Text style={styles.teamName}>{encuentro.equipo1.nombre}</Text>
     </View>
 
@@ -22,7 +22,7 @@ const Encuentro = React.memo(({ encuentro }) => (
 
     <View style={styles.teamContainer}>
       <Text style={styles.teamName}>{encuentro.equipo2.nombre}</Text>
-      <FastImage style={styles.teamImage} source={{ uri: encuentro.equipo2.imagen }} />
+      <FastImage style={styles.teamImage} source={{ uri: encuentro.equipo2.imagen }} resizeMode='contain' />
     </View>
   </View>
 ));
@@ -73,7 +73,8 @@ const styles = StyleSheet.create({
   },
   teamImage: {
     width: 20,
-    height: 20,
+    height: 20
+    
   },
   scoreContainer: {
     flexDirection: 'row',

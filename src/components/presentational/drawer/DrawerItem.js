@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Pressable } from 'react-native'
-import colors from '../../utils/globals/colors'
+import colors from '../../../utils/globals/colors'
 import DrawerIcon from './DrawerIcon'
 
 const DrawerItem = ({ navigation, activeRoute, route, icon, title }) => {

@@ -1,7 +1,7 @@
 import { StyleSheet,View,Image, ImageBackground, Text, Pressable, TouchableOpacity } from 'react-native'
-import { OrientationContext } from '../../utils/globals/context'
+import { OrientationContext } from '../../../utils/globals/context'
 import { useContext } from 'react'
-import Categories from '../logical/Categories'
+import Categories from '../../logical/Categories'
 
 
 const Competencies = ({navigation}) => {
@@ -13,7 +13,7 @@ const Competencies = ({navigation}) => {
 
   return (
     <>
-        <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
+        <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
             <View style={styles.containerText}></View>
             <Categories navigation={navigation}/>  
         </ImageBackground>

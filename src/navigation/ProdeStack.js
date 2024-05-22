@@ -1,9 +1,9 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import Home from '../screens/Home'
+import Home from '../components/presentational/stackProde/Home'
 import CustomHeader from '../components/headers/CustomHeader'
-import Competencies from '../components/presentational/Competencies'
-import Fixture from '../components/presentational/Fixture'
-import PredictsByCategory from '../screens/PredictsByCategory'
+import Competencies from '../components/presentational/stackProde/Competencies'
+import Fixture from '../components/presentational/stackProde/Fixture'
+import PredictsByCategory from '../components/presentational/stackProde/PredictsByCategory'
 
 
 const Stack = createNativeStackNavigator()

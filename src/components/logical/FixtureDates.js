@@ -10,78 +10,74 @@ import CardFixture from '../presentational/CardFixture'
 import { db } from '../../app/services/firebase/config'
 
 const FixtureDates = ({ navigation }) => {
-  const [datos, setDatos] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-  const portrait = useContext(OrientationContext);
-  const [selectedLeague, setSelectedLeague] = useState(null);
-  const [selectedTournament, setSelectedTournament] = useState(null);
-  const [filteredPartidos, setFilteredPartidos] = useState([]);
+  const [datos, setDatos] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
+  const portrait = useContext(OrientationContext)
+  const [selectedLeague, setSelectedLeague] = useState(null)
+  const [selectedTournament, setSelectedTournament] = useState(null)
+  const [selectedDivision, setSelectedDivision] = useState('Primera Division') // Inicializar con 'Primera Division'
+  const [filteredPartidos, setFilteredPartidos] = useState([])
+  const divisions = ['Primera Division', 'Reserva']
 
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture')
       .on('value', (snapshot) => {
         if (snapshot.exists()) {
-          const data = snapshot.val();
-          setDatos(data);
+          const data = snapshot.val()
+          setDatos(data)
           if (data && Object.keys(data).length > 0) {
-            setSelectedLeague(Object.keys(data)[0]);
-            setSelectedTournament(data[Object.keys(data)[0]][0].title);
+            const [firstLeagueKey] = Object.keys(data)
+            setSelectedLeague(firstLeagueKey)
+            const divisions = Object.keys(data[firstLeagueKey])
+            if (!divisions.includes('Primera Division')) {
+              setSelectedDivision(divisions[0]) // Seleccionar la primera división disponible si 'Primera Division' no está en las divisiones
+            }
+            setSelectedTournament(Object.keys(data[firstLeagueKey][selectedDivision])[0])
           } else {
-            setIsLoading(false);
-            setIsError(true);
+            setIsLoading(false)
+            setIsError(true)
           }
         } else {
-          setIsLoading(false);
-          setIsError(true);
+          setIsLoading(false)
+          setIsError(true)
         }
       }, (error) => {
-        console.error(error);
-        setIsLoading(false);
-        setIsError(true);
-      });
-
-    return () => db.ref('/datos/fixture').off('value', onValueChange);
-  }, []);
+        console.error(error)
+        setIsLoading(false)
+        setIsError(true)
+      })
+  
+    return () => db.ref('/datos/fixture').off('value', onValueChange)
+  }, [])
 
   useEffect(() => {
     if (datos && selectedLeague && selectedTournament) {
-      const partidosDelTorneo = datos[selectedLeague].find(item => item.title === selectedTournament)?.partidos || [];
-      setFilteredPartidos(partidosDelTorneo);
-      setIsLoading(false);
+      const partidosDelTorneo = datos[selectedLeague][selectedDivision][selectedTournament]?.partidos || []
+      setFilteredPartidos(partidosDelTorneo)
+      setIsLoading(false)
     }
-  }, [selectedLeague, selectedTournament, datos]);
+  }, [selectedLeague, selectedTournament, datos, selectedDivision])
 
-  if (isLoading) return <LoadingSpinner />;
-  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Home')} />;
-  if (!datos || Object.keys(datos).length === 0) return <EmptyListComponent message="No hay datos disponibles" />;
+  if (isLoading) return <LoadingSpinner />
+  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Home')} />
+  if (!datos || Object.keys(datos).length === 0) return <EmptyListComponent message="No hay datos disponibles" />
 
   return (
     <View style={[styles.container, !portrait && styles.landScape]}>
       {selectedLeague && datos[selectedLeague] && selectedTournament && (
-      <Picker
-        selectedValue={selectedLeague}
-        onValueChange={(itemValue) => setSelectedLeague(itemValue)}
-        style={styles.picker}
-        mode="dropdown"
-      >
-        {Object.keys(datos).map((liga, index) => (
-          <Picker.Item key={index} label={liga} value={liga} />
-        ))}
-      </Picker>
-      )}
-      {selectedLeague && datos[selectedLeague] && selectedTournament && (
         <Picker
-          selectedValue={selectedTournament}
-          onValueChange={(itemValue) => setSelectedTournament(itemValue)}
+          selectedValue={selectedDivision}
+          onValueChange={(itemValue) => setSelectedDivision(itemValue)}
           style={styles.picker}
           mode="dropdown"
         >
-          {datos[selectedLeague].map((torneo, index) => (
-            <Picker.Item key={index} label={torneo.title} value={torneo.title} />
+          {divisions.map((division) => (
+            <Picker.Item key={division} label={division} value={division} />
           ))}
         </Picker>
       )}
+
 
       <View style={styles.flatlist}>
       {filteredPartidos && (
@@ -96,10 +92,11 @@ const FixtureDates = ({ navigation }) => {
       )}
       </View>
     </View>
-  );
-};
+  )
+}
 
-export default FixtureDates;
+export default FixtureDates
+
 
 
 const styles = StyleSheet.create({

@@ -1,8 +1,7 @@
 import { StyleSheet,View,Image, ImageBackground, Text, Pressable, TouchableOpacity } from 'react-native'
-import { OrientationContext } from '../../utils/globals/context'
+import { OrientationContext } from '../../../utils/globals/context'
 import { useContext } from 'react'
-import FixtureDates from '../logical/FixtureDates'
-import colors from '../../utils/globals/colors'
+import FixtureDates from '../../logical/FixtureDates'
 
 
 const Fixture = ({navigation}) => {
@@ -14,7 +13,7 @@ const Fixture = ({navigation}) => {
 
   return (
     <>
-        <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
+        <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
             <View style={styles.containerText}></View>
             <FixtureDates navigation={navigation}/>  
         </ImageBackground>

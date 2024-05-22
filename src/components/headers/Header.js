@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View, Pressable, StatusBar, Platform } from 'react-native'
 import colors from '../../utils/globals/colors'
-import {AntDesign} from '@expo/vector-icons'
 import { OrientationContext } from '../../utils/globals/context'
 import { useContext } from 'react'
 

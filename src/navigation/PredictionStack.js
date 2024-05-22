@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import CustomHeader from '../components/headers/CustomHeader'
-import Competencies from '../components/presentational/Competencies'
+import Competencies from '../components/presentational/stackProde/Competencies'
 import MyPrediction from '../components/presentational/MyPrediction'
 
 const Stack = createNativeStackNavigator()

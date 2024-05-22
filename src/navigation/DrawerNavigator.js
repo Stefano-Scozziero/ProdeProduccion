@@ -1,13 +1,13 @@
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createDrawerNavigator } from '@react-navigation/drawer'
 import React from 'react'
-import ProfileStack from './ProfileStack';
-import ProdeStack from './ProdeStack';
-import CustomDrawerContent from '../components/presentational/drawer/CustomDrawerContent';
-import PredictionStack from './PredictionStack';
-import HowToPlayStack from './HowToPlayStack';
-import GoPremiumStack from './GoPremiumStack';
+import ProfileStack from './ProfileStack'
+import ProdeStack from './ProdeStack'
+import CustomDrawerContent from '../components/presentational/drawer/CustomDrawerContent'
+import PredictionStack from './PredictionStack'
+import HowToPlayStack from './HowToPlayStack'
+import Administrador from './AdministradorStack'
 
-const Drawer = createDrawerNavigator();
+const Drawer = createDrawerNavigator()
 
 const DrawerNavigator = () => {
     
@@ -38,8 +38,8 @@ const DrawerNavigator = () => {
                     component={HowToPlayStack}
                 />
                 <Drawer.Screen 
-                    name='Hazte Premium' 
-                    component={GoPremiumStack}
+                    name='Administrador' 
+                    component={Administrador}
                 />
            </Drawer.Navigator>
   )

@@ -12,6 +12,7 @@ import colors from '../../utils/globals/colors'
 import fonts from '../../utils/globals/fonts'
 import { db, st as storage } from '../../app/services/firebase/config'
 import auth from '@react-native-firebase/auth'
+import ModalCamera from './modal/ModalCamera'
 
 const Profile = () => {
 
@@ -19,6 +20,7 @@ const Profile = () => {
     const [phone, setPhone] = useState('')
     const [image, setImage] = useState('')
     const [modalVisible, setModalVisible] = useState(false)
+    const [modalCameraVisible, setModalCameraVisible] = useState(false)
     const portrait = useContext(OrientationContext)
     const [isLoading, setIsLoading] = useState(true)
     const user = auth().currentUser
@@ -47,30 +49,41 @@ const Profile = () => {
     const handlerCloseModal = () => {
         setModalVisible(false)
     }
-    const pickImage = async () => {
-        // Solicita los permisos de cámara
-        const { status } = await ImagePicker.requestCameraPermissionsAsync()
-        if (status !== 'granted') {
-            alert('Sorry, we need camera permissions to make this work!')
-            return;
-        }
-    
-        // Lanza la cámara para tomar una foto
-        let result = await ImagePicker.launchCameraAsync({
+    const handlerCloseModalCamera = () => {
+        setModalCameraVisible(false)
+    }
+
+    const pickImage = async (camera) => {
+        let result;
+        if (camera) {
+          result = await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [4, 3],
-            quality: 1,
+            quality: 0.8,
             base64: true
-        })
+          });
+        } else {
+          result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+            base64: true
+          });
+        }
     
         // Verifica si el usuario canceló la toma de la foto
         if (!result.canceled) {
             // Codifica la imagen en base64 para enviar a Firebase
+            
             const imageBase64 =  'data:image/jpeg;base64,' + result.assets[0].base64;
             updateProfileImage(imageBase64) // Llama a la función para actualizar la imagen en Firebase
         }
-    }
+        setModalCameraVisible(false)
+      };
+
+      
 
     const updateProfileImage = async (imageBase64) => {
         if (user) {
@@ -91,10 +104,12 @@ const Profile = () => {
                     setModalVisible(true)
                 } else {
                     console.log(error)
-                    setImage(imageUrl); // Actualiza el estado local con la nueva URL de la imagen
+                    setImage(imageUrl)
+                    
                 }
                 setIsLoading(false)
-            });
+                
+            })
         }
     }
     
@@ -103,9 +118,9 @@ const Profile = () => {
         if (user.uid) {
             setIsLoading(true);
             db.ref(`/profiles/${user.uid}`).update({
-                username,
-                phone,
-                image
+                username: username,
+                phone: phone,
+                image: image
             }, (error) => {
                 if (error) {
                     setModalVisible(true)
@@ -114,6 +129,7 @@ const Profile = () => {
             })
         }
     }
+
 
     if (isLoading) return <LoadingSpinner />;
 
@@ -124,7 +140,7 @@ const Profile = () => {
             <ImageBackground
                 source={image ? { uri: image } : user?.photoURL ? { uri: user.photoURL } : require('../../../assets/usuario.png')}
                 style={[styles.image, !portrait && styles.imageLandScape]}>
-                <TouchableOpacity style={styles.containerImage} onPress={pickImage}>
+                <TouchableOpacity style={styles.containerImage} onPress={() => setModalCameraVisible(true)}>
                     <AntDesign name='pluscircleo' color={"white"} size={60}/>
                 </TouchableOpacity>
             </ImageBackground>
@@ -147,10 +163,19 @@ const Profile = () => {
             </View>
         </View>
         <ModalMessage 
-        textButton='Volver a intentar' 
-        text="No se pudo guardar informacion" 
-        modalVisible={modalVisible} 
-        onclose={handlerCloseModal}/>  
+            textButton='Volver a intentar' 
+            text="No se pudo guardar informacion" 
+            modalVisible={modalVisible} 
+            onclose={handlerCloseModal}/>
+        <ModalCamera 
+            textButton='Volver'
+            textCamera={'Camara'}
+            textGallery={'Galeria'}
+            modalVisible={modalCameraVisible} 
+            onclose={handlerCloseModalCamera}
+            pickImage={pickImage}
+        /> 
+        
     </ImageBackground>
   )
 }

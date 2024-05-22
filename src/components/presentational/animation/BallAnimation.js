@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Animated, Easing, Image } from 'react-native';
+import { View, Animated, Easing } from 'react-native';
 
 const BallAnimation = () => {
   const spinValue = new Animated.Value(0);

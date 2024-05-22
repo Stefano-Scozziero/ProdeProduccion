@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native'
 import {Entypo} from '@expo/vector-icons'
-import colors from '../../utils/globals/colors'
+import colors from '../../../utils/globals/colors'
 
 const DrawerIcon = ({title, nameIcon, focused, portrait}) => {
   return (

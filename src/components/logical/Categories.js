@@ -10,34 +10,34 @@ import { db } from '../../app/services/firebase/config'
 
 const Categories = ({navigation}) => {
 
-  const [categories, setCategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
-  const portrait = useContext(OrientationContext);
+  const [categories, setCategories] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
+  const portrait = useContext(OrientationContext)
 
   useEffect(() => {
-    const categoriesRef = db.ref('/categories');
+    const categoriesRef = db.ref('/categories')
     categoriesRef.on('value', snapshot => {
       if (snapshot.exists()) {
-        const fetchedCategories = snapshot.val();
+        const fetchedCategories = snapshot.val()
         const formattedCategories = Object.keys(fetchedCategories).map(key => ({
           ...fetchedCategories[key],
           id: key
         }));
-        setCategories(formattedCategories);
-        setIsLoading(false);
+        setCategories(formattedCategories)
+        setIsLoading(false)
       } else {
-        setIsLoading(false);
-        setIsError(true);
+        setIsLoading(false)
+        setIsError(true)
       }
     }, (error) => {
-      console.error(error);
-      setIsError(true);
-      setIsLoading(false);
-    });
+      console.error(error)
+      setIsError(true)
+      setIsLoading(false)
+    })
 
-    return () => categoriesRef.off('value');
-  }, []);
+    return () => categoriesRef.off('value')
+  }, [])
 
   const onRetry = () => {
     navigation.reset({
@@ -46,10 +46,9 @@ const Categories = ({navigation}) => {
     })
   }
 
-  if (isLoading) return <LoadingSpinner />;
-  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={onRetry} />;
-  if (categories.length === 0) return <EmptyListComponent message="Las categorias no están disponibles" />;
-
+  if (isLoading) return <LoadingSpinner />
+  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={onRetry} />
+  if (categories.length === 0) return <EmptyListComponent message="Las categorias no están disponibles" />
 
   return (
     <View style={[styles.flatList, !portrait && styles.flatListLandScape]}>
@@ -59,8 +58,6 @@ const Categories = ({navigation}) => {
         renderItem={({item}) => <CardCategories navigation={navigation} item={item}/>}
       />
     </View>
-      
-    
   )
 }
 
@@ -73,6 +70,6 @@ const styles = StyleSheet.create({
   },
   flatList: {
     width: '100%',
-    height: '100%',
+    height: '100%'
   }
 })

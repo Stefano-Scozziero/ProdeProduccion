@@ -1,15 +1,15 @@
 import { StyleSheet, Text, View, Pressable, Image, ImageBackground } from 'react-native'
-import InputForm from '../components/presentational/inputText/InputForm'
-import SubmitButton from '../components/presentational/buttons/SubmitButton'
+import InputForm from '../../components/presentational/inputText/InputForm'
+import SubmitButton from '../../components/presentational/buttons/SubmitButton'
 import {useState} from 'react'
-import colors from '../utils/globals/colors'
-import fonts from '../utils/globals/fonts'
-import { useRegisterMutation } from '../app/services/auth'
+import colors from '../../utils/globals/colors'
+import fonts from '../../utils/globals/fonts'
+import { useRegisterMutation } from '../../app/services/auth'
 import { useDispatch } from 'react-redux'
-import { setUser } from '../features/auth/authSlice'
-import { registerSchema } from '../utils/validations/authSchema'
-import { deleteSession, insertSession } from '../utils/db'
-import ModalMessage from '../components/presentational/modal/ModalMessage'
+import { setUser } from '../../features/auth/authSlice'
+import { registerSchema } from '../../utils/validations/authSchema'
+import { deleteSession, insertSession } from '../../utils/db'
+import ModalMessage from '../../components/presentational/modal/ModalMessage'
 
 const Register = ({navigation}) => {
 
@@ -64,8 +64,8 @@ const Register = ({navigation}) => {
 
   return (
     <>
-      <ImageBackground source={require('../../assets/fondodefinitivo.png')} style={styles.main}>
-        <Image  source={require('../../assets/logo.png')} style={styles.image} resizeMode='contain'/>
+      <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={styles.main}>
+        <Image  source={require('../../../assets/logo.png')} style={styles.image} resizeMode='contain'/>
         <Text style={styles.title}>REGISTRO</Text>
         <View style={styles.container}>
           <InputForm

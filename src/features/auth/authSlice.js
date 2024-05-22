@@ -4,6 +4,7 @@ const initialState = {
     email:"",
     idToken:"",
     localId:"",
+    isAdmin: false,
     updateAt: 0
 
 }
@@ -13,10 +14,11 @@ export const authSlice = createSlice({
     initialState,
     reducers:{
         setUser: (state, actions) => state = actions.payload,
-        clearUser:(state) => state = {email:"", idToken:"",localId:"",updateAt:0}
+        clearUser:(state) => state = {email:"", idToken:"",localId:"", isAdmin: false, updateAt:0},
+        setAdmin: (state, actions) => {state.isAdmin = actions.payload} 
     }
 })
 
-export const {setUser,clearUser} = authSlice.actions
+export const {setUser,clearUser,setAdmin} = authSlice.actions 
 
 export default authSlice.reducer
