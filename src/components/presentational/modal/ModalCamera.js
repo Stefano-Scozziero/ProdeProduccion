@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.orange,
     padding: 30,
     gap: 20,
-    borderRadius: 5,
+    borderRadius: 30,
   },
   text: {
     fontSize: 16,

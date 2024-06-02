@@ -1,5 +1,5 @@
 <resources>
-  <string name="app_name">Prode-React-Native</string>
+  <string name="app_name">ProdeSCO</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
   <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
   <string name="server_client_id">1021676695100-ohso9m6ipncli8aukpajj5f75pr3dtlo.apps.googleusercontent.com</string>

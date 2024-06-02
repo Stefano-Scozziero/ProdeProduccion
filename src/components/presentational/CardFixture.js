@@ -62,18 +62,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 5,
+    paddingVertical: 2.5,
     marginVertical: 2.5,
     width: '100%',
-    position: 'relative', // Agrega esta línea
+    position: 'relative',
   },
   teamContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   teamImage: {
-    width: 20,
-    height: 20
+    width: 30,
+    height: 30
     
   },
   scoreContainer: {
@@ -81,9 +81,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    position: 'absolute', // Agrega esta línea
-    left: 0, // Agrega esta línea
-    right: 0, // Agrega esta línea
+    position: 'absolute',
+    left: 0,
+    right: 0, 
   },
   teamName: {
     fontSize: 10,

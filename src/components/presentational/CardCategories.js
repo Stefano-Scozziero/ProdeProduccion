@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Image, View } from 'react-native'
+import { Pressable, StyleSheet, Image, View, TouchableOpacity } from 'react-native'
 import fonts from '../../utils/globals/fonts'
 import colors from '../../utils/globals/colors'
 import { setSelectedCategory } from '../../features/category/categorySlice'
@@ -9,12 +9,12 @@ const CardCategories = ({item, navigation}) => {
   const dispatch = useDispatch()
   return (
     <View style={styles.container}>
-      <Pressable style={styles.card} onPress={() => {
+      <TouchableOpacity style={styles.card} onPress={() => {
           dispatch(setSelectedCategory(item.title));
           navigation.navigate("PredictsByCategory");
         }}>
         <Image source={{ uri: item.thumbnail }} style={styles.background} resizeMode='contain'/>
-      </Pressable>
+      </TouchableOpacity>
     </View>
     
     

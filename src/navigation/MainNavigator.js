@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { StyleSheet, Text, View, Pressable, Image, ImageBackground, Keyboard } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { useSelector, useDispatch } from 'react-redux'
 import { deleteSession, fetchSession } from '../utils/db'
@@ -11,9 +12,9 @@ import auth from '@react-native-firebase/auth'
 import { db } from '../app/services/firebase/config'
 
 const MainNavigator = () => {
-    const dispatch = useDispatch()
-    const user = useSelector((state) => state.auth)
-    const [isLoading, setIsLoading] = useState(true)
+  const dispatch = useDispatch()
+  const user = useSelector((state) => state.auth)
+  const [isLoading, setIsLoading] = useState(true)
 
   const checkIfAdmin = async (userId) => {
     const adminRef = db.ref(`admins/${userId}`)
@@ -30,19 +31,30 @@ const MainNavigator = () => {
           const { updateAt, ...userData } = session.rows._array[0]
           const sessionTime = now - updateAt
           if (sessionTime < 3600) {
-            dispatch(setUser(userData))
-            const isAdmin = await checkIfAdmin(userData.localId)
-            dispatch(setAdmin(isAdmin))
+            const firebaseUser = auth().currentUser
+            if (firebaseUser) {
+              const emailVerified = firebaseUser.emailVerified
+              const updatedUserData = { ...userData, emailVerified }
+              dispatch(setUser(updatedUserData))
+              const isAdmin = await checkIfAdmin(userData.localId)
+              dispatch(setAdmin(isAdmin))
+            } else {
+              dispatch(clearUser())
+              await deleteSession()
+              if (auth().currentUser) {
+                await GoogleSignin.signOut()
+              }
+            }
           } else {
             dispatch(clearUser())
-            deleteSession()
+            await deleteSession()
             if (auth().currentUser) {
               await GoogleSignin.signOut()
             }
           }
         } else {
           dispatch(clearUser())
-          deleteSession()
+          await deleteSession()
           if (auth().currentUser) {
             await GoogleSignin.signOut()
           }
@@ -52,17 +64,21 @@ const MainNavigator = () => {
       }
       setIsLoading(false)
     })()
+    
   }, [dispatch])
 
   if (isLoading) {
-    return <LoadingScreen />
-  }
-
     return (
-        <NavigationContainer>
-            {user.idToken ? <DrawerNavigator /> : <AuthStack />}
-        </NavigationContainer>
-    )
+    <LoadingScreen 
+      message={'Cargando...'}
+    />
+  )
+  }
+  return (
+    <NavigationContainer>
+      {user.emailVerified && user.idToken ? <DrawerNavigator /> : <AuthStack />}
+    </NavigationContainer>
+  )
 }
 
 export default MainNavigator

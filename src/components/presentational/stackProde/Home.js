@@ -38,7 +38,7 @@ const Home = React.memo(({ navigation }) => {
         <ImageLoader
           uri='https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Ftabladelideres.png?alt=media&token=6774c721-7422-40e7-b2e4-5373e17b50fe'
           style={styles.predictionImageRow}
-          onPress={() => navigation.navigate('TablaDeLideres')}
+          onPress={() => navigation.navigate('LeaderBoard')}
           loading={loading}
           setLoading={setLoading}
         />
@@ -54,7 +54,7 @@ const Home = React.memo(({ navigation }) => {
         <ImageLoader
           uri='https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fnoticias.png?alt=media&token=b6a17432-35b6-4845-9548-f4b8173c9401'
           style={styles.predictionImage}
-          onPress={() => navigation.navigate('Noticias')}
+          onPress={() => navigation.navigate('News')}
           loading={loading}
           setLoading={setLoading}
         />

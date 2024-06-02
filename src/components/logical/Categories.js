@@ -46,7 +46,7 @@ const Categories = ({navigation}) => {
     })
   }
 
-  if (isLoading) return <LoadingSpinner />
+  if (isLoading) return <LoadingSpinner message={'Cargando Datos...'}/>
   if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={onRetry} />
   if (categories.length === 0) return <EmptyListComponent message="Las categorias no están disponibles" />
 

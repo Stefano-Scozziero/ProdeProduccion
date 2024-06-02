@@ -1,27 +1,37 @@
-import { StyleSheet, Text, ImageBackground, ActivityIndicator  } from 'react-native'
-import colors from '../../utils/globals/colors'
+import React from 'react';
+import { StyleSheet, Text, View, ActivityIndicator, ImageBackground } from 'react-native';
+import colors from '../../utils/globals/colors';
 
 
-const LoadingSpinner = () => {
+const LoadingSpinner = ({message}) => {
   return (
-    <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={styles.container}>
-      <Text style={styles.text}>CARGANDO DATOS...</Text>
-      <ActivityIndicator size={80} color="white" />
+    <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={styles.overlay}>
+      <View style={styles.spinnerContainer}>
+        <ActivityIndicator size="large" color="white" />
+        <Text style={styles.text}>{message}</Text>
+      </View>
     </ImageBackground>
-  )
+  );
 }
 
 export default LoadingSpinner
 
 const styles = StyleSheet.create({
-  container:{ 
+  overlay: {
+    position: 'absolute',
     width: '100%',
     height: '100%',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    zIndex: 1, // asegúrate de que esté por encima del contenido
   },
-  text:{
-    color:colors.black, 
-    textAlign: 'center'
-  }
-})
+  spinnerContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    color: colors.white,
+    textAlign: 'center',
+    marginTop: 10,
+  },
+});

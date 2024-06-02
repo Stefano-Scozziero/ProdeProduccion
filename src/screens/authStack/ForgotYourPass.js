@@ -32,9 +32,10 @@ const ForgotYourPass = ({navigation}) => {
     
     <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={styles.main}>
       <Image source={require('../../../assets/logo.png')} style={styles.image} resizeMode='contain'/>
+      <Text style={styles.title}>PRODESCO</Text>
       <View style={styles.container}>
         <InputForm
-          label="Email"
+          label="Correo Electronico"
           value={email}
           onChangeText={(t) => setEmail(t)}
           isSecure={false}
@@ -75,5 +76,12 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 130,
     bottom: '6.5%'
+  },
+  title:{
+    fontSize:50,
+    textAlign: 'center',
+    color: colors.white,
+    bottom: 30,
+    fontFamily:fonts.russoOne,
   },
 })

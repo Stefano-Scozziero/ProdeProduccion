@@ -6,11 +6,7 @@ import Categories from '../../logical/Categories'
 
 const Competencies = ({navigation}) => {
 
-
   const portrait = useContext(OrientationContext)
-
-
-
   return (
     <>
         <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>

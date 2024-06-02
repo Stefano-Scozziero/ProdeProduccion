@@ -1,4 +1,4 @@
-rootProject.name = 'Prode-React-Native'
+rootProject.name = 'ProdeSCO'
 
 dependencyResolutionManagement {
   versionCatalogs {
