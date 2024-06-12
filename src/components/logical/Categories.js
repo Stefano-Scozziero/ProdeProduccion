@@ -66,7 +66,7 @@ export default Categories
 const styles = StyleSheet.create({
   flatListLandScape: {
     width: '100%',
-    height: '60%'
+    height: '50%'
   },
   flatList: {
     width: '100%',

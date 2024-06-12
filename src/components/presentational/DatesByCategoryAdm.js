@@ -21,7 +21,7 @@ const ScoreButton = ({ onPress, label }) => (
   </TouchableOpacity>
 )
 
-const DatesByCategoryAdm = ({ encuentros, updateScore, updateDate}) => {
+const DatesByCategoryAdm = ({ encuentros, updateScore, updateDate }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [date, setDate] = useState(new Date(encuentros.fecha));
@@ -39,11 +39,15 @@ const DatesByCategoryAdm = ({ encuentros, updateScore, updateDate}) => {
     if (selectedTime) {
       setTime(selectedTime);
     }
-  }
+  };
 
   const formatDate = (date) => {
-    return format(date, 'yyyy-MM-dd')
-  }
+    return format(date, 'yyyy-MM-dd');
+  };
+
+  const formatTime = (time) => {
+    return format(time, 'HH:mm');
+  };
 
   const applyDateTime = () => {
     const dateTime = new Date(date);
@@ -55,61 +59,60 @@ const DatesByCategoryAdm = ({ encuentros, updateScore, updateDate}) => {
 
   return (
     <View style={styles.container}>
-      
       <View style={[styles.cardContainer]}>
         <View style={styles.datePickerContainer}>
-            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-              <Text style={styles.dateText}>{formatDate(date)}</Text>
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={date}
-                mode="date"
-                display="default"
-                onChange={onChangeDate}
-              />
-            )}
-            <TouchableOpacity style={{marginStart: 2, marginRight: 25}} onPress={() => setShowTimePicker(true)}>
-              <Text style={styles.dateText}>{time.toTimeString().substring(0, 5)}</Text>
-            </TouchableOpacity>
-            {showTimePicker && (
-              <DateTimePicker
-                value={time}
-                mode="time"
-                is24Hour={true}
-                display="default"
-                onChange={onChangeTime}
-              />
-            )}
-            <TouchableOpacity style={{backgroundColor: colors.orange, borderRadius: 5, width: '20%'}} onPress={applyDateTime} >
-              <Text style={styles.dateText}>Aplicar</Text>
-            </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+            <Text style={styles.dateText}>{formatDate(date)}</Text>
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode="date"
+              display="default"
+              onChange={onChangeDate}
+            />
+          )}
+          <TouchableOpacity style={{ marginStart: 2, marginRight: 25 }} onPress={() => setShowTimePicker(true)}>
+            <Text style={styles.dateText}>{formatTime(time)}</Text>
+          </TouchableOpacity>
+          {showTimePicker && (
+            <DateTimePicker
+              value={time}
+              mode="time"
+              is24Hour={true}
+              display="default"
+              onChange={onChangeTime}
+            />
+          )}
+          <TouchableOpacity style={styles.applyButton} onPress={applyDateTime}>
+            <Text style={styles.dateText}>Aplicar</Text>
+          </TouchableOpacity>
         </View>
-        
+
         <View style={styles.encuentroContainer}>
           <TeamInfo imageUri={encuentros.equipo1.imagen} teamName={encuentros.equipo1.nombre} />
 
           <View style={styles.scoreContainer}>
             <View style={styles.scoreBoxLeft}>
-              <ScoreButton onPress={() => updateScore('equipo1', encuentros.id, 1)} label="+" />
-              <Text style={styles.scoreText}>{encuentros.equipo1.puntos === undefined ? '-' : encuentros.equipo1.puntos}</Text>
-              <ScoreButton onPress={() => updateScore('equipo1', encuentros.id, -1)} label="-" />
+              <ScoreButton onPress={() => updateScore(encuentros.id, 1, 1)} label="+" />
+              <Text style={styles.scoreText}>{encuentros.goles1 === undefined ? '-' : encuentros.goles1}</Text>
+              <ScoreButton onPress={() => updateScore(encuentros.id, 1, -1)} label="-" />
             </View>
 
             <View style={styles.scoreBoxRight}>
-              <ScoreButton onPress={() => updateScore('equipo2', encuentros.id, 1)} label="+" />
-              <Text style={styles.scoreText}>{encuentros.equipo2.puntos === undefined ? '-' : encuentros.equipo2.puntos}</Text>
-              <ScoreButton onPress={() => updateScore('equipo2', encuentros.id, -1)} label="-" />
+              <ScoreButton onPress={() => updateScore(encuentros.id, 2, 1)} label="+" />
+              <Text style={styles.scoreText}>{encuentros.goles2 === undefined ? '-' : encuentros.goles2}</Text>
+              <ScoreButton onPress={() => updateScore(encuentros.id, 2, -1)} label="-" />
             </View>
           </View>
 
           <TeamInfo imageUri={encuentros.equipo2.imagen} teamName={encuentros.equipo2.nombre} />
-
         </View>
       </View>
     </View>
-  )
-}
+  );
+};
+
 
 DatesByCategoryAdm.propTypes = {
   encuentros: PropTypes.shape({
@@ -127,7 +130,9 @@ DatesByCategoryAdm.propTypes = {
     isUpComing: PropTypes.bool.isRequired,
     isPlaying: PropTypes.bool.isRequired,
   }).isRequired,
-}
+  updateScore: PropTypes.func.isRequired,
+  updateDate: PropTypes.func.isRequired,
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -144,7 +149,7 @@ const styles = StyleSheet.create({
   },
   dateText: {
     fontSize: 16,
-    color: '#000',
+    color: colors.white,
     textAlign: 'center'
   },
   hasPlayedButton: {
@@ -245,6 +250,11 @@ const styles = StyleSheet.create({
   disabledText: {
     color: 'rgba(128, 128, 128, 0.5)',
   },
+  applyButton:{
+    backgroundColor: colors.orange, 
+    borderRadius: 5, 
+    width: '20%'
+  }
 })
 
 export default DatesByCategoryAdm

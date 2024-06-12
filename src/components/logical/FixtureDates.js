@@ -1,109 +1,175 @@
-import { useContext, useState, useEffect } from 'react';
-import { View, StyleSheet, Text, FlatList } from 'react-native';
+import React, { useContext, useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Text, FlatList, Touchable } from 'react-native';
 import LoadingSpinner from '../presentational/LoadingSpinner';
 import EmptyListComponent from '../presentational/EmptyListComponent';
 import Error from '../presentational/Error';
 import { OrientationContext } from '../../utils/globals/context';
-import { Picker } from '@react-native-picker/picker';
 import ModalSelector from 'react-native-modal-selector';
 import CardFixture from '../presentational/CardFixture';
 import { db } from '../../app/services/firebase/config';
 import colors from '../../utils/globals/colors';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const FixtureDates = ({ navigation }) => {
+  const [categorySelected, setCategorySelected] = useState('Liga Casildense');
   const [datos, setDatos] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const portrait = useContext(OrientationContext);
-  const [selectedLeague, setSelectedLeague] = useState(null);
-  const [selectedTournament, setSelectedTournament] = useState(null);
-  const [selectedDivision, setSelectedDivision] = useState('Primera Division'); // Inicializar con 'Primera Division'
-  const [filteredPartidos, setFilteredPartidos] = useState([]);
+  const [selectedDivision, setSelectedDivision] = useState('Primera Division');
+  const [selectedTournament, setSelectedTournament] = useState('Apertura');
+  const [filteredFechas, setFilteredFechas] = useState([]);
+  const divisionSelectorRef = useRef(null)
+  const tournamentSelectorRef = useRef(null)
+  const [divisionOptions, setDivisionOptions] = useState([])
+  const [tournamentOptions, setTournamentOptions] = useState([])
 
   useEffect(() => {
-    const onValueChange = db.ref('/datos/fixture')
-      .on('value', (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
+    const onValueChange = db.ref('/datos/fixture').on('value', (snapshot) => {
+      if (snapshot.exists() && categorySelected !== null) {
+        const data = snapshot.val();
+        if (data[categorySelected]) {
           setDatos(data);
-          if (data && Object.keys(data).length > 0) {
-            const [firstLeagueKey] = Object.keys(data);
-            setSelectedLeague(firstLeagueKey);
-            const divisions = Object.keys(data[firstLeagueKey]);
-            if (!divisions.includes('Primera Division')) {
-              setSelectedDivision(divisions[0]); // Seleccionar la primera división disponible si 'Primera Division' no está en las divisiones
-            }
-            setSelectedTournament(Object.keys(data[firstLeagueKey][selectedDivision])[0]);
-          } else {
-            setIsLoading(false);
-            setIsError(true);
-          }
-        } else {
           setIsLoading(false);
-          setIsError(true);
+        } else {
+          setDatos(null);
+          setIsLoading(false);
         }
-      }, (error) => {
-        console.error(error);
-        setIsLoading(false);
+      } else {
         setIsError(true);
-      });
+        setIsLoading(false);
+      }
+    }, (error) => {
+      console.error(error);
+      setIsError(true);
+      setIsLoading(false);
+    });
 
-    return () => db.ref('/datos/fixture').off('value', onValueChange);
-  }, []);
+    return () => {
+      db.ref('/datos/fixture').off('value', onValueChange);
+    };
+  }, [categorySelected]);
+
+  const getEquipo = (id) => {
+    if (datos && datos[categorySelected] && datos[categorySelected].equipos) {
+      return datos[categorySelected].equipos[id];
+    }
+    return null;
+  };
 
   useEffect(() => {
-    if (datos && selectedLeague && selectedTournament) {
-      const partidosDelTorneo = datos[selectedLeague][selectedDivision][selectedTournament]?.partidos || [];
-      setFilteredPartidos(partidosDelTorneo);
-      setIsLoading(false);
+    if (datos && categorySelected) {
+      const divisions = Object.keys(datos[categorySelected].partidos || {})
+        .map(key => ({ key, label: key }))
+        .sort((a, b) => {
+          return a.label.localeCompare(b.label);
+        });
+      setDivisionOptions(divisions);
+      setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
     }
-  }, [selectedLeague, selectedTournament, datos, selectedDivision]);
+  }, [datos, categorySelected]);
 
-  const divisionOptions = [
-    { key: 'Primera Division', label: 'Primera Division' },
-    { key: 'Reserva', label: 'Reserva' }
-  ];
+  useEffect(() => {
+    if (datos && categorySelected && selectedDivision) {
+      const tournaments = Object.keys(datos[categorySelected].partidos[selectedDivision] || {}).map(key => ({ key, label: key }))
+      setTournamentOptions(tournaments)
+      setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null)
+    }
+  }, [datos, categorySelected, selectedDivision])
+
+  useEffect(() => {
+    if (datos && categorySelected) {
+      const partidosDelTorneo = datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+      const fechas = Object.keys(partidosDelTorneo)
+        .filter(key => !isNaN(key) && Number(key) >= 1) 
+        .map(Number);
+
+      const fechasConPartidos = fechas.map(fecha => {
+        const encuentrosDeLaFecha = partidosDelTorneo[fecha]?.encuentros || [];
+        const partidosConEquipos = encuentrosDeLaFecha.map(partido => ({
+          ...partido,
+          equipo1: getEquipo(partido.equipo1),
+          equipo2: getEquipo(partido.equipo2),
+        }));
+        return { fecha, partidos: partidosConEquipos };
+      });
+      setFilteredFechas(fechasConPartidos);
+    }
+  }, [datos, categorySelected, selectedDivision, selectedTournament]);
+
+  const renderItem = ({ item }) => (
+    <View style={{backgroundColor: colors.blackGray, borderRadius: 10, marginVertical: 10}}>
+      <Text style={styles.fechaTitle}>Fecha {item.fecha}</Text>
+      {item.partidos.length > 0 && (
+        item.partidos.map((partido, index) => (
+          <CardFixture key={`partido-${index}`} encuentro={partido} />
+        ))
+      )}
+    </View>
+  );
 
   if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
-  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Home')} />;
-  if (!datos || Object.keys(datos).length === 0) return <EmptyListComponent message="No hay datos disponibles" />;
+  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Competencies')} />;
+  if (!datos) return <EmptyListComponent message="No hay datos disponibles" />
 
   return (
     <View style={[styles.container, !portrait && styles.landScape]}>
-      {selectedLeague && datos[selectedLeague] && selectedTournament && (
-        <View style={styles.containerPicker}>
-          <View style={styles.containerText}>
-            <ModalSelector
-              data={divisionOptions}
-              initValue={selectedDivision}
-              onChange={(option) => setSelectedDivision(option.key)}
-              style={styles.picker}
-              optionTextStyle={styles.pickerText}
-              selectStyle={{ borderWidth: 0 }}
-              selectedItem={selectedDivision}
-              selectedItemTextStyle={styles.selectedItem}
-              initValueTextStyle={styles.initValueTextStyle}
-              backdropPressToClose={true}
-              animationType='fade'
-              cancelText='Salir'
-              cancelTextStyle={{ color: colors.black }}
-            />
-            <Text style={styles.pickerArrow}>▼</Text>
-          </View>
-        </View>
-      )}
-
-      <View style={styles.flatlist}>
-        {filteredPartidos && (
-          <FlatList
-            data={filteredPartidos}
-            keyExtractor={(_, index) => `partido-${index}`}
-            renderItem={({ item }) => <CardFixture partidos={item} />}
-            initialNumToRender={15}
-            maxToRenderPerBatch={15}
-            windowSize={5}
+      <View style={styles.containerPicker}>
+        <View style={styles.containerText}>
+        <TouchableOpacity style={styles.touchableContainer} onPress={() => divisionSelectorRef.current.open()}>
+          <ModalSelector
+            data={divisionOptions}
+            initValue={selectedDivision}
+            onChange={(option) => setSelectedDivision(option.key)}
+            style={styles.picker}
+            optionTextStyle={styles.pickerText}
+            selectStyle={{ borderWidth: 0 }}
+            selectedItem={selectedDivision}
+            selectedItemTextStyle={styles.selectedItem}
+            initValueTextStyle={styles.initValueTextStyle}
+            backdropPressToClose={true}
+            animationType='fade'
+            cancelText='Salir'
+            cancelTextStyle={{ color: colors.black }}
+            ref={divisionSelectorRef}
           />
-        )}
+          <Text style={styles.pickerArrow}>▼</Text>
+        </TouchableOpacity>
+          
+        </View>
+        <View style={styles.containerText}>
+        <TouchableOpacity style={styles.touchableContainer} onPress={() => tournamentSelectorRef.current.open()}>
+          <ModalSelector
+            data={tournamentOptions}
+            initValue={selectedTournament}
+            onChange={(option) => setSelectedTournament(option.key)}
+            optionTextStyle={styles.pickerText}
+            style={styles.picker}
+            selectStyle={{ borderWidth: 0 }}
+            selectedItem={selectedTournament}
+            selectedItemTextStyle={styles.selectedItem}
+            initValueTextStyle={styles.initValueTextStyle}
+            backdropPressToClose={true}
+            animationType='fade'
+            cancelText='Salir'
+            cancelTextStyle={{ color: colors.black }}
+            ref={tournamentSelectorRef}
+          />
+          <Text style={styles.pickerArrow}>▼</Text>
+        </TouchableOpacity>
+          
+        </View>
+      </View>
+      <View style={styles.containerFlatlist}>
+        <FlatList
+          data={filteredFechas}
+          keyExtractor={(item) => `fecha-${item.fecha}`}
+          renderItem={renderItem}
+          ListEmptyComponent={<Text style={styles.emptyListText}>No hay encuentros disponibles</Text>}
+          initialNumToRender={5}
+          maxToRenderPerBatch={5}
+          windowSize={8}
+        />
       </View>
     </View>
   );
@@ -113,35 +179,25 @@ export default FixtureDates;
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    height: '87%',
-    justifyContent: 'center',
+    flex: 1,
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    padding: 10,
   },
   landScape: {
-    width: '100%',
     height: '60%',
   },
   containerPicker: {
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 10
-  },
-  picker: {
-    width: '100%',
-    height: 50,
-    color: '#333', // Color del texto del picker
-  },
-  flatlist: {
-    width: '95%',
-    height: '100%',
   },
   containerText: {
-    width: '90%',
+    width: '95%',
     marginVertical: 5,
     borderRadius: 10,
     borderWidth: 1,
+    borderColor: colors.orange,
     alignItems: 'center', 
     backgroundColor: colors.white,
     shadowColor: colors.black,
@@ -154,6 +210,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', 
     paddingHorizontal: 20
   },
+  touchableContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
   selectedItem: {
     color: colors.orange,
   },
@@ -163,7 +225,7 @@ const styles = StyleSheet.create({
   },
   pickerText: {
     color: colors.black,
-    textAlign: 'left'
+    textAlign: 'left',
   },
   initValueTextStyle: {
     color: colors.black,
@@ -171,5 +233,22 @@ const styles = StyleSheet.create({
   pickerArrow: {
     color: colors.black,
     fontSize: 15, 
+  },
+  containerFlatlist: {
+    width: '100%',
+    flex: 1,
+  },
+  fechaTitle: {
+    fontSize: 18,
+    color: colors.white,
+    marginVertical: 5,
+    textAlign: 'center',
+  },
+  emptyListText: {
+    flex: 1,
+    fontSize: 20,
+    textAlign: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

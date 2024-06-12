@@ -34,12 +34,13 @@ const styles = StyleSheet.create({
       width: '95%',
       height: 200,
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      margin: 10
     },
     text: {
-        fontSize: 20,
-        fontFamily: fonts.robotoBold,
-        color: 'white',
+      fontSize: 20,
+      fontFamily: fonts.robotoBold,
+      color: 'white',
     },
     background: {
       width: '100%',

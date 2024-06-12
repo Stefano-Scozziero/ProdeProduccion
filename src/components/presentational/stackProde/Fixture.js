@@ -14,7 +14,6 @@ const Fixture = ({navigation}) => {
   return (
     <>
         <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
-            <View style={styles.containerText}></View>
             <FixtureDates navigation={navigation}/>  
         </ImageBackground>
     </>

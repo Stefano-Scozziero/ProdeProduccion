@@ -1,63 +1,35 @@
-import { StyleSheet, Text,  View } from 'react-native'
-import FastImage from 'react-native-fast-image'
-import colors from '../../utils/globals/colors'
-import React from 'react'
+import { StyleSheet, Text, View } from 'react-native';
+import FastImage from 'react-native-fast-image';
+import colors from '../../utils/globals/colors';
+import React from 'react';
 
-const Encuentro = React.memo(({ encuentro }) => (
-  <View style={styles.encuentroContainer}>
-    <View style={styles.teamContainer}>
-      <FastImage style={styles.teamImage} source={{ uri: encuentro.equipo1.imagen }} resizeMode='contain'/>
-      <Text style={styles.teamName}>{encuentro.equipo1.nombre}</Text>
-    </View>
-
-    <View style={styles.scoreContainer}>
-      <View style={styles.scoreBox}>
-        <Text style={styles.scoreText}>{encuentro.equipo1.puntos}</Text>
+const CardFixture = React.memo(({ encuentro }) => {
+  return (
+    <View style={styles.encuentroContainer}>
+      <View style={styles.teamContainer}>
+        <FastImage style={styles.teamImage} source={{ uri: encuentro.equipo1.imagen }} resizeMode='contain' />
+        <Text style={styles.teamName}>{encuentro.equipo1.nombre}</Text>
       </View>
-      <Text style={styles.versusText}>-</Text>
-      <View style={styles.scoreBox}>
-        <Text style={styles.scoreText}>{encuentro.equipo2.puntos}</Text>
+      <View style={styles.scoreContainer}>
+        <View style={styles.scoreBox}>
+          <Text style={styles.scoreText}>{encuentro.goles1}</Text>
+        </View>
+        <Text style={styles.versusText}>-</Text>
+        <View style={styles.scoreBox}>
+          <Text style={styles.scoreText}>{encuentro.goles2}</Text>
+        </View>
+      </View>
+      <View style={styles.teamContainer}>
+        <Text style={styles.teamName}>{encuentro.equipo2.nombre}</Text>
+        <FastImage style={styles.teamImage} source={{ uri: encuentro.equipo2.imagen }} resizeMode='contain' />
       </View>
     </View>
-
-    <View style={styles.teamContainer}>
-      <Text style={styles.teamName}>{encuentro.equipo2.nombre}</Text>
-      <FastImage style={styles.teamImage} source={{ uri: encuentro.equipo2.imagen }} resizeMode='contain' />
-    </View>
-  </View>
-));
-
-class CardFixture extends React.PureComponent {
-  render() {
-    const { partidos } = this.props;
-    return (
-      <View style={styles.container}>
-        <Text style={styles.dateText}>{`Fecha N°${partidos.fecha}`}</Text>
-        {partidos.encuentros.map((encuentro) => (
-          <Encuentro key={encuentro.id} encuentro={encuentro} />
-        ))}
-      </View>
-    )
-  }
-}
+  );
+});
 
 export default CardFixture;
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    backgroundColor: colors.blackGray,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 10,
-  },
-  dateText: {
-    fontSize: 16,
-    color: colors.white,
-    marginBottom: 10
-  },
   encuentroContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -66,6 +38,8 @@ const styles = StyleSheet.create({
     marginVertical: 2.5,
     width: '100%',
     position: 'relative',
+    padding: 5,
+    borderRadius: 10,
   },
   teamContainer: {
     flexDirection: 'row',
@@ -73,8 +47,7 @@ const styles = StyleSheet.create({
   },
   teamImage: {
     width: 30,
-    height: 30
-    
+    height: 30,
   },
   scoreContainer: {
     flexDirection: 'row',

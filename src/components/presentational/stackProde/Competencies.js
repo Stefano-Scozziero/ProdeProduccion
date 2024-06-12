@@ -10,7 +10,6 @@ const Competencies = ({navigation}) => {
   return (
     <>
         <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
-            <View style={styles.containerText}></View>
             <Categories navigation={navigation}/>  
         </ImageBackground>
     </>
@@ -28,16 +27,5 @@ const styles = StyleSheet.create({
     mainLandScape:{
         flexDirection: 'row'
     },
-    containerText: {
-        width: '90%',
-        height: 20,
-        alignItems: 'center', 
-        justifyContent: 'center',
-        marginVertical: 10,
-    },
-    text: {
-        fontSize: 25,
-        textAlign: 'center',
-    }
     
 })

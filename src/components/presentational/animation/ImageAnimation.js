@@ -24,7 +24,7 @@ const ImageAnimation = ({ style }) => {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    ).start()
   }, [pulseAnimation])
 
   return (
@@ -44,4 +44,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.blackGray,
   },
-});
+})

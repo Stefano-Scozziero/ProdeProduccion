@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, ImageBackground} from 'react-native'
 const EmptyListComponent = ({message}) => {
 
   return (
-    <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.errorMessage}>{message}</Text>
-    </ImageBackground>
+    </View>
   )
 }
 
