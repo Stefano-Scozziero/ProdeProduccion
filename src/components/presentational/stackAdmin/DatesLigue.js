@@ -139,11 +139,21 @@ const DatesLigue = () => {
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
-      const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {}).map(key => ({ key, label: key }))
+      const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
+      .map(key => ({ key, label: key }))
+      .sort((a, b) => {
+        return a.label.localeCompare(b.label)
+      })
       setTournamentOptions(tournaments)
       setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null)
     }
   }, [datos, categorySelected, selectedDivision])
+
+  const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
+  ? Object.keys(datos?.[categorySelected]?.partidos[selectedDivision][selectedTournament])
+      .filter(key => !isNaN(key) && Number(key) >= 1)
+      .map(key => ({ key, label: `Fecha ${key}` }))
+  : [];
 
   const updateScore = (encounterId, teamNumber, increment) => {
     const updatedDatos = { ...datos };
@@ -194,11 +204,7 @@ const DatesLigue = () => {
   if (!datos || Object.keys(datos).length === 0) return <EmptyListComponent message="No hay datos disponibles" />;
 
 
-  const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
-    ? Object.keys(datos?.[categorySelected]?.partidos[selectedDivision][selectedTournament])
-        .filter(key => !isNaN(key) && Number(key) >= 1)
-        .map(key => ({ key, label: `Fecha ${key}` }))
-    : [];
+ 
 
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.container, !portrait && styles.landScape]}>

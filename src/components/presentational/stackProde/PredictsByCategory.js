@@ -68,8 +68,8 @@ const PredictsByCategory = ({ navigation }) => {
   },  [categorySelected]);
 
   const getEquipo = (id) => {
-    if (datos && datos[categorySelected] && datos[categorySelected].equipos) {
-      return datos[categorySelected].equipos[id];
+    if (datos && datos?.[categorySelected] && datos?.[categorySelected]?.equipos) {
+      return datos?.[categorySelected]?.equipos[id];
     }
     return null;
   };
@@ -198,7 +198,7 @@ const PredictsByCategory = ({ navigation }) => {
 
   useEffect(() => {
     if (datos && categorySelected) {
-      const divisions = Object.keys(datos[categorySelected].partidos || {})
+      const divisions = Object.keys(datos?.[categorySelected]?.partidos || {})
         .map(key => ({ key, label: key }))
         .sort((a, b) => {
           return a.label.localeCompare(b.label)
@@ -208,9 +208,19 @@ const PredictsByCategory = ({ navigation }) => {
     }
   }, [datos, categorySelected]);
 
+  const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
+    ? Object.keys(datos?.[categorySelected].partidos?.[selectedDivision]?.[selectedTournament])
+        .filter(key => !isNaN(key) && Number(key) >= 1)
+        .map(key => ({ key, label: `Fecha ${key}` }))
+    : [];
+
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
-      const tournaments = Object.keys(datos[categorySelected].partidos[selectedDivision] || {}).map(key => ({ key, label: key }))
+      const tournaments = Object.keys(datos?.[categorySelected]?.partidos?.[selectedDivision] || {})
+      .map(key => ({ key, label: key }))
+      .sort((a, b) => {
+        return a.label.localeCompare(b.label)
+      })
       setTournamentOptions(tournaments)
       setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null)
     }
@@ -230,7 +240,7 @@ const PredictsByCategory = ({ navigation }) => {
   useEffect(() => {
     if (selectedDate !== null && datos && categorySelected) {
       const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-      const encuentrosDeLaFecha = partidosDelTorneo[selectedDate]?.encuentros || [];
+      const encuentrosDeLaFecha = partidosDelTorneo?.[selectedDate]?.encuentros || [];
       const partidosConEquipos = encuentrosDeLaFecha.map(partido => ({
         ...partido,
         equipo1: getEquipo(partido.equipo1),
@@ -245,11 +255,7 @@ const PredictsByCategory = ({ navigation }) => {
   if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Competencies')} />;
   if (!datos || Object.keys(datos).length === 0) return <EmptyListComponent message="No hay datos disponibles" />;
 
-  const dateOptions = categorySelected && datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
-    ? Object.keys(datos[categorySelected].partidos[selectedDivision][selectedTournament])
-        .filter(key => !isNaN(key) && Number(key) >= 1)
-        .map(key => ({ key, label: `Fecha ${key}` }))
-    : [];
+  
 
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.container, !portrait && styles.landScape]}>

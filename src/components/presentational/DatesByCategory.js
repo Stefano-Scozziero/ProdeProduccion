@@ -14,7 +14,13 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
   return (
     <View style={styles.container}>
       <View style={[styles.cardContainer, (encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying) ? styles.cardContainerDisable : null]}>
-        {!encuentros.hasPlayed && !encuentros.isUpComing && !encuentros.isPlaying && diferenciaHoras <= 3 &&
+        {!encuentros.hasPlayed && !encuentros.isUpComing && !encuentros.isPlaying &&
+          <View style={styles.containerResult}>
+            <Text style={{ textAlign: 'center', color: colors.white, fontSize: 12, marginHorizontal: 5 }}>FECHA:</Text>
+            <Text style={{ textAlign: 'left', color: colors.white, fontSize: 15 }}>{format(fechaPartido, 'yyyy-MM-dd HH:mm')}</Text>
+          </View>
+        }
+        {!encuentros.hasPlayed && !encuentros.isUpComing && !encuentros.isPlaying && diferenciaHoras <= 3 && diferenciaHoras > 0 &&
           <View style={styles.containerResult}>
             <Text style={{ textAlign: 'center', color: colors.white, fontSize: 12, marginHorizontal: 5 }}>PROXIMAMENTE:</Text>
             <Text style={{ textAlign: 'left', color: colors.white, fontSize: 15 }}>{format(fechaPartido, 'yyyy-MM-dd HH:mm')}</Text>

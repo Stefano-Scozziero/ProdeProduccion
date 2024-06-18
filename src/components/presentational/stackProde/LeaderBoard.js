@@ -58,23 +58,27 @@ const LeaderBoard = ({ navigation }) => {
 
   useEffect(() => {
     if (datos1 && categorySelected) {
-      const divisions = Object.keys(datos1[categorySelected].partidos || {})
+      const divisions = Object.keys(datos1[categorySelected]?.partidos || {})
         .map(key => ({ key, label: key }))
-        .sort((a, b) => {
-          return a.label.localeCompare(b.label);
-        });
+        .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
       setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
     }
-  }, [datos1, categorySelected]);
+  }, [datos1, categorySelected])
 
   useEffect(() => {
     if (datos1 && categorySelected && selectedDivision) {
-      const tournaments = Object.keys(datos1[categorySelected].partidos[selectedDivision] || {}).map(key => ({ key, label: key }))
-      setTournamentOptions(tournaments)
-      setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null)
+      const tournaments = Object.keys(datos1[categorySelected]?.partidos?.[selectedDivision] || {})
+        .map(key => ({ key, label: key }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+      setTournamentOptions(tournaments);
+
+      // Check if the currently selected tournament is still available
+      if (!tournaments.find(t => t.key === selectedTournament)) {
+        setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
+      }
     }
-  }, [datos, categorySelected, selectedDivision])
+  }, [datos1, categorySelected, selectedDivision])
 
   useEffect(() => {
     if (datos && categorySelected && equipos) {
@@ -101,8 +105,7 @@ const LeaderBoard = ({ navigation }) => {
   if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />
   if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Competencies')} />
   if (!datos) return <EmptyListComponent message="No hay datos disponibles" />
-
-
+  
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
       <View style={styles.containerPicker}>
@@ -179,8 +182,7 @@ const LeaderBoard = ({ navigation }) => {
             />
           )}
           ListEmptyComponent={<Text style={styles.emptyListText}>No hay datos disponibles</Text>}
-          initialNumToRender={5}
-          maxToRenderPerBatch={5}
+          initialNumToRender={16}
           windowSize={8}
         />
       </View>
