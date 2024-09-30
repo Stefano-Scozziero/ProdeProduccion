@@ -8,11 +8,11 @@ import { store } from './src/app/store'
 import MainNavigator from './src/navigation/MainNavigator'
 import colors from './src/utils/globals/colors'
 import { init } from './src/utils/db'
-import { configuration } from './src/app/services/authGoogle/config'
+import { configureGoogleSignIn } from './src/app/services/authGoogle/config'
 
 
 init()
-configuration()
+configureGoogleSignIn()
 
 const App = () => {
 

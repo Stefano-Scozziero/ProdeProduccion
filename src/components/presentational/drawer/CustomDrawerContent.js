@@ -35,16 +35,16 @@ const CustomDrawerContent = (props) => {
       }, error => {
         console.error(error);
       });
-      return () => profileRef.off('value');
+      return () => profileRef.off('value'); // Cleanup del listener
     }
   }, [user]);
 
   const onLogout = async () => {
-    if (profile?.email !== null) {
-      await GoogleSignin.signOut();
-    }
-    auth().signOut();
     try {
+      if (profile?.email !== null) {
+        await GoogleSignin.signOut();
+      }
+      await auth().signOut();
       await navigation.dispatch(DrawerActions.closeDrawer());
       dispatch(clearUser());
       deleteSession();
@@ -74,7 +74,7 @@ const CustomDrawerContent = (props) => {
           <Text style={styles.profileText}>{profile?.email || user?.email || "Correo Electrónico"}</Text>
         </View>
       </View>
-      <Drawer.Section></Drawer.Section>
+      
       <Drawer.Section>
         <Pressable style={[styles.drawerButton, activeRoute === 'Inicio' ? styles.drawerItemActive : styles.drawerItemInactive]} onPress={goToHome}>
           <DrawerIcon nameIcon="home" focused={activeRoute === 'Inicio'} />
@@ -96,11 +96,12 @@ const CustomDrawerContent = (props) => {
         <DrawerItem navigation={navigation} activeRoute={activeRoute} route='Preferencias' icon='cog' title='Preferencias' />
         {idToken && (
           <Pressable style={styles.drawerButton} onPress={onLogout}>
-              <DrawerIcon nameIcon="log-out" focused={activeRoute === 'Cerrar Sesion'} />
-              <Text style={[styles.text, activeRoute === 'Cerrar Sesion' ? styles.activeText : styles.inactiveText]}>Cerrar Sesion</Text>
-            </Pressable>
+            <DrawerIcon nameIcon="log-out" focused={activeRoute === 'Cerrar Sesion'} />
+            <Text style={[styles.text, activeRoute === 'Cerrar Sesion' ? styles.activeText : styles.inactiveText]}>Cerrar Sesion</Text>
+          </Pressable>
         )}
       </Drawer.Section>
+      
       {isAdmin && (
         <Drawer.Section>
           <Pressable style={[styles.drawerButton, activeRoute === 'Administrador' ? styles.drawerItemActive : styles.drawerItemInactive]} onPress={() => goToRoute('Administrador', 'Administrador')}>

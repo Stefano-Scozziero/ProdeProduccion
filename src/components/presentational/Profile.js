@@ -10,7 +10,7 @@ import LoadingSpinner from './LoadingSpinner';
 import ModalMessage from './modal/ModalMessage';
 import colors from '../../utils/globals/colors';
 import fonts from '../../utils/globals/fonts';
-import { db, st as storage } from '../../app/services/firebase/config';
+import { db, storage } from '../../app/services/firebase/config'; // Asegúrate de que db y storage estén bien importados
 import auth from '@react-native-firebase/auth';
 import ModalCamera from './modal/ModalCamera';
 
@@ -22,12 +22,12 @@ const Profile = () => {
     const [modalCameraVisible, setModalCameraVisible] = useState(false);
     const portrait = useContext(OrientationContext);
     const [isLoading, setIsLoading] = useState(true);
-    const user = auth().currentUser;
-    const localId = user ? user.uid : null;
+    const user = auth().currentUser; // Asegúrate de que user esté disponible
     const [initialUsername, setInitialUsername] = useState('');
 
+    // useEffect para cargar los datos de perfil desde la base de datos
     useEffect(() => {
-        if (user.uid) {
+        if (user && user.uid) { // Asegúrate de que user esté disponible y tenga un UID
             const profileRef = db.ref(`/profiles/${user.uid}`);
             profileRef.on('value', snapshot => {
                 if (snapshot.exists()) {
@@ -41,12 +41,15 @@ const Profile = () => {
                 setIsLoading(false);
             });
             return () => profileRef.off('value');
+        } else {
+            setIsLoading(false); // Detener el spinner si no hay un usuario
         }
-    }, [localId]);
+    }, [user]);
 
     const handlerCloseModal = () => setModalVisible(false);
     const handlerCloseModalCamera = () => setModalCameraVisible(false);
 
+    // Función para elegir una imagen desde la cámara o la galería
     const pickImage = async (camera) => {
         let result;
         if (camera) {
@@ -74,8 +77,9 @@ const Profile = () => {
         setModalCameraVisible(false);
     };
 
+    // Función para actualizar la imagen del perfil en Firebase Storage
     const updateProfileImage = async (imageBase64) => {
-        if (user) {
+        if (user && user.uid) {
             setIsLoading(true);
             const reference = storage().ref(`profiles/${user.uid}/profilePicture.png`);
             await reference.putString(imageBase64, 'data_url');
@@ -93,8 +97,9 @@ const Profile = () => {
         }
     };
 
+    // Función para actualizar los datos del perfil en la base de datos
     const onSubmit = async () => {
-        if (user.uid) {
+        if (user && user.uid) {
             setIsLoading(true);
             db.ref(`/profiles/${user.uid}`).update({
                 username: username,
@@ -109,8 +114,8 @@ const Profile = () => {
         }
     };
 
-    if (isLoading) return <LoadingSpinner message={'Actualizando Imagen...'}/>;
-
+    // Mostrar spinner si se está cargando
+    if (isLoading) return <LoadingSpinner message={'Actualizando Imagen...'} />;
 
     return (
         <ImageBackground source={require('../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
@@ -120,7 +125,7 @@ const Profile = () => {
                     source={image ? { uri: image } : user?.photoURL ? { uri: user.photoURL } : require('../../../assets/usuario.png')}
                     style={[styles.image, !portrait && styles.imageLandScape]}>
                     <TouchableOpacity style={styles.containerImage} onPress={() => setModalCameraVisible(true)}>
-                        <AntDesign name='pluscircleo' color={colors.white} size={50}/>
+                        <AntDesign name='pluscircleo' color={colors.white} size={50} />
                     </TouchableOpacity>
                 </ImageBackground>
                 <View style={[styles.Button, !portrait && styles.ButtonLandScape]}>
@@ -136,23 +141,24 @@ const Profile = () => {
                         isSecure={false}
                         onChangeText={(text) => setPhone(text)}
                     />
-                    <AddButton title={"Actualizar Datos"} onPress={onSubmit}/>
-                    <DeleteButton title='Eliminar cuenta'/>
+                    <AddButton title={"Actualizar Datos"} onPress={onSubmit} />
+                    <DeleteButton title='Eliminar cuenta' />
                 </View>
             </View>
-            <ModalMessage 
-                textButton='Volver a intentar' 
-                text="No se pudo guardar informacion" 
-                modalVisible={modalVisible} 
-                onclose={handlerCloseModal}/>
-            <ModalCamera 
+            <ModalMessage
+                textButton='Volver a intentar'
+                text="No se pudo guardar informacion"
+                modalVisible={modalVisible}
+                onclose={handlerCloseModal}
+            />
+            <ModalCamera
                 textButton='Volver'
                 textCamera={'Camara'}
                 textGallery={'Galeria'}
-                modalVisible={modalCameraVisible} 
+                modalVisible={modalCameraVisible}
                 onclose={handlerCloseModalCamera}
                 pickImage={pickImage}
-            /> 
+            />
         </ImageBackground>
     );
 };

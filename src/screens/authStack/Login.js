@@ -29,15 +29,12 @@ const Login = ({navigation}) =>  {
       setModalVisible(false)
     }
 
- 
-
     const checkIfAdmin = async (userId) => {
-      const adminRef = db.ref(`admins/${userId}`)
-      const snapshot = await adminRef.once('value')
-      return snapshot.exists()
-    }
+      const adminRef = db().ref(`admins/${userId}`);
+      const snapshot = await adminRef.once('value');
+      return snapshot.exists();
+    };
     
-
     const authWithGoogle = async () => {
       try {
         await GoogleSignin.hasPlayServices()
