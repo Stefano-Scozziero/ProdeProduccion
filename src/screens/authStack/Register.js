@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux';
 import { setUser, setAdmin } from '../../features/auth/authSlice';
 import { registerSchema } from '../../utils/validations/authSchema';
 import { deleteSession, insertSession } from '../../utils/db';
-import ModalMessage from '../../components/presentational/modal/ModalMessage';
+import CustomModal from '../../components/presentational/modal/CustomModal';  // Importa el nuevo modal genérico
 import auth from '@react-native-firebase/auth';
 import { db } from '../../app/services/firebase/config';
 import LoadingSpinner from '../../components/presentational/LoadingSpinner2';
@@ -22,10 +22,15 @@ const Register = ({ navigation }) => {
   const [errorPassword, setErrorPassword] = useState("");
   const [errorConfirmPassword, setErrorConfirmPassword] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const [modalMessage, setModalMessage] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [navigateToLogin, setNavigateToLogin] = useState(false); // Nuevo estado para manejar la navegación
 
   const handlerCloseModal = () => {
     setModalVisible(false);
+    if (navigateToLogin) {
+      navigation.navigate("Login");
+    }
   };
 
   const checkIfAdmin = async (userId) => {
@@ -36,78 +41,93 @@ const Register = ({ navigation }) => {
 
   const onSubmit = async () => {
     try {
-      setIsLoggingIn(true)
+      setIsLoggingIn(true);
       Keyboard.dismiss();
-      registerSchema.validateSync({ email, password, confirmPassword });
 
-      // Realizar el registro del usuario con Firebase
+      // Validar los datos con `yup`
+      try {
+        await registerSchema.validate({ email, password, confirmPassword }, { abortEarly: false });
+      } catch (validationErrors) {
+        validationErrors.inner.forEach((error) => {
+          if (error.path === 'email') {
+            setErrorEmail(error.message);
+          } else if (error.path === 'password') {
+            setErrorPassword(error.message);
+          } else if (error.path === 'confirmPassword') {
+            setErrorConfirmPassword(error.message);
+          }
+        });
+        setIsLoggingIn(false); // Desactivar el spinner si hay errores de validación
+        return;
+      }
+
+      // Registro del usuario con Firebase
       const userCredential = await auth().createUserWithEmailAndPassword(email, password);
 
+      // Enviar verificación de email
       try {
         await userCredential.user.sendEmailVerification();
-        alert('Se ha enviado un enlace para verificar tu email. Revise su casilla de Correo');
-        navigation.navigate("Login"); // Opcional: Redirige al usuario al login tras el envío
-      } catch (error) {
-        alert("Error al enviar el email");
-        console.error("Error al enviar email de restablecimiento:", error);
-      }
-     
-
-      if (userCredential && userCredential.user) {
-        // Obtener el idToken del usuario registrado
-        const idToken = await userCredential.user.getIdToken();
-
-        const { email, uid, displayName, photoURL } = userCredential.user;
-
-        // Inserta la sesión en la base de datos local
-        await deleteSession();
-        await insertSession({
-          email: email,
-          idToken: idToken,
-          localId: uid,
-          name: displayName,
-          image: photoURL
-        });
-
-        // Verifica si el usuario es administrador
-        const isAdmin = await checkIfAdmin(uid);
-
-        // Despacha el estado del usuario registrado y el estado de admin en Redux
-        dispatch(setUser({
-          idToken: idToken,
-          localId: uid,
-          email: email,
-          name: displayName,
-          image: photoURL
-        }));
-        dispatch(setAdmin(isAdmin));
-        setIsLoggingIn(false)
-      } else {
+        setModalMessage('Se ha enviado un enlace para verificar tu email. Revisa tu casilla de Correo');
         setModalVisible(true);
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setNavigateToLogin(true); // Marca que después de cerrar el modal se debe navegar a Login
+        setIsLoggingIn(false); // Desactivar el spinner después de la operación exitosa
+      } catch (error) {
+        setModalMessage("Error al enviar el email de verificación");
+        setModalVisible(true);
+        console.error("Error al enviar email de verificación:", error);
+        setIsLoggingIn(false); // Desactivar el spinner en caso de error
       }
+
+      // Verificar si el usuario es administrador
+      const isAdmin = await checkIfAdmin(userCredential.user.uid);
+
+      // Guardar la sesión en la base de datos local
+      await deleteSession();
+      await insertSession({
+        email: userCredential.user.email,
+        idToken: await userCredential.user.getIdToken(),
+        localId: userCredential.user.uid,
+        name: userCredential.user.displayName,
+        image: userCredential.user.photoURL,
+      });
+
+      // Actualizar el estado en Redux
+      dispatch(setUser({
+        idToken: await userCredential.user.getIdToken(),
+        localId: userCredential.user.uid,
+        email: userCredential.user.email,
+        name: userCredential.user.displayName,
+        image: userCredential.user.photoURL,
+      }));
+      dispatch(setAdmin(isAdmin));
+
     } catch (error) {
+      // Manejo de errores de Firebase
       setErrorEmail("");
       setErrorPassword("");
-      setIsLoggingIn(false)
       setErrorConfirmPassword("");
+      setIsLoggingIn(false); // Asegúrate de desactivar el spinner en caso de error
+
       switch (error.code) {
         case "auth/invalid-email":
           setErrorEmail("Email no válido");
-          
           break;
         case "auth/email-already-in-use":
-          setErrorEmail("Email ya está en uso");
+          setErrorEmail("El email ya está en uso");
           break;
         case "auth/weak-password":
           setErrorPassword("Contraseña débil");
           break;
         default:
-          setErrorEmail("Error en el registro");
+          setModalMessage("Error en el registro");
+          setModalVisible(true);
           break;
       }
     }
-  }
-  
+  };
 
   return (
     <>
@@ -143,19 +163,20 @@ const Register = ({ navigation }) => {
           </Pressable>
         </View>
       </ImageBackground>
-      {isLoggingIn && 
-      <LoadingSpinner
-        message={'Cargando...'}
-      />}
-      <ModalMessage 
-        textButton='Volver a intentar' 
-        text="Error en el registro" 
-        modalVisible={modalVisible} 
-        onclose={handlerCloseModal}
+
+      {isLoggingIn && <LoadingSpinner message={'Cargando...'} />}
+
+      <CustomModal
+        text={modalMessage}
+        secondaryButtonText="Aceptar"
+        modalVisible={modalVisible}
+        onPrimaryAction={handlerCloseModal} // Navegación ocurre después de cerrar el modal
+        onClose={handlerCloseModal} // Manejo de cierre del modal
       />
     </>
   );
-}
+};
+
 
 export default Register;
 

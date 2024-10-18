@@ -1,4 +1,4 @@
-import 'react-native-gesture-handler';
+import 'react-native-gesture-handler'
 import { useFonts } from 'expo-font'
 import { StatusBar } from 'expo-status-bar'
 import { fontsCollections } from './src/utils/globals/fonts'

@@ -7,7 +7,7 @@ import { useContext, useEffect, useState } from 'react';
 import { AntDesign } from "@expo/vector-icons";
 import InputFormProfile from './inputText/InputFormProfile';
 import LoadingSpinner from './LoadingSpinner';
-import ModalMessage from './modal/ModalMessage';
+import CustomModal from './modal/CustomModal';
 import colors from '../../utils/globals/colors';
 import fonts from '../../utils/globals/fonts';
 import { db, storage } from '../../app/services/firebase/config'; // Asegúrate de que db y storage estén bien importados
@@ -19,11 +19,11 @@ const Profile = () => {
     const [phone, setPhone] = useState('');
     const [image, setImage] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalMessage, setModalMessage] = useState(false);
     const [modalCameraVisible, setModalCameraVisible] = useState(false);
     const portrait = useContext(OrientationContext);
     const [isLoading, setIsLoading] = useState(true);
-    const user = auth().currentUser; // Asegúrate de que user esté disponible
-    const [initialUsername, setInitialUsername] = useState('');
+    const user = auth().currentUser;
 
     // useEffect para cargar los datos de perfil desde la base de datos
     useEffect(() => {
@@ -33,7 +33,6 @@ const Profile = () => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
                     const userName = data.username || user.displayName || '';
-                    setInitialUsername(userName); // Guardar el valor inicial del nombre de usuario
                     setUsername(userName);
                     setPhone(data.phone || '');
                     setImage(data.image || '');
@@ -89,6 +88,7 @@ const Profile = () => {
             }, error => {
                 if (error) {
                     setModalVisible(true);
+                    setModalMessage('Error al subir la imagen')
                 } else {
                     setImage(imageUrl);
                 }
@@ -145,11 +145,12 @@ const Profile = () => {
                     <DeleteButton title='Eliminar cuenta' />
                 </View>
             </View>
-            <ModalMessage
-                textButton='Volver a intentar'
-                text="No se pudo guardar informacion"
+            <CustomModal
+                text={modalMessage}
+                secondaryButtonText="Aceptar"
                 modalVisible={modalVisible}
-                onclose={handlerCloseModal}
+                onPrimaryAction={handlerCloseModal} // Navegación ocurre después de cerrar el modal
+                onClose={handlerCloseModal} // Manejo de cierre del modal
             />
             <ModalCamera
                 textButton='Volver'

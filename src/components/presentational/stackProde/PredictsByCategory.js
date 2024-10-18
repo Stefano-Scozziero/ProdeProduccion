@@ -1,16 +1,21 @@
-import { useContext, useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, FlatList, ImageBackground, Text, TouchableOpacity, Pressable } from 'react-native';
+// Librerías externas
+import React, { useContext, useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, FlatList, ImageBackground, Text, TouchableOpacity } from 'react-native';
+import { useSelector } from 'react-redux';
+import ModalSelector from 'react-native-modal-selector';
+import auth from '@react-native-firebase/auth';
+import { db } from '../../../app/services/firebase/config';
+
+// Componentes internos
 import LoadingSpinner from '../LoadingSpinner';
 import EmptyListComponent from '../EmptyListComponent';
 import Error from '../Error';
 import DatesByCategory from '../DatesByCategory';
+import ModalAlert from '../modal/ModalAlert';
+
+// Contexto y utilidades
 import { OrientationContext } from '../../../utils/globals/context';
 import colors from '../../../utils/globals/colors';
-import ModalAlert from '../modal/ModalAlert';
-import { db } from '../../../app/services/firebase/config';
-import auth from '@react-native-firebase/auth';
-import { useSelector } from 'react-redux';
-import ModalSelector from 'react-native-modal-selector';
 
 const PredictsByCategory = ({ navigation }) => {
   const [modalAlert, setModalAlert] = useState(false);
@@ -67,12 +72,15 @@ const PredictsByCategory = ({ navigation }) => {
     };
   },  [categorySelected]);
 
-  const getEquipo = (id) => {
-    if (datos && datos?.[categorySelected] && datos?.[categorySelected]?.equipos) {
-      return datos?.[categorySelected]?.equipos[id];
-    }
-    return null;
-  };
+  const getEquipo = useCallback(
+    (id) => {
+      if (datos?.[categorySelected]?.equipos) {
+        return datos[categorySelected].equipos[id];
+      }
+      return null;
+    },
+    [datos, categorySelected]
+  );
 
   const handleSumarPuntos = (equipo, id) => {
     setPartidosEditados(prev => ({ ...prev, [id]: true }));

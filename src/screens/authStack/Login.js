@@ -30,7 +30,7 @@ const Login = ({navigation}) =>  {
     }
 
     const checkIfAdmin = async (userId) => {
-      const adminRef = db().ref(`admins/${userId}`);
+      const adminRef = db.ref(`admins/${userId}`);
       const snapshot = await adminRef.once('value');
       return snapshot.exists();
     };
@@ -178,7 +178,7 @@ const Login = ({navigation}) =>  {
               
               <SubmitButtonBgn onPress={()=> navigation.navigate("Register")} title="REGISTRESE AQUI"/>
               <Pressable onPress={()=> navigation.navigate("ForgotYourPass")}>
-                <Text style={styles.btnText}>Olvido su contraseña?</Text>
+                <Text style={styles.btnText}>¿Olvidó su contraseña?</Text>
               </Pressable> 
             </View>
             <View style={styles.containerImages}>

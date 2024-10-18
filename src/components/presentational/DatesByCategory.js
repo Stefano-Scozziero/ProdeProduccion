@@ -1,118 +1,122 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
-import FastImage from 'react-native-fast-image'
-import colors from '../../utils/globals/colors'
-import { parseISO, format, differenceInHours } from 'date-fns'
-import React from 'react'
-import BallAnimation from './animation/BallAnimation'
-import LineAnimation from './animation/LineAnimation'
+import React, { useMemo } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import FastImage from 'react-native-fast-image';
+import { parseISO, format, differenceInHours } from 'date-fns';
+import BallAnimation from './animation/BallAnimation';
+import LineAnimation from './animation/LineAnimation';
+import colors from '../../utils/globals/colors';
 
-const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1, puntosEq2 }) => {
-  const fechaPartido = parseISO(encuentros.fecha);
-  const ahora = new Date();
-  const diferenciaHoras = differenceInHours(fechaPartido, ahora);
+const BUTTON_SIZE = 50;
 
-  return (
-    <View style={styles.container}>
-      <View style={[styles.cardContainer, (encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying) ? styles.cardContainerDisable : null]}>
-        {!encuentros.hasPlayed && !encuentros.isUpComing && !encuentros.isPlaying &&
+const DatesByCategory = React.memo(({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1, puntosEq2 }) => {
+  const fechaPartido = useMemo(() => parseISO(encuentros.fecha), [encuentros.fecha]);
+  const ahora = useMemo(() => new Date(), []);
+  const diferenciaHoras = useMemo(() => differenceInHours(fechaPartido, ahora), [fechaPartido, ahora]);
+
+  // Función para determinar el estado del partido
+  const getMatchStatus = () => {
+    if (encuentros.hasPlayed) return 'played';
+    if (encuentros.isPlaying) return 'playing';
+    if (encuentros.isUpComing) return 'upcoming';
+    if (diferenciaHoras <= 3 && diferenciaHoras > 0) return 'soon';
+    return 'scheduled';
+  };
+
+  const matchStatus = getMatchStatus();
+
+  // Componente para mostrar el estado del partido
+  const MatchStatusView = () => {
+    switch (matchStatus) {
+      case 'played':
+        return (
           <View style={styles.containerResult}>
-            <Text style={{ textAlign: 'center', color: colors.white, fontSize: 12, marginHorizontal: 5 }}>FECHA:</Text>
-            <Text style={{ textAlign: 'left', color: colors.white, fontSize: 15 }}>{format(fechaPartido, 'yyyy-MM-dd HH:mm')}</Text>
-          </View>
-        }
-        {!encuentros.hasPlayed && !encuentros.isUpComing && !encuentros.isPlaying && diferenciaHoras <= 3 && diferenciaHoras > 0 &&
-          <View style={styles.containerResult}>
-            <Text style={{ textAlign: 'center', color: colors.white, fontSize: 12, marginHorizontal: 5 }}>PROXIMAMENTE:</Text>
-            <Text style={{ textAlign: 'left', color: colors.white, fontSize: 15 }}>{format(fechaPartido, 'yyyy-MM-dd HH:mm')}</Text>
-          </View>
-        }
-        {encuentros.isUpComing && !encuentros.hasPlayed &&
-          <View style={styles.containerResult}>
-            <Image style={{ width: 20, height: 20 }} source={require('../../../assets/pelota.png')} />
-            <Text style={{ textAlign: 'center', color: colors.white, fontSize: 12, marginHorizontal: 5 }}>POR COMENZAR:</Text>
-            <Text style={{ textAlign: 'left', color: colors.white, fontSize: 15 }}>{format(fechaPartido, 'HH:mm')}</Text>
-          </View>
-        }
-        {encuentros.isPlaying &&
-          <View style={styles.containerResult}>
-            <BallAnimation />
-            <Text style={{ textAlign: 'center', color: colors.white, fontSize: 12, marginHorizontal: 5 }}>JUGANDO:</Text>
-            <Text style={styles.scoreTextReal}>{encuentros.goles1}</Text>
-            <LineAnimation />
-            <Text style={styles.scoreTextReal}>{encuentros.goles2}</Text>
-          </View>
-        }
-        {encuentros.hasPlayed &&
-          <View style={styles.containerResult}>
-            <Text style={{ textAlign: 'left', right: 15, color: colors.white, fontSize: 12 }}>{format(fechaPartido, 'yyyy-MM-dd HH:mm')}</Text>
-            <Text style={{ color: colors.white, fontSize: 12 }}>RESULTADO:</Text>
+            <Text style={styles.dateText}>{format(fechaPartido, 'yyyy-MM-dd HH:mm')}</Text>
+            <Text style={styles.statusText}>RESULTADO:</Text>
             <Text style={styles.scoreTextReal}>{encuentros.goles1}</Text>
             <Text style={styles.scoreTextReal}>-</Text>
             <Text style={styles.scoreTextReal}>{encuentros.goles2}</Text>
           </View>
-        }
+        );
+      case 'playing':
+        return (
+          <View style={styles.containerResult}>
+            <BallAnimation />
+            <Text style={styles.statusText}>JUGANDO:</Text>
+            <Text style={styles.scoreTextReal}>{encuentros.goles1}</Text>
+            <LineAnimation />
+            <Text style={styles.scoreTextReal}>{encuentros.goles2}</Text>
+          </View>
+        );
+      case 'upcoming':
+        return (
+          <View style={styles.containerResult}>
+            <Image style={styles.ballIcon} source={require('../../../assets/pelota.png')} />
+            <Text style={styles.statusText}>POR COMENZAR:</Text>
+            <Text style={styles.timeText}>{format(fechaPartido, 'HH:mm')}</Text>
+          </View>
+        );
+      case 'soon':
+        return (
+          <View style={styles.containerResult}>
+            <Text style={styles.statusText}>PRÓXIMAMENTE:</Text>
+            <Text style={styles.timeText}>{format(fechaPartido, 'yyyy-MM-dd HH:mm')}</Text>
+          </View>
+        );
+      default:
+        return (
+          <View style={styles.containerResult}>
+            <Text style={styles.statusText}>FECHA:</Text>
+            <Text style={styles.timeText}>{format(fechaPartido, 'yyyy-MM-dd HH:mm')}</Text>
+          </View>
+        );
+    }
+  };
+
+  // Componente para los botones de sumar y restar puntos
+  const ScoreButton = ({ onPress, disabled, label }) => (
+    <TouchableOpacity onPress={onPress} disabled={disabled} style={styles.scoreButton} accessible accessibilityLabel={label}>
+      <View style={styles.buttonContent}>
+        <Text style={[styles.buttonText, disabled && styles.disabledText]}>{label}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const isDisabled = encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying;
+
+  return (
+    <View style={styles.container}>
+      <View style={[styles.cardContainer, isDisabled && styles.cardContainerDisabled]}>
+        <MatchStatusView />
+
         <View style={styles.encuentroContainer}>
-          <View style={styles.containerMatch}>
-            <View style={styles.teamContainer}>
-              <FastImage style={styles.teamImage} source={{ uri: encuentros.equipo1.imagen }} resizeMode='contain' />
-              <Text style={styles.teamName}>{encuentros.equipo1.nombre}</Text>
-            </View>
+          <View style={styles.teamContainer}>
+            <FastImage style={styles.teamImage} source={{ uri: encuentros.equipo1.imagen }} resizeMode="contain" />
+            <Text style={styles.teamName}>{encuentros.equipo1.nombre}</Text>
           </View>
+
           <View style={styles.scoreContainer}>
-            <View style={styles.scoreBoxLeft}>
-              <TouchableOpacity
-                style={styles.buttonLeft}
-                onPress={() => onSumarPuntos('equipo1')}
-                disabled={encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying}
-              >
-                <View style={{ width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={[{ fontSize: 25, fontWeight: 'bold', textAlign: 'center' }, (encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying) ? { fontSize: 25, textAlign: 'center', fontWeight: 'bold', color: 'rgba(128, 128, 128, 0.5)' } : null]}>+</Text>
-                </View>
-              </TouchableOpacity>
-              <Text style={styles.scoreText}> {puntosEq1 == undefined ? '-' : puntosEq1}</Text>
-              <TouchableOpacity
-                style={styles.buttonLeft}
-                onPress={() => onRestarPuntos('equipo1')}
-                disabled={encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying}
-              >
-                <View style={{ width: 30, height: 30, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={[{ fontSize: 25, fontWeight: 'bold', textAlign: 'center' }, (encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying) ? { fontSize: 25, textAlign: 'center', fontWeight: 'bold', color: 'rgba(128, 128, 128, 0.5)' } : null]}>-</Text>
-                </View>
-              </TouchableOpacity>
+            <View style={styles.scoreBox}>
+              <ScoreButton onPress={() => onSumarPuntos('equipo1')} disabled={isDisabled} label="+" />
+              <Text style={styles.scoreText}>{puntosEq1 !== undefined ? puntosEq1 : '-'}</Text>
+              <ScoreButton onPress={() => onRestarPuntos('equipo1')} disabled={isDisabled} label="-" />
             </View>
-            <View style={styles.scoreBoxRight}>
-              <TouchableOpacity
-                style={styles.buttonRight}
-                onPress={() => onSumarPuntos('equipo2')}
-                disabled={encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying}
-              >
-                <View style={{ width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={[{ fontSize: 25, fontWeight: 'bold', textAlign: 'center' }, (encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying) ? { fontSize: 25, textAlign: 'center', fontWeight: 'bold', color: 'rgba(128, 128, 128, 0.5)' } : null]}>+</Text>
-                </View>
-              </TouchableOpacity>
-              <Text style={styles.scoreText}> {puntosEq2 == undefined ? '-' : puntosEq2}</Text>
-              <TouchableOpacity
-                style={styles.buttonRight}
-                onPress={() => onRestarPuntos('equipo2')}
-                disabled={encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying}
-              >
-                <View style={{ width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={[{ fontSize: 25, fontWeight: 'bold', textAlign: 'center' }, (encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying) ? { fontSize: 25, textAlign: 'center', fontWeight: 'bold', color: 'rgba(128, 128, 128, 0.5)' } : null]}>-</Text>
-                </View>
-              </TouchableOpacity>
+
+            <View style={styles.scoreBox}>
+              <ScoreButton onPress={() => onSumarPuntos('equipo2')} disabled={isDisabled} label="+" />
+              <Text style={styles.scoreText}>{puntosEq2 !== undefined ? puntosEq2 : '-'}</Text>
+              <ScoreButton onPress={() => onRestarPuntos('equipo2')} disabled={isDisabled} label="-" />
             </View>
           </View>
-          <View style={styles.containerMatch}>
-            <View style={styles.teamContainer}>
-              <FastImage style={styles.teamImage} source={{ uri: encuentros.equipo2.imagen }} resizeMode='contain' />
-              <Text style={styles.teamName}>{encuentros.equipo2.nombre}</Text>
-            </View>
+
+          <View style={styles.teamContainer}>
+            <FastImage style={styles.teamImage} source={{ uri: encuentros.equipo2.imagen }} resizeMode="contain" />
+            <Text style={styles.teamName}>{encuentros.equipo2.nombre}</Text>
           </View>
         </View>
       </View>
     </View>
   );
-}
+});
 
 export default DatesByCategory;
 
@@ -120,130 +124,105 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
-    borderRadius: 10,
-  },
-  containerResult: {
-    width: '100%',
-    flexDirection: 'row',
-    bottom: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.blackGray,
-    borderRadius: 20
-  },
-  cardContainerDisable:{
-    width:'100%',
-    height: 155,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(128, 128, 128, 0.5)', // Color de fondo de la tarjeta
-    borderRadius: 10,
     padding: 10,
   },
   cardContainer: {
-    width:'100%',
-    height: 155,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.blackGray, // Color de fondo de la tarjeta
+    width: '100%',
+    backgroundColor: colors.blackGray,
     borderRadius: 10,
     padding: 10,
+  },
+  cardContainerDisabled: {
+    backgroundColor: 'rgba(128, 128, 128, 0.5)',
+  },
+  containerResult: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.blackGray,
+    borderRadius: 20,
+    paddingVertical: 5,
+    marginBottom: 10,
+  },
+  dateText: {
+    color: colors.white,
+    fontSize: 12,
+    marginHorizontal: 5,
+  },
+  statusText: {
+    color: colors.white,
+    fontSize: 12,
+    marginHorizontal: 5,
+  },
+  timeText: {
+    color: colors.white,
+    fontSize: 15,
+  },
+  scoreTextReal: {
+    color: colors.green,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginHorizontal: 5,
+  },
+  ballIcon: {
+    width: 20,
+    height: 20,
   },
   encuentroContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 5,
-    marginVertical: 2.5,
-    width: '100%',
-    position: 'relative'
   },
-  containerMatch: {
-    width: 100,
-    height: '100%'
-  },
-
   teamContainer: {
     alignItems: 'center',
+    width: 100,
   },
   teamImage: {
     width: 60,
-    height: 60
+    height: 60,
+  },
+  teamName: {
+    width: 80,
+    fontSize: 10,
+    color: colors.white,
+    textAlign: 'center',
+    marginTop: 5,
   },
   scoreContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 1,
-    position: 'absolute', // Agrega esta línea
-    left: 0, // Agrega esta línea
-    right: 0, // Agrega esta línea
   },
-  teamName: {
-    width: 80,
-    height: 30,
-    fontSize: 10,
-    color: colors.white,
-    textAlign: 'center',
-    top: 5
-  },
-  scoreBoxLeft: {
-    width: 25,
-    height: 30,
+  scoreBox: {
     alignItems: 'center',
-    justifyContent: 'center',
-    right: 25,
+    marginHorizontal: 10,
   },
-  scoreBoxRight: {
-    width: 25,
-    height: 30,
-    alignItems: 'center',
+  scoreButton: {
+    width: BUTTON_SIZE,
+    height: BUTTON_SIZE,
+    backgroundColor: colors.white,
+    borderRadius: BUTTON_SIZE / 2,
     justifyContent: 'center',
-    left: 25
-    
+    alignItems: 'center',
+    marginVertical: 5,
+  },
+  buttonContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 25,
+    fontWeight: 'bold',
+    color: colors.black,
+  },
+  disabledText: {
+    color: 'rgba(128, 128, 128, 0.5)',
   },
   scoreText: {
-    width: 25,
     fontSize: 16,
     color: colors.white,
     fontWeight: 'bold',
-    marginVertical: 5,
-    textAlign: 'center'
+    textAlign: 'center',
   },
-  scoreTextReal: {
-    width: 25,
-    fontSize: 16,
-    color: colors.green,
-    fontWeight: 'bold',
-    textAlign: 'center'
-  },
-  versusText: {
-    fontSize: 14,
-    color: colors.white, // Color del texto del vs
-    marginHorizontal: 5,
-  },
-  buttonLeft: {
-    width: 50,
-    height: 30,
-    backgroundColor: colors.white,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center'
-
-  },
-  buttonRight: {
-  
-    width: 50,
-    height: 30,
-    backgroundColor: colors.white,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(128, 128, 128, 0.5)',
-  }
-})
+});
