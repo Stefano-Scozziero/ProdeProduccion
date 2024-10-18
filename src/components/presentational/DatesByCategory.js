@@ -227,6 +227,7 @@ const styles = StyleSheet.create({
   },
   teamContainer: {
     alignItems: 'center',
+    width: 100,
   },
   teamImage: {
     width: 60,

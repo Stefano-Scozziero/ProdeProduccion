@@ -99,7 +99,11 @@ Una aplicación de Futbol para los amantes de las timbas.
 - **Pestaña 3 - Notificaciones:** Muestra eventos importantes para los usuarios.
 - **Pestaña 4 - Amigos:** Permite ver los amigos conectados.
 - **Pestaña 5 - Compartir:** Permite compartir la aplicación mediante un enlace.
+<<<<<<< HEAD
 - **Pestaña 6 - Editar Perfil:** Información del usuario y carga de imagen de perfil. Ademas cuenta con un boton de borrado de cuenta.
+=======
+- **Pestaña 6 - Editar Perfil:** Información del usuario y carga de imagen de perfil.
+>>>>>>> c429cdbddcd5082303fe84682c217c57a857b9cd
 - **Pestaña 7 - Preferencias:** Configuración de preferencias del usuario (ej. tema oscuro).
 - **Pestaña 8 - Cerrar Sesion:** Permite cerrar la sesión del usuario.
 
