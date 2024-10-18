@@ -8,14 +8,8 @@ import { useDispatch } from 'react-redux';
 import { setUser, setAdmin } from '../../features/auth/authSlice';
 import { registerSchema } from '../../utils/validations/authSchema';
 import { deleteSession, insertSession } from '../../utils/db';
-<<<<<<< HEAD
-import ModalMessage from '../../components/presentational/modal/ModalMessage';
-import auth from '@react-native-firebase/auth';
-import { db } from '../../app/services/firebase/config';
-=======
 import CustomModal from '../../components/presentational/modal/CustomModal';
 import { database, auth } from '../../app/services/firebase/config';
->>>>>>> testing/master
 import LoadingSpinner from '../../components/presentational/LoadingSpinner2';
 
 const Register = ({ navigation }) => {
@@ -27,12 +21,6 @@ const Register = ({ navigation }) => {
   const [errorPassword, setErrorPassword] = useState("");
   const [errorConfirmPassword, setErrorConfirmPassword] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-<<<<<<< HEAD
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
-
-  const handlerCloseModal = () => {
-    setModalVisible(false);
-=======
   const [modalMessage, setModalMessage] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [navigateToLogin, setNavigateToLogin] = useState(false); // Nuevo estado para manejar la navegación
@@ -43,7 +31,6 @@ const Register = ({ navigation }) => {
     if (navigateToLogin) {
       navigation.navigate("Login");
     }
->>>>>>> testing/master
   };
 
   const checkIfAdmin = async (userId) => {
@@ -54,69 +41,6 @@ const Register = ({ navigation }) => {
 
   const onSubmit = async () => {
     try {
-<<<<<<< HEAD
-      setIsLoggingIn(true)
-      Keyboard.dismiss();
-      registerSchema.validateSync({ email, password, confirmPassword });
-
-      // Realizar el registro del usuario con Firebase
-      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-
-      try {
-        await userCredential.user.sendEmailVerification();
-        alert('Se ha enviado un enlace para verificar tu email. Revise su casilla de Correo');
-        navigation.navigate("Login"); // Opcional: Redirige al usuario al login tras el envío
-      } catch (error) {
-        alert("Error al enviar el email");
-        console.error("Error al enviar email de restablecimiento:", error);
-      }
-     
-
-      if (userCredential && userCredential.user) {
-        // Obtener el idToken del usuario registrado
-        const idToken = await userCredential.user.getIdToken();
-
-        const { email, uid, displayName, photoURL } = userCredential.user;
-
-        // Inserta la sesión en la base de datos local
-        await deleteSession();
-        await insertSession({
-          email: email,
-          idToken: idToken,
-          localId: uid,
-          name: displayName,
-          image: photoURL
-        });
-
-        // Verifica si el usuario es administrador
-        const isAdmin = await checkIfAdmin(uid);
-
-        // Despacha el estado del usuario registrado y el estado de admin en Redux
-        dispatch(setUser({
-          idToken: idToken,
-          localId: uid,
-          email: email,
-          name: displayName,
-          image: photoURL
-        }));
-        dispatch(setAdmin(isAdmin));
-        setIsLoggingIn(false)
-      } else {
-        setModalVisible(true);
-      }
-    } catch (error) {
-      setErrorEmail("");
-      setErrorPassword("");
-      setIsLoggingIn(false)
-      setErrorConfirmPassword("");
-      switch (error.code) {
-        case "auth/invalid-email":
-          setErrorEmail("Email no válido");
-          
-          break;
-        case "auth/email-already-in-use":
-          setErrorEmail("Email ya está en uso");
-=======
       setIsLoggingIn(true);
       Keyboard.dismiss();
 
@@ -193,27 +117,17 @@ const Register = ({ navigation }) => {
           break;
         case "auth/email-already-in-use":
           setErrorEmail("El email ya está en uso");
->>>>>>> testing/master
           break;
         case "auth/weak-password":
           setErrorPassword("Contraseña débil");
           break;
         default:
-<<<<<<< HEAD
-          setErrorEmail("Error en el registro");
-          break;
-      }
-    }
-  }
-  
-=======
           setModalMessage("Error en el registro");
           setModalVisible(true);
           break;
       }
     }
   };
->>>>>>> testing/master
 
   return (
     <>
@@ -249,21 +163,6 @@ const Register = ({ navigation }) => {
           </Pressable>
         </View>
       </ImageBackground>
-<<<<<<< HEAD
-      {isLoggingIn && 
-      <LoadingSpinner
-        message={'Cargando...'}
-      />}
-      <ModalMessage 
-        textButton='Volver a intentar' 
-        text="Error en el registro" 
-        modalVisible={modalVisible} 
-        onclose={handlerCloseModal}
-      />
-    </>
-  );
-}
-=======
 
       {isLoggingIn && <LoadingSpinner message={'Cargando...'} />}
 
@@ -278,7 +177,6 @@ const Register = ({ navigation }) => {
   );
 };
 
->>>>>>> testing/master
 
 export default Register;
 

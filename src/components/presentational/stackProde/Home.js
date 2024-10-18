@@ -1,36 +1,3 @@
-<<<<<<< HEAD
-import { TouchableOpacity, StyleSheet, ImageBackground, Image, View, Dimensions } from 'react-native'
-import React, { useState, useContext } from 'react'
-import { OrientationContext } from '../../../utils/globals/context'
-import ImageAnimation from '../animation/ImageAnimation'
-
-const { width, height } = Dimensions.get('window')
-
-const ImageLoader = ({ uri, style, onPress, loading, setLoading }) => {
-  return (
-    <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
-      {loading && <ImageAnimation style={style} />}
-      <Image
-        style={[style, loading && { display: 'none' }]}
-        source={{ uri }}
-        resizeMode='stretch'
-        onLoad={() => setLoading(false)}
-      />
-    </TouchableOpacity>
-  );
-};
-
-const Home = React.memo(({ navigation }) => {
-  const portrait = useContext(OrientationContext);
-  const [loading, setLoading] = useState(true);
-
-  return (
-    <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
-      <View style={styles.predictionContainer}>
-        <ImageLoader
-          uri='https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fmispredicciones.png?alt=media&token=ef9f815a-e80b-4f15-8981-4844c95695ad'
-          style={styles.predictionImage}
-=======
 import React, { useState, useContext, useEffect } from 'react';
 import { 
   TouchableOpacity, 
@@ -114,10 +81,6 @@ const Home = React.memo(({ navigation }) => {
         <ImageLoader
           uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fmispredicciones.png?alt=media&token=ef9f815a-e80b-4f15-8981-4844c95695ad"
           style={[styles.predictionImage, !portrait && styles.predictionImageLandScape]}
-<<<<<<< HEAD
->>>>>>> testing/master
-          onPress={() => navigation.navigate('Competencies')}
-=======
           onPress={() => {
             if (!selectedCategory) {
               setIntendedNavigation('Predictions');
@@ -126,18 +89,10 @@ const Home = React.memo(({ navigation }) => {
               navigation.navigate('Predictions');
             }
           }}
->>>>>>> testing/master
           loading={loading}
           setLoading={setLoading}
         />
       </View>
-<<<<<<< HEAD
-      <View style={styles.buttonRow}>
-        <ImageLoader
-          uri='https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Ftabladelideres.png?alt=media&token=6774c721-7422-40e7-b2e4-5373e17b50fe'
-          style={styles.predictionImageRow}
-          onPress={() => navigation.navigate('LeaderBoard')}
-=======
 
       <View style={[styles.predictionContainerRow, !portrait && styles.predictionContainerRowLandScape]}>
         <ImageLoader
@@ -151,16 +106,10 @@ const Home = React.memo(({ navigation }) => {
               navigation.navigate('Leader');
             }
           }}
->>>>>>> testing/master
           loading={loading}
           setLoading={setLoading}
         />
         <ImageLoader
-<<<<<<< HEAD
-          uri='https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Ffixture.png?alt=media&token=299cb20e-6a51-4078-9ecd-374514047aaa'
-          style={styles.predictionImageRow}
-          onPress={() => navigation.navigate('Fixture')}
-=======
           uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Ffixture.png?alt=media&token=299cb20e-6a51-4078-9ecd-374514047aaa"
           style={[styles.predictionImageRow, !portrait && styles.predictionImageRowLandScape]}
           onPress={() => {
@@ -171,19 +120,10 @@ const Home = React.memo(({ navigation }) => {
               navigation.navigate('Fixture');
             }
           }}
->>>>>>> testing/master
           loading={loading}
           setLoading={setLoading}
         />
       </View>
-<<<<<<< HEAD
-<<<<<<< HEAD
-      <View style={styles.predictionContainer}>
-        <ImageLoader
-          uri='https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fnoticias.png?alt=media&token=b6a17432-35b6-4845-9548-f4b8173c9401'
-          style={styles.predictionImage}
-=======
-=======
       
       <View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
         <ImageLoader
@@ -194,20 +134,16 @@ const Home = React.memo(({ navigation }) => {
           setLoading={setLoading}
         />
       </View>
->>>>>>> testing/master
 
       <View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
         <ImageLoader
           uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fnoticias.png?alt=media&token=b6a17432-35b6-4845-9548-f4b8173c9401"
           style={[styles.predictionImage, !portrait && styles.predictionImageLandScape]}
->>>>>>> testing/master
           onPress={() => navigation.navigate('News')}
           loading={loading}
           setLoading={setLoading}
         />
       </View>
-<<<<<<< HEAD
-=======
 
       {/* Reemplazo del Modal por CustomModal */}
       <CustomModal
@@ -256,28 +192,17 @@ const Home = React.memo(({ navigation }) => {
           />
         )}
       </CustomModal>
->>>>>>> testing/master
     </ImageBackground>
   );
 });
 
-<<<<<<< HEAD
-export default Home
-=======
 export default Home;
->>>>>>> testing/master
 
 const styles = StyleSheet.create({
   main: {
     flex: 1,
     alignItems: 'center',
   },
-<<<<<<< HEAD
-  mainLandScape: {
-    flexDirection: 'row',
-  },
-=======
->>>>>>> testing/master
   predictionContainer: {
     width: width * 0.95,
     height: height * 0.17,
@@ -299,17 +224,6 @@ const styles = StyleSheet.create({
     height: height * 0.17,
     borderRadius: 10,
   },
-<<<<<<< HEAD
-  buttonRow: {
-    width: width * 0.95,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-<<<<<<< HEAD
-=======
-=======
->>>>>>> testing/master
   predictionContainerLandScape: {
     width: width * 0.95,
     height: width * 0.18,
@@ -374,5 +288,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
   },
->>>>>>> testing/master
 });

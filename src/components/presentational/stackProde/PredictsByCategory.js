@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { useContext, useState, useEffect, useRef } from 'react';
-=======
 import React, { useContext, useState, useEffect, useRef } from 'react';
->>>>>>> testing/master
 import { View, StyleSheet, FlatList, ImageBackground, Text, TouchableOpacity, Pressable } from 'react-native';
 import LoadingSpinner from '../LoadingSpinner';
 import EmptyListComponent from '../EmptyListComponent';
@@ -11,12 +7,7 @@ import DatesByCategory from '../DatesByCategory';
 import { OrientationContext } from '../../../utils/globals/context';
 import colors from '../../../utils/globals/colors';
 import ModalAlert from '../modal/ModalAlert';
-<<<<<<< HEAD
-import { db } from '../../../app/services/firebase/config';
-import auth from '@react-native-firebase/auth';
-=======
 import { database, auth } from '../../../app/services/firebase/config';
->>>>>>> testing/master
 import { useSelector } from 'react-redux';
 import ModalSelector from 'react-native-modal-selector';
 
@@ -33,16 +24,6 @@ const PredictsByCategory = ({ navigation }) => {
   const [filteredPartidos, setFilteredPartidos] = useState([]);
   const [pickerDataLoaded, setPickerDataLoaded] = useState(false);
   const [puntos, setPuntos] = useState({ eq1: {}, eq2: {} });
-<<<<<<< HEAD
-  const user = auth().currentUser;
-  const [guardarPronosticos, setGuardarPronosticos] = useState(false);
-  const [partidosEditados, setPartidosEditados] = useState({});
-  const divisionSelectorRef = useRef(null)
-  const tournamentSelectorRef = useRef(null)
-  const dateSelectorRef = useRef(null)
-  const [divisionOptions, setDivisionOptions] = useState([])
-  const [tournamentOptions, setTournamentOptions] = useState([])
-=======
   const [puntosWin, setPuntosWin] = useState({});
   const user = auth().currentUser;
   const db = database();
@@ -55,7 +36,6 @@ const PredictsByCategory = ({ navigation }) => {
   
   const [divisionOptions, setDivisionOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
->>>>>>> testing/master
 
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture').on('value', (snapshot) => {
@@ -137,15 +117,6 @@ const PredictsByCategory = ({ navigation }) => {
 
   const guardarPronosticosEnDB = async () => {
     if (!categorySelected || !selectedDate || !filteredPartidos) return;
-<<<<<<< HEAD
-
-    try {
-      const pronosticosRef = db.ref(`/profiles/${user.uid}/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`);
-
-      const snapshot = await pronosticosRef.once('value');
-      const pronosticosExistentes = snapshot.val() || [];
-
-=======
   
     try {
       const pronosticosRef = db.ref(`/profiles/${user.uid}/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`);
@@ -153,16 +124,11 @@ const PredictsByCategory = ({ navigation }) => {
       const snapshot = await pronosticosRef.once('value');
       const pronosticosExistentes = snapshot.val() || {};
   
->>>>>>> testing/master
       const pronosticosArray = filteredPartidos
         .filter(partido => partido !== null && partido !== undefined)
         .reduce((obj, partido) => {
           if (partidosEditados[partido.id]) {
-<<<<<<< HEAD
-            obj[partido.id] = {
-=======
             obj[partido.id.toString()] = {
->>>>>>> testing/master
               equipo1: {
                 nombre: partido.equipo1.nombre,
                 puntos: puntos.eq1.hasOwnProperty(partido.id) ? puntos.eq1[partido.id] : undefined
@@ -170,14 +136,10 @@ const PredictsByCategory = ({ navigation }) => {
               equipo2: {
                 nombre: partido.equipo2.nombre,
                 puntos: puntos.eq2.hasOwnProperty(partido.id) ? puntos.eq2[partido.id] : undefined
-<<<<<<< HEAD
-              }
-=======
               },
               // Añadir el campo `processed` y posiblemente `points`
               processed: false, // Restablecer a false para nuevas predicciones
               points: 0 // Opcional: Inicializar puntos
->>>>>>> testing/master
             };
           } else {
             const pronosticoExistente = pronosticosExistentes[partido.id];
@@ -187,58 +149,16 @@ const PredictsByCategory = ({ navigation }) => {
           }
           return obj;
         }, {});
-<<<<<<< HEAD
-
-      await pronosticosRef.set(pronosticosArray);
-
-      setGuardarPronosticos(false);
-      setModalAlert(true);
-
-=======
   
       await pronosticosRef.set(pronosticosArray);
   
       setGuardarPronosticos(false);
       setModalAlert(true);
   
->>>>>>> testing/master
     } catch (error) {
       console.error('Error al guardar los pronósticos:', error);
     }
   };
-<<<<<<< HEAD
-
-  useEffect(() => {
-    setPuntos({ eq1: {}, eq2: {} });
-    const pronosticosRef = db.ref(`/profiles/${user.uid}/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`);
-
-    const onValueChange = pronosticosRef.on('value', (snapshot) => {
-      const pronosticosObj = snapshot.val();
-      if (pronosticosObj) {
-        const nuevosPuntosEq1 = {};
-        const nuevosPuntosEq2 = {};
-
-        Object.keys(pronosticosObj).forEach(id => {
-          const pronostico = pronosticosObj[id];
-          nuevosPuntosEq1[id] = pronostico.equipo1.puntos || 0;
-          nuevosPuntosEq2[id] = pronostico.equipo2.puntos || 0;
-        });
-
-        setPuntos({ eq1: nuevosPuntosEq1, eq2: nuevosPuntosEq2 });
-        setGuardarPronosticos(false);
-      }
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 1500);
-      setGuardarPronosticos(false);
-    }, (error) => {
-      console.error('Error al cargar los pronósticos desde la base de datos:', error);
-      setIsLoading(false);
-    });
-
-    return () => pronosticosRef.off('value', onValueChange);
-  }, [categorySelected, selectedDate, selectedDivision, selectedTournament]);
-=======
   
 
   useEffect(() => {
@@ -307,7 +227,6 @@ const PredictsByCategory = ({ navigation }) => {
     selectedTournament
   ]);
   
->>>>>>> testing/master
 
   useEffect(() => {
     const puntosEq1Definidos = Object.values(puntos.eq1).length > 0;
@@ -324,13 +243,6 @@ const PredictsByCategory = ({ navigation }) => {
     if (datos && categorySelected) {
       const divisions = Object.keys(datos?.[categorySelected]?.partidos || {})
         .map(key => ({ key, label: key }))
-<<<<<<< HEAD
-        .sort((a, b) => {
-          return a.label.localeCompare(b.label)
-        })
-      setDivisionOptions(divisions);
-      setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
-=======
         .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
   
@@ -338,7 +250,6 @@ const PredictsByCategory = ({ navigation }) => {
       if (!selectedDivision || !divisions.find(d => d.key === selectedDivision)) {
         setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
       }
->>>>>>> testing/master
     }
   }, [datos, categorySelected]);
 
@@ -350,17 +261,6 @@ const PredictsByCategory = ({ navigation }) => {
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
-<<<<<<< HEAD
-      const tournaments = Object.keys(datos?.[categorySelected]?.partidos?.[selectedDivision] || {})
-      .map(key => ({ key, label: key }))
-      .sort((a, b) => {
-        return a.label.localeCompare(b.label)
-      })
-      setTournamentOptions(tournaments)
-      setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null)
-    }
-  }, [datos, categorySelected, selectedDivision])
-=======
       const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
@@ -372,7 +272,6 @@ const PredictsByCategory = ({ navigation }) => {
       }
     }
   }, [datos, categorySelected, selectedDivision]);
->>>>>>> testing/master
 
   useEffect(() => {
     if (!pickerDataLoaded && datos && categorySelected) {
@@ -397,20 +296,12 @@ const PredictsByCategory = ({ navigation }) => {
       setFilteredPartidos(partidosConEquipos);
     }
   }, [selectedDate, datos, categorySelected, selectedDivision, selectedTournament]);
-<<<<<<< HEAD
-  
-=======
->>>>>>> testing/master
 
   if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
   if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Home')} />;
   if (!datos) return <EmptyListComponent message="No hay datos disponibles" />
 
   
-<<<<<<< HEAD
-
-=======
->>>>>>> testing/master
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.container, !portrait && styles.landScape]}>
       {modalAlert && (
@@ -421,100 +312,6 @@ const PredictsByCategory = ({ navigation }) => {
         />
       )}
       <View style={styles.containerPicker}>
-<<<<<<< HEAD
-        <View style={styles.containerText}>
-        <TouchableOpacity style={styles.touchableContainer} onPress={() => divisionSelectorRef.current.open()}>
-          <ModalSelector
-            data={divisionOptions}
-            initValue={selectedDivision}
-            onChange={(option) => setSelectedDivision(option.key)}
-            style={styles.picker}
-            optionTextStyle={styles.pickerText}
-            selectStyle={{ borderWidth: 0 }}
-            selectedItem={selectedDivision}
-            selectedItemTextStyle={styles.selectedItem}
-            initValueTextStyle={styles.initValueTextStyle}
-            backdropPressToClose={true}
-            animationType='fade'
-            cancelText='Salir'
-            cancelTextStyle={{ color: colors.black }}
-            ref={divisionSelectorRef}
-          />
-          <Text style={styles.pickerArrow}>▼</Text>
-        </TouchableOpacity>
-          
-        </View>
-        <View style={styles.containerText}>
-        <TouchableOpacity style={styles.touchableContainer} onPress={() => tournamentSelectorRef.current.open()}>
-          <ModalSelector
-            data={tournamentOptions}
-            initValue={selectedTournament}
-            onChange={(option) => setSelectedTournament(option.key)}
-            optionTextStyle={styles.pickerText}
-            style={styles.picker}
-            selectStyle={{ borderWidth: 0 }}
-            selectedItem={selectedTournament}
-            selectedItemTextStyle={styles.selectedItem}
-            initValueTextStyle={styles.initValueTextStyle}
-            backdropPressToClose={true}
-            animationType='fade'
-            cancelText='Salir'
-            cancelTextStyle={{ color: colors.black }}
-            ref={tournamentSelectorRef}
-          />
-          <Text style={styles.pickerArrow}>▼</Text>
-        </TouchableOpacity>
-          
-        </View>
-        <View  style={[styles.containerText, dateOptions.length === 0 ? styles.disabledPicker : null]}>
-        <TouchableOpacity style={styles.touchableContainer} onPress={() => dateSelectorRef.current.open()}>
-          <ModalSelector
-            data={dateOptions}
-            initValue={dateOptions.length > 0 ? `Fecha ${selectedDate}` : null}
-            onChange={(option) => setSelectedDate(option.key) }
-            optionTextStyle={styles.pickerText}
-            style={styles.picker}
-            selectStyle={{ borderWidth: 0 }}
-            selectedItem={`Fecha ${selectedDate}`}
-            selectedItemTextStyle={styles.selectedItem}
-            initValueTextStyle={styles.initValueTextStyle}
-            backdropPressToClose={true}
-            animationType='fade'
-            cancelText='Salir'
-            cancelTextStyle={{ color: colors.black }}
-            disabled={dateOptions.length === 0}
-            ref={dateSelectorRef}
-          />
-          { dateOptions.length !== 0 ? (
-            <Text style={styles.pickerArrow}>▼</Text>) : null
-          }
-        </TouchableOpacity>
-          
-          
-        </View>
-      </View>
-      
-      <View style={styles.containerFlatlist}>
-          <FlatList
-            data={filteredPartidos}
-            keyExtractor={(_, index) => `partidos-${index}`}
-            renderItem={({ item }) => (
-              <DatesByCategory
-                encuentros={item}
-                onSumarPuntos={(equipo) => handleSumarPuntos(equipo, item.id)}
-                onRestarPuntos={(equipo) => handleRestarPuntos(equipo, item.id)}
-                puntosEq1={puntos.eq1.hasOwnProperty(item.id) ? puntos.eq1[item.id] : undefined}
-                puntosEq2={puntos.eq2.hasOwnProperty(item.id) ? puntos.eq2[item.id] : undefined}
-              />
-            )}
-            ListEmptyComponent={<Text style={{ fontSize: 20 }}>No hay encuentros disponibles</Text>}
-            initialNumToRender={8}
-            maxToRenderPerBatch={8}
-            windowSize={8}
-          />
-        
-      </View>
-=======
         <ModalSelector
           data={divisionOptions}
           initValue={selectedDivision}
@@ -605,7 +402,6 @@ const PredictsByCategory = ({ navigation }) => {
         />
       </View>
 
->>>>>>> testing/master
       {guardarPronosticos && Object.keys(partidosEditados).length > 0 && 
         <TouchableOpacity activeOpacity={0.8} style={styles.guardarButton} onPress={guardarPronosticosEnDB}>
           <Text style={styles.guardarButtonText}>Guardar Pronósticos</Text>
@@ -625,30 +421,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   containerPicker: {
-<<<<<<< HEAD
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 10
-=======
     width: '90%',
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 10,
->>>>>>> testing/master
   },
   landScape: {
     width: '100%',
     height: '60%',
   },
-<<<<<<< HEAD
-  containerText: {
-    width: '95%',
-    marginVertical: 5,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center', 
-=======
   touchableContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -656,44 +437,17 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 15,
     borderRadius: 10,
->>>>>>> testing/master
     backgroundColor: colors.white,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-<<<<<<< HEAD
-    elevation: 5,
-    borderColor: colors.gray,
-    flexDirection: 'row',
-    justifyContent: 'space-between', 
-    paddingHorizontal: 20
-  },
-  selectedItem: {
-    color: colors.orange,
-  },
-  touchableContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-=======
     borderColor: colors.orange,
     borderWidth: 1,
->>>>>>> testing/master
   },
   picker: {
     width: '100%',
     borderRadius: 10,
-<<<<<<< HEAD
-  },
-  pickerText: {
-    color: colors.black,
-    textAlign: 'left'
-  },
-  initValueTextStyle: {
-    color: colors.black,
-=======
     marginVertical: 5,
   },
   pickerText: {
@@ -710,7 +464,6 @@ const styles = StyleSheet.create({
   initValueTextStyle: {
     color: colors.black,
     fontSize: 16,
->>>>>>> testing/master
   },
   pickerArrow: {
     color: colors.black,
@@ -744,16 +497,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   disabledPicker: {
-<<<<<<< HEAD
-    backgroundColor: 'rgba(0,0,0,0.0)', 
-    elevation: 0,
-    borderWidth: 0,
-  },
-});
-=======
     backgroundColor: 'rgba(0,0,0,0.1)', 
     borderWidth: 1,
     borderColor: colors.gray,
   },
 });
->>>>>>> testing/master

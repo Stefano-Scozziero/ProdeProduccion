@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-import React, { useContext, useState, useEffect, useRef } from 'react'
-import { View, StyleSheet, Text, FlatList, ImageBackground, Dimensions, TouchableOpacity } from 'react-native'
-import LoadingSpinner from '../LoadingSpinner'
-import EmptyListComponent from '../EmptyListComponent'
-import Error from '../Error'
-import { OrientationContext } from '../../../utils/globals/context'
-import ModalSelector from 'react-native-modal-selector'
-<<<<<<< HEAD
-import { db } from '../../../app/services/firebase/config'
-import colors from '../../../utils/globals/colors'
-import DatesByLeader from '../DatesByLeader'
-=======
-import { database } from '../../../app/services/firebase/config'
-import colors from '../../../utils/globals/colors'
-import DatesByLeader from '../DatesByLeader'
-=======
 import React, { useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { View, StyleSheet, Text, FlatList, ImageBackground, Dimensions, TouchableOpacity } from 'react-native';
 import LoadingSpinner from '../LoadingSpinner';
@@ -25,35 +8,12 @@ import ModalSelector from 'react-native-modal-selector';
 import { database } from '../../../app/services/firebase/config';
 import colors from '../../../utils/globals/colors';
 import DatesByLeader from './DatesByLeader';
->>>>>>> testing/master
 import { useSelector } from 'react-redux';
->>>>>>> testing/master
 
 const { width } = Dimensions.get('window');
 
 const LeaderBoard = ({ navigation }) => {
-<<<<<<< HEAD
-  const [categorySelected, setCategorySelected] = useState('Liga Casildense')
-=======
   const categorySelected = useSelector(state => state.category.selectedCategory);
-<<<<<<< HEAD
->>>>>>> testing/master
-  const [datos, setDatos] = useState(null)
-  const [datos1, setDatos1] = useState(null)
-  const [equipos, setEquipos] = useState({})
-  const [isLoading, setIsLoading] = useState(true)
-  const [isError, setIsError] = useState(false)
-  const portrait = useContext(OrientationContext)
-  const [selectedDivision, setSelectedDivision] = useState('Primera Division')
-  const [selectedTournament, setSelectedTournament] = useState('Apertura')
-  const [positions, setPositions] = useState([])
-  const divisionSelectorRef = useRef(null)
-  const tournamentSelectorRef = useRef(null)
-  const [divisionOptions, setDivisionOptions] = useState([])
-  const [tournamentOptions, setTournamentOptions] = useState([])
-<<<<<<< HEAD
-=======
-=======
   
   // Estados para los datos
   const [positionsData, setPositionsData] = useState(null);
@@ -75,9 +35,7 @@ const LeaderBoard = ({ navigation }) => {
   const [divisionOptions, setDivisionOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
   
->>>>>>> testing/master
   const db = database();
->>>>>>> testing/master
   
   // Refs para los selectores
   const divisionSelectorRef = useRef(null);
@@ -198,53 +156,6 @@ const LeaderBoard = ({ navigation }) => {
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
       <View style={styles.containerPicker}>
-<<<<<<< HEAD
-        <View style={styles.containerText}>
-          <TouchableOpacity style={styles.touchableContainer} onPress={() => divisionSelectorRef.current.open()}>
-            <ModalSelector
-              data={divisionOptions}
-              initValue={selectedDivision}
-              onChange={(option) => setSelectedDivision(option.key)}
-              style={styles.picker}
-              optionTextStyle={styles.pickerText}
-              selectStyle={{ borderWidth: 0 }}
-              selectedItem={selectedDivision}
-              selectedItemTextStyle={styles.selectedItem}
-              initValueTextStyle={styles.initValueTextStyle}
-<<<<<<< HEAD
-              backdropPressToClose={true}
-=======
->>>>>>> testing/master
-              animationType='fade'
-              cancelText='Salir'
-              cancelTextStyle={{ color: colors.black }}
-              ref={divisionSelectorRef}
-            />
-            <Text style={styles.pickerArrow}>▼</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.containerText}>
-          <TouchableOpacity style={styles.touchableContainer} onPress={() => tournamentSelectorRef.current.open()}>
-            <ModalSelector
-              data={tournamentOptions}
-              initValue={selectedTournament}
-              onChange={(option) => setSelectedTournament(option.key)}
-              optionTextStyle={styles.pickerText}
-              style={styles.picker}
-              selectStyle={{ borderWidth: 0 }}
-              selectedItem={selectedTournament}
-              selectedItemTextStyle={styles.selectedItem}
-              initValueTextStyle={styles.initValueTextStyle}
-<<<<<<< HEAD
-              backdropPressToClose={true}
-=======
->>>>>>> testing/master
-              animationType='fade'
-              cancelText='Salir'
-              cancelTextStyle={{ color: colors.black }}
-              ref={tournamentSelectorRef}
-            />
-=======
         {/* Selector de División */}
         <ModalSelector
           data={divisionOptions}
@@ -285,7 +196,6 @@ const LeaderBoard = ({ navigation }) => {
         >
           <TouchableOpacity style={styles.touchableContainer}>
             <Text style={styles.selectedItemText}>{selectedTournament || 'Selecciona Torneo'}</Text>
->>>>>>> testing/master
             <Text style={styles.pickerArrow}>▼</Text>
           </TouchableOpacity>
         </ModalSelector>

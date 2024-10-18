@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-import { createSlice } from '@reduxjs/toolkit'
-
-const initialState = {
-  selectedCategory: null,
-}
-=======
 // src/store/slices/categorySlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { database } from '../../app/services/firebase/config'; // Ajusta la ruta según tu estructura de carpetas
@@ -39,7 +32,6 @@ const initialState = {
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
 };
->>>>>>> testing/master
 
 export const categorySlice = createSlice({
   name: "category",
@@ -51,14 +43,6 @@ export const categorySlice = createSlice({
     clearSelectedCategory: (state) => {
       state.selectedCategory = null;
     }
-<<<<<<< HEAD
-  }
-})
-
-export const { setSelectedCategory, clearSelectedCategory } = categorySlice.actions
-
-export default categorySlice.reducer
-=======
   },
   extraReducers: (builder) => {
     builder
@@ -80,4 +64,3 @@ export default categorySlice.reducer
 export const { setSelectedCategory, clearSelectedCategory } = categorySlice.actions;
 
 export default categorySlice.reducer;
->>>>>>> testing/master

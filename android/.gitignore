@@ -10,10 +10,7 @@ build/
 local.properties
 *.iml
 *.hprof
-<<<<<<< HEAD
-=======
 .cxx/
->>>>>>> testing/master
 
 # Bundle artifacts
 *.jsbundle

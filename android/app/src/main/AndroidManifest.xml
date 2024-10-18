@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-<manifest 
-  xmlns:android="http://schemas.android.com/apk/res/android" 
-  xmlns:tools="http://schemas.android.com/tools">
-=======
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 xmlns:tools="http://schemas.android.com/tools">
->>>>>>> testing/master
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO"/>
@@ -27,15 +21,8 @@ xmlns:tools="http://schemas.android.com/tools">
     android:allowBackup="true" 
     android:theme="@style/AppTheme">
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="true"/>
-<<<<<<< HEAD
-    <meta-data android:name="expo.modules.updates.EXPO_RUNTIME_VERSION" android:value="@string/expo_runtime_version"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATE_URL" android:value="https://u.expo.dev/77834781-a9a9-4a5b-85ea-96badaaeff82"/>
-=======
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
-    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
->>>>>>> testing/master
     <activity 
       android:name=".MainActivity" 
       android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode" 

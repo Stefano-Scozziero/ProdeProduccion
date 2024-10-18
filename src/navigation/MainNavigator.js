@@ -1,8 +1,4 @@
 import React, { useEffect, useState } from 'react'
-<<<<<<< HEAD
-import { StyleSheet, Text, View, Pressable, Image, ImageBackground, Keyboard } from 'react-native'
-=======
->>>>>>> testing/master
 import { NavigationContainer } from '@react-navigation/native'
 import { useSelector, useDispatch } from 'react-redux'
 import { deleteSession, fetchSession } from '../utils/db'
@@ -11,21 +7,13 @@ import DrawerNavigator from './DrawerNavigator'
 import AuthStack from './AuthStack'
 import LoadingScreen from '../components/presentational/LoadingSpinner'
 import { GoogleSignin } from '@react-native-google-signin/google-signin'
-<<<<<<< HEAD
-import auth from '@react-native-firebase/auth'
-import { db } from '../app/services/firebase/config'
-=======
 import { database, auth } from '../app/services/firebase/config'
->>>>>>> testing/master
 
 const MainNavigator = () => {
   const dispatch = useDispatch()
   const user = useSelector((state) => state.auth)
   const [isLoading, setIsLoading] = useState(true)
-<<<<<<< HEAD
-=======
   const db = database()
->>>>>>> testing/master
 
   const checkIfAdmin = async (userId) => {
     const adminRef = db.ref(`admins/${userId}`)

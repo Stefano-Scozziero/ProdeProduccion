@@ -18,12 +18,10 @@ web-build/
 *.key
 *.mobileprovision
 android/app/google-services.json
+android/app/debug.keystore
 src/app/services/authGoogle/config.js
 src/app/services/firebase/config.js
-<<<<<<< HEAD
-=======
 functions/
->>>>>>> testing/master
 
 # Metro
 .metro-health-check*
