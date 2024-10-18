@@ -3,7 +3,11 @@ import { useContext, useState, useEffect, useRef } from 'react';
 import LoadingSpinner from '../LoadingSpinner';
 import EmptyListComponent from '../EmptyListComponent';
 import Error from '../Error';
+<<<<<<< HEAD
 import { db } from '../../../app/services/firebase/config';
+=======
+import { database } from '../../../app/services/firebase/config';
+>>>>>>> testing/master
 import colors from '../../../utils/globals/colors';
 import DatesByCategoryAdm from '../DatesByCategoryAdm';
 import { OrientationContext } from '../../../utils/globals/context';
@@ -27,6 +31,10 @@ const DatesLigue = () => {
   const dateSelectorRef = useRef(null)
   const [divisionOptions, setDivisionOptions] = useState([])
   const [tournamentOptions, setTournamentOptions] = useState([])
+<<<<<<< HEAD
+=======
+  const db = database();
+>>>>>>> testing/master
 
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture/').on('value', (snapshot) => {
@@ -129,17 +137,28 @@ const DatesLigue = () => {
     if (datos && categorySelected) {
       const divisions = Object.keys(datos?.[categorySelected]?.partidos || {})
         .map(key => ({ key, label: key }))
+<<<<<<< HEAD
         .sort((a, b) => {
           return a.label.localeCompare(b.label)
         })
       setDivisionOptions(divisions);
       setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
+=======
+        .sort((a, b) => a.label.localeCompare(b.label));
+      setDivisionOptions(divisions);
+  
+      // Solo actualizar selectedDivision si no está establecido o ya no es válido
+      if (!selectedDivision || !divisions.find(d => d.key === selectedDivision)) {
+        setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
+      }
+>>>>>>> testing/master
     }
   }, [datos, categorySelected]);
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
       const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
+<<<<<<< HEAD
       .map(key => ({ key, label: key }))
       .sort((a, b) => {
         return a.label.localeCompare(b.label)
@@ -148,6 +167,18 @@ const DatesLigue = () => {
       setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null)
     }
   }, [datos, categorySelected, selectedDivision])
+=======
+        .map(key => ({ key, label: key }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+      setTournamentOptions(tournaments);
+  
+      // Solo actualizar selectedTournament si no está establecido o si ya no es válido
+      if (!selectedTournament || !tournaments.find(t => t.key === selectedTournament)) {
+        setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
+      }
+    }
+  }, [datos, categorySelected, selectedDivision]);
+>>>>>>> testing/master
 
   const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
   ? Object.keys(datos?.[categorySelected]?.partidos[selectedDivision][selectedTournament])
@@ -210,22 +241,31 @@ const DatesLigue = () => {
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.container, !portrait && styles.landScape]}>
       <View style={styles.containerPicker}>
         <View style={styles.containerText}>
+<<<<<<< HEAD
         <TouchableOpacity style={styles.touchableContainer} onPress={() => divisionSelectorRef.current.open()}>
+=======
+>>>>>>> testing/master
           <ModalSelector
             data={divisionOptions}
             initValue={selectedDivision}
             onChange={(option) => setSelectedDivision(option.key)}
             style={styles.picker}
             optionTextStyle={styles.pickerText}
+<<<<<<< HEAD
             selectStyle={{ borderWidth: 0 }}
             selectedItem={selectedDivision}
             selectedItemTextStyle={styles.selectedItem}
             initValueTextStyle={styles.initValueTextStyle}
             backdropPressToClose={true}
+=======
+            selectedItemTextStyle={styles.selectedItem}
+            initValueTextStyle={styles.initValueTextStyle}
+>>>>>>> testing/master
             animationType='fade'
             cancelText='Salir'
             cancelTextStyle={{ color: colors.black }}
             ref={divisionSelectorRef}
+<<<<<<< HEAD
           />
           <Text style={styles.pickerArrow}>▼</Text>
         </TouchableOpacity>
@@ -233,10 +273,23 @@ const DatesLigue = () => {
         </View>
         <View style={styles.containerText}>
         <TouchableOpacity style={styles.touchableContainer} onPress={() => tournamentSelectorRef.current.open()}>
+=======
+            accessible={true}
+            touchableAccessible={true}
+          >
+            <TouchableOpacity style={styles.touchableContainer}>
+              <Text style={styles.selectedItemText}>{selectedDivision}</Text>
+              <Text style={styles.pickerArrow}>▼</Text>
+            </TouchableOpacity>
+          </ModalSelector>
+        </View>
+        <View style={styles.containerText}>
+>>>>>>> testing/master
           <ModalSelector
             data={tournamentOptions}
             initValue={selectedTournament}
             onChange={(option) => setSelectedTournament(option.key)}
+<<<<<<< HEAD
             optionTextStyle={styles.pickerText}
             style={styles.picker}
             selectStyle={{ borderWidth: 0 }}
@@ -244,10 +297,17 @@ const DatesLigue = () => {
             selectedItemTextStyle={styles.selectedItem}
             initValueTextStyle={styles.initValueTextStyle}
             backdropPressToClose={true}
+=======
+            style={styles.picker}
+            optionTextStyle={styles.pickerText}
+            selectedItemTextStyle={styles.selectedItem}
+            initValueTextStyle={styles.initValueTextStyle}
+>>>>>>> testing/master
             animationType='fade'
             cancelText='Salir'
             cancelTextStyle={{ color: colors.black }}
             ref={tournamentSelectorRef}
+<<<<<<< HEAD
           />
           <Text style={styles.pickerArrow}>▼</Text>
         </TouchableOpacity>
@@ -266,17 +326,51 @@ const DatesLigue = () => {
             selectedItemTextStyle={styles.selectedItem}
             initValueTextStyle={styles.initValueTextStyle}
             backdropPressToClose={true}
+=======
+            accessible={true}
+            touchableAccessible={true}
+          >
+            <TouchableOpacity style={styles.touchableContainer}>
+              <Text style={styles.selectedItemText}>{selectedTournament}</Text>
+              <Text style={styles.pickerArrow}>▼</Text>
+            </TouchableOpacity>
+          </ModalSelector>
+          
+        </View>
+        <View  style={[styles.containerText, dateOptions.length === 0 ? styles.disabledPicker : null]}>
+          <ModalSelector
+            data={dateOptions}
+            initValue={dateOptions.length > 0 ? `Fecha ${selectedDate}` : 'Selecciona una Fecha'}
+            onChange={(option) => setSelectedDate(option.key)}
+            style={dateOptions.length === 0 ? styles.disabledPicker : styles.picker}
+            optionTextStyle={styles.pickerText}
+            selectedItemTextStyle={styles.selectedItem}
+            initValueTextStyle={styles.initValueTextStyle}
+>>>>>>> testing/master
             animationType='fade'
             cancelText='Salir'
             cancelTextStyle={{ color: colors.black }}
             disabled={dateOptions.length === 0}
             ref={dateSelectorRef}
+<<<<<<< HEAD
             
           />
           { dateOptions.length !== 0 ? (
             <Text style={styles.pickerArrow}>▼</Text>) : null
           }
         </TouchableOpacity>
+=======
+            accessible={true}
+            touchableAccessible={true}
+          >
+            <TouchableOpacity style={styles.touchableContainer} disabled={dateOptions.length === 0}>
+              <Text style={styles.selectedItemText}>
+                {dateOptions.length > 0 ? `Fecha ${selectedDate}` : 'Sin Fechas Disponibles'}
+              </Text>
+              {dateOptions.length !== 0 && <Text style={styles.pickerArrow}>▼</Text>}
+            </TouchableOpacity>
+          </ModalSelector>
+>>>>>>> testing/master
           
           
         </View>
@@ -314,15 +408,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   containerPicker: {
+<<<<<<< HEAD
     width: '100%',
     height: 170,
     justifyContent: 'center',
     alignItems: 'center'
+=======
+    width: '90%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
+>>>>>>> testing/master
   },
   landScape: {
     width: '100%',
     height: '60%',
   },
+<<<<<<< HEAD
   containerText: {
     width: '95%',
     marginVertical: 5,
@@ -330,11 +432,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.orange,
     alignItems: 'center', 
+=======
+  touchableContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: 15,
+    borderRadius: 10,
+>>>>>>> testing/master
     backgroundColor: colors.white,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+<<<<<<< HEAD
     elevation: 5,
     borderColor: colors.gray,
     flexDirection: 'row',
@@ -346,10 +458,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+=======
+    borderColor: colors.orange,
+    borderWidth: 1,
+>>>>>>> testing/master
   },
   picker: {
     width: '100%',
     borderRadius: 10,
+<<<<<<< HEAD
+=======
+    marginVertical: 5,
+>>>>>>> testing/master
   },
   pickerText: {
     color: colors.black,
@@ -357,10 +477,18 @@ const styles = StyleSheet.create({
   },
   initValueTextStyle: {
     color: colors.black,
+<<<<<<< HEAD
   },
   pickerArrow: {
     color: colors.black,
     fontSize: 18,
+=======
+    fontSize: 16,
+  },
+  pickerArrow: {
+    color: colors.black,
+    fontSize: 15,
+>>>>>>> testing/master
   },
   containerFlatlist: {
     flex: 1, // Use flex to fill the remaining space
@@ -368,12 +496,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+<<<<<<< HEAD
+=======
+  selectedItemText: {
+    color: colors.black,
+    fontSize: 16,
+  },
+>>>>>>> testing/master
   selectedItem: {
     color: colors.orange,
   },
   disabledPicker: {
+<<<<<<< HEAD
     backgroundColor: 'rgba(0,0,0,0.0)', 
     elevation: 0,
     borderWidth: 0,
+=======
+    backgroundColor: 'rgba(0,0,0,0.1)', 
+    borderWidth: 1,
+    borderColor: colors.gray,
+>>>>>>> testing/master
   },
 });

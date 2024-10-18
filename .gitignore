@@ -20,6 +20,10 @@ web-build/
 android/app/google-services.json
 src/app/services/authGoogle/config.js
 src/app/services/firebase/config.js
+<<<<<<< HEAD
+=======
+functions/
+>>>>>>> testing/master
 
 # Metro
 .metro-health-check*

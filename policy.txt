@@ -1,0 +1,59 @@
+ProdeSCO Privacy Policy
+Your privacy is important to us. It is ProdeSCO's policy to respect your privacy and comply with any applicable law and regulation regarding any personal information we may collect about you, including via our app, Prode, and its associated services.
+
+Personal information is any information about you that can be used to identify you. This includes information about you as a person (such as your name, email address, phone number, and profile picture) and even information about how you use an app or online service.
+
+In the event our app contains links to third-party sites and services, please be aware that those sites and services have their own privacy policies. After following a link to any third-party content, you should read their privacy policy to understand how they collect and use personal information. This Privacy Policy does not apply to any of your activities after you leave our app.
+
+Information We Collect
+We may collect personal information from you when you use our app. This information includes:
+
+Name
+Email address
+Phone number
+Profile picture
+This data is collected to help us provide a better and more personalized user experience.
+
+How We Use Your Information
+The personal information we collect is used to:
+
+Provide and improve the functionality of our app.
+Personalize your experience within the app.
+Ensure secure access to your account through authentication methods.
+Communicate with you when necessary regarding app updates, issues, or user support.
+Third-Party Services
+We rely on trusted third-party services to provide some of our app’s functionality. Specifically, we use:
+
+Firebase Authentication to manage user authentication and login processes.
+OAuth 2.0 for secure external authentication options.
+These third-party providers adhere to their own privacy policies. We encourage you to review Firebase’s privacy policy here.
+
+Account Deletion
+You have the right to delete your account and all associated personal data at any time.
+To delete your account:
+
+Go to the Profile section in the app.
+Press the Delete Account button.
+Confirm your decision when prompted.
+Once the account is deleted, all personal data will be permanently removed and cannot be recovered.
+
+Data Sharing and Disclosure
+We do not share your personal data with any third parties outside of the services mentioned above.
+
+Data Security
+We take reasonable steps to protect the personal information we collect and store. However, please note that no system or method of electronic storage is 100% secure, and we cannot guarantee absolute security.
+
+Your Rights and Choices
+You have the right to:
+
+Access, update, or delete your personal information.
+Withdraw your consent for data collection at any time.
+Contact us if you have any questions or concerns regarding how your data is handled.
+If you have any questions or need further assistance, please reach out to us at:
+scozzierostefano@gmail.com
+
+Changes to This Policy
+We may update this Privacy Policy from time to time to reflect changes in our practices, services, or applicable laws. We encourage users to review this policy periodically to stay informed about how we are protecting the information we collect.
+
+This policy is effective as of October 13, 2024.
+Last updated: October 13, 2024.

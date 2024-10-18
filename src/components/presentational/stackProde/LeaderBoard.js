@@ -5,14 +5,25 @@ import EmptyListComponent from '../EmptyListComponent'
 import Error from '../Error'
 import { OrientationContext } from '../../../utils/globals/context'
 import ModalSelector from 'react-native-modal-selector'
+<<<<<<< HEAD
 import { db } from '../../../app/services/firebase/config'
 import colors from '../../../utils/globals/colors'
 import DatesByLeader from '../DatesByLeader'
+=======
+import { database } from '../../../app/services/firebase/config'
+import colors from '../../../utils/globals/colors'
+import DatesByLeader from '../DatesByLeader'
+import { useSelector } from 'react-redux';
+>>>>>>> testing/master
 
 const { width } = Dimensions.get('window')
 
 const LeaderBoard = ({ navigation }) => {
+<<<<<<< HEAD
   const [categorySelected, setCategorySelected] = useState('Liga Casildense')
+=======
+  const categorySelected = useSelector(state => state.category.selectedCategory);
+>>>>>>> testing/master
   const [datos, setDatos] = useState(null)
   const [datos1, setDatos1] = useState(null)
   const [equipos, setEquipos] = useState({})
@@ -26,6 +37,10 @@ const LeaderBoard = ({ navigation }) => {
   const tournamentSelectorRef = useRef(null)
   const [divisionOptions, setDivisionOptions] = useState([])
   const [tournamentOptions, setTournamentOptions] = useState([])
+<<<<<<< HEAD
+=======
+  const db = database();
+>>>>>>> testing/master
   
 
   useEffect(() => {
@@ -121,7 +136,10 @@ const LeaderBoard = ({ navigation }) => {
               selectedItem={selectedDivision}
               selectedItemTextStyle={styles.selectedItem}
               initValueTextStyle={styles.initValueTextStyle}
+<<<<<<< HEAD
               backdropPressToClose={true}
+=======
+>>>>>>> testing/master
               animationType='fade'
               cancelText='Salir'
               cancelTextStyle={{ color: colors.black }}
@@ -142,7 +160,10 @@ const LeaderBoard = ({ navigation }) => {
               selectedItem={selectedTournament}
               selectedItemTextStyle={styles.selectedItem}
               initValueTextStyle={styles.initValueTextStyle}
+<<<<<<< HEAD
               backdropPressToClose={true}
+=======
+>>>>>>> testing/master
               animationType='fade'
               cancelText='Salir'
               cancelTextStyle={{ color: colors.black }}

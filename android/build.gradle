@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+=======
+                                                                                                                                                                                                                                                                                                                       // Top-level build file where you can add configuration options common to all sub-projects/modules.
+>>>>>>> testing/master
 
 buildscript {
     ext {
@@ -6,16 +10,28 @@ buildscript {
         minSdkVersion = Integer.parseInt(findProperty('android.minSdkVersion') ?: '23')
         compileSdkVersion = Integer.parseInt(findProperty('android.compileSdkVersion') ?: '34')
         targetSdkVersion = Integer.parseInt(findProperty('android.targetSdkVersion') ?: '34')
+<<<<<<< HEAD
         kotlinVersion = findProperty('android.kotlinVersion') ?: '1.8.10'
         ndkVersion = "25.1.8937393"
+=======
+        kotlinVersion = findProperty('android.kotlinVersion') ?: '1.9.23'
+
+        ndkVersion = "26.1.10909125"
+>>>>>>> testing/master
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
+<<<<<<< HEAD
         classpath('com.android.tools.build:gradle:8.1.4')
         classpath('com.facebook.react:react-native-gradle-plugin')
+=======
+        classpath('com.android.tools.build:gradle')
+        classpath('com.facebook.react:react-native-gradle-plugin')
+        classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
+>>>>>>> testing/master
         classpath('com.google.gms:google-services:4.4.2')
     }
 }
@@ -37,4 +53,8 @@ allprojects {
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> testing/master

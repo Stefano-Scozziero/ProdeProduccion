@@ -2,18 +2,26 @@ package com.krefrim.ProdeReactNative
 
 import android.app.Application
 import android.content.res.Configuration
+<<<<<<< HEAD
 import androidx.annotation.NonNull
+=======
+>>>>>>> testing/master
 
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.ReactHost
+<<<<<<< HEAD
 import com.facebook.react.config.ReactFeatureFlags
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.flipper.ReactNativeFlipper
+=======
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
+import com.facebook.react.defaults.DefaultReactNativeHost
+>>>>>>> testing/master
 import com.facebook.soloader.SoLoader
 
 import expo.modules.ApplicationLifecycleDispatcher
@@ -40,21 +48,31 @@ class MainApplication : Application(), ReactApplication {
   )
 
   override val reactHost: ReactHost
+<<<<<<< HEAD
     get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
+=======
+    get() = ReactNativeHostWrapper.createReactHost(applicationContext, reactNativeHost)
+>>>>>>> testing/master
 
   override fun onCreate() {
     super.onCreate()
     SoLoader.init(this, false)
+<<<<<<< HEAD
     if (!BuildConfig.REACT_NATIVE_UNSTABLE_USE_RUNTIME_SCHEDULER_ALWAYS) {
       ReactFeatureFlags.unstable_useRuntimeSchedulerAlways = false
     }
+=======
+>>>>>>> testing/master
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()
     }
+<<<<<<< HEAD
     if (BuildConfig.DEBUG) {
       ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
     }
+=======
+>>>>>>> testing/master
     ApplicationLifecycleDispatcher.onApplicationCreate(this)
   }
 

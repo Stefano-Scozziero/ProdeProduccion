@@ -1,17 +1,30 @@
 import React, { useContext, useState, useEffect, useRef } from 'react'
+<<<<<<< HEAD
 import { View, StyleSheet, Text, FlatList, Touchable } from 'react-native'
+=======
+import { View, StyleSheet, Text, FlatList, TouchableOpacity } from 'react-native'
+>>>>>>> testing/master
 import LoadingSpinner from '../presentational/LoadingSpinner'
 import EmptyListComponent from '../presentational/EmptyListComponent'
 import Error from '../presentational/Error'
 import { OrientationContext } from '../../utils/globals/context'
 import ModalSelector from 'react-native-modal-selector'
 import CardFixture from '../presentational/CardFixture'
+<<<<<<< HEAD
 import { db } from '../../app/services/firebase/config'
 import colors from '../../utils/globals/colors'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 const FixtureDates = ({ navigation }) => {
   const [categorySelected, setCategorySelected] = useState('Liga Casildense')
+=======
+import { database } from '../../app/services/firebase/config'
+import { useSelector } from 'react-redux';
+import colors from '../../utils/globals/colors'
+
+const FixtureDates = ({ navigation }) => {
+  const categorySelected = useSelector(state => state.category.selectedCategory);
+>>>>>>> testing/master
   const [datos, setDatos] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
@@ -23,6 +36,10 @@ const FixtureDates = ({ navigation }) => {
   const tournamentSelectorRef = useRef(null)
   const [divisionOptions, setDivisionOptions] = useState([])
   const [tournamentOptions, setTournamentOptions] = useState([])
+<<<<<<< HEAD
+=======
+  const db = database();
+>>>>>>> testing/master
 
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture').on('value', (snapshot) => {
@@ -138,7 +155,10 @@ const FixtureDates = ({ navigation }) => {
             selectedItem={selectedDivision}
             selectedItemTextStyle={styles.selectedItem}
             initValueTextStyle={styles.initValueTextStyle}
+<<<<<<< HEAD
             backdropPressToClose={true}
+=======
+>>>>>>> testing/master
             animationType='fade'
             cancelText='Salir'
             cancelTextStyle={{ color: colors.black }}
@@ -160,7 +180,10 @@ const FixtureDates = ({ navigation }) => {
             selectedItem={selectedTournament}
             selectedItemTextStyle={styles.selectedItem}
             initValueTextStyle={styles.initValueTextStyle}
+<<<<<<< HEAD
             backdropPressToClose={true}
+=======
+>>>>>>> testing/master
             animationType='fade'
             cancelText='Salir'
             cancelTextStyle={{ color: colors.black }}

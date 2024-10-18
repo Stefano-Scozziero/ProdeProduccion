@@ -8,9 +8,14 @@ import { useDispatch } from 'react-redux';
 import { setUser, setAdmin } from '../../features/auth/authSlice';
 import { registerSchema } from '../../utils/validations/authSchema';
 import { deleteSession, insertSession } from '../../utils/db';
+<<<<<<< HEAD
 import ModalMessage from '../../components/presentational/modal/ModalMessage';
 import auth from '@react-native-firebase/auth';
 import { db } from '../../app/services/firebase/config';
+=======
+import CustomModal from '../../components/presentational/modal/CustomModal';
+import { database, auth } from '../../app/services/firebase/config';
+>>>>>>> testing/master
 import LoadingSpinner from '../../components/presentational/LoadingSpinner2';
 
 const Register = ({ navigation }) => {
@@ -22,10 +27,23 @@ const Register = ({ navigation }) => {
   const [errorPassword, setErrorPassword] = useState("");
   const [errorConfirmPassword, setErrorConfirmPassword] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+<<<<<<< HEAD
   const [isLoggingIn, setIsLoggingIn] = useState(false)
 
   const handlerCloseModal = () => {
     setModalVisible(false);
+=======
+  const [modalMessage, setModalMessage] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [navigateToLogin, setNavigateToLogin] = useState(false); // Nuevo estado para manejar la navegación
+  const db = database()
+
+  const handlerCloseModal = () => {
+    setModalVisible(false);
+    if (navigateToLogin) {
+      navigation.navigate("Login");
+    }
+>>>>>>> testing/master
   };
 
   const checkIfAdmin = async (userId) => {
@@ -36,6 +54,7 @@ const Register = ({ navigation }) => {
 
   const onSubmit = async () => {
     try {
+<<<<<<< HEAD
       setIsLoggingIn(true)
       Keyboard.dismiss();
       registerSchema.validateSync({ email, password, confirmPassword });
@@ -97,17 +116,104 @@ const Register = ({ navigation }) => {
           break;
         case "auth/email-already-in-use":
           setErrorEmail("Email ya está en uso");
+=======
+      setIsLoggingIn(true);
+      Keyboard.dismiss();
+
+      // Validar los datos con `yup`
+      try {
+        await registerSchema.validate({ email, password, confirmPassword }, { abortEarly: false });
+      } catch (validationErrors) {
+        validationErrors.inner.forEach((error) => {
+          if (error.path === 'email') {
+            setErrorEmail(error.message);
+          } else if (error.path === 'password') {
+            setErrorPassword(error.message);
+          } else if (error.path === 'confirmPassword') {
+            setErrorConfirmPassword(error.message);
+          }
+        });
+        setIsLoggingIn(false); // Desactivar el spinner si hay errores de validación
+        return;
+      }
+
+      // Registro del usuario con Firebase
+      const userCredential = await auth().createUserWithEmailAndPassword(email, password);
+
+      // Enviar verificación de email
+      try {
+        await userCredential.user.sendEmailVerification();
+        setModalMessage('Se ha enviado un enlace para verificar tu email. Revisa tu casilla de Correo');
+        setModalVisible(true);
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setNavigateToLogin(true); // Marca que después de cerrar el modal se debe navegar a Login
+        setIsLoggingIn(false); // Desactivar el spinner después de la operación exitosa
+      } catch (error) {
+        setModalMessage("Error al enviar el email de verificación");
+        setModalVisible(true);
+        console.error("Error al enviar email de verificación:", error);
+        setIsLoggingIn(false); // Desactivar el spinner en caso de error
+      }
+
+      // Verificar si el usuario es administrador
+      const isAdmin = await checkIfAdmin(userCredential.user.uid);
+
+      // Guardar la sesión en la base de datos local
+      await deleteSession();
+      await insertSession({
+        email: userCredential.user.email,
+        idToken: await userCredential.user.getIdToken(),
+        localId: userCredential.user.uid,
+        name: userCredential.user.displayName,
+        image: userCredential.user.photoURL,
+      });
+
+      // Actualizar el estado en Redux
+      dispatch(setUser({
+        idToken: await userCredential.user.getIdToken(),
+        localId: userCredential.user.uid,
+        email: userCredential.user.email,
+        name: userCredential.user.displayName,
+        image: userCredential.user.photoURL,
+      }));
+      dispatch(setAdmin(isAdmin));
+
+    } catch (error) {
+      // Manejo de errores de Firebase
+      setErrorEmail("");
+      setErrorPassword("");
+      setErrorConfirmPassword("");
+      setIsLoggingIn(false); // Asegúrate de desactivar el spinner en caso de error
+
+      switch (error.code) {
+        case "auth/invalid-email":
+          setErrorEmail("Email no válido");
+          break;
+        case "auth/email-already-in-use":
+          setErrorEmail("El email ya está en uso");
+>>>>>>> testing/master
           break;
         case "auth/weak-password":
           setErrorPassword("Contraseña débil");
           break;
         default:
+<<<<<<< HEAD
           setErrorEmail("Error en el registro");
           break;
       }
     }
   }
   
+=======
+          setModalMessage("Error en el registro");
+          setModalVisible(true);
+          break;
+      }
+    }
+  };
+>>>>>>> testing/master
 
   return (
     <>
@@ -143,6 +249,7 @@ const Register = ({ navigation }) => {
           </Pressable>
         </View>
       </ImageBackground>
+<<<<<<< HEAD
       {isLoggingIn && 
       <LoadingSpinner
         message={'Cargando...'}
@@ -156,6 +263,22 @@ const Register = ({ navigation }) => {
     </>
   );
 }
+=======
+
+      {isLoggingIn && <LoadingSpinner message={'Cargando...'} />}
+
+      <CustomModal
+        text={modalMessage}
+        secondaryButtonText="Aceptar"
+        modalVisible={modalVisible}
+        onPrimaryAction={handlerCloseModal} // Navegación ocurre después de cerrar el modal
+        onClose={handlerCloseModal} // Manejo de cierre del modal
+      />
+    </>
+  );
+};
+
+>>>>>>> testing/master
 
 export default Register;
 

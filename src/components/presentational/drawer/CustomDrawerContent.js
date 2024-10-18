@@ -1,5 +1,9 @@
 import { DrawerContentScrollView } from '@react-navigation/drawer';
+<<<<<<< HEAD
 import { StyleSheet, View, Text, Image, Pressable } from 'react-native';
+=======
+import { StyleSheet, View, Text, Image, Pressable, Switch, TouchableOpacity } from 'react-native';
+>>>>>>> testing/master
 import colors from '../../../utils/globals/colors';
 import { Drawer } from 'react-native-paper';
 import DrawerItem from './DrawerItem';
@@ -9,9 +13,15 @@ import { useDispatch, useSelector } from "react-redux";
 import { deleteSession } from "../../../utils/db";
 import { useEffect, useState } from 'react';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+<<<<<<< HEAD
 import auth from '@react-native-firebase/auth';
 import { db } from '../../../app/services/firebase/config';
 import { DrawerActions } from '@react-navigation/native';
+=======
+import { database, auth } from '../../../app/services/firebase/config';
+import { DrawerActions } from '@react-navigation/native';
+import { toggleRankedMode, toggleDarkMode } from '../../../features/preferences/preferencesSlice';
+>>>>>>> testing/master
 
 const CustomDrawerContent = (props) => {
   const { state, navigation } = props;
@@ -19,8 +29,17 @@ const CustomDrawerContent = (props) => {
   const dispatch = useDispatch();
   const idToken = useSelector((state) => state.auth.idToken);
   const isAdmin = useSelector((state) => state.auth.isAdmin);
+<<<<<<< HEAD
   const [profile, setProfile] = useState({});
   const user = auth().currentUser;
+=======
+  const isRankedMode = useSelector((state) => state.preferences.isRankedMode); // Obtén el estado de Redux
+  const isDarkMode = useSelector((state) => state.preferences.isDarkMode);
+  const [profile, setProfile] = useState({});
+  const user = auth().currentUser;
+  const db = database();
+
+>>>>>>> testing/master
 
   useEffect(() => {
     if (user && user.uid) {
@@ -35,6 +54,10 @@ const CustomDrawerContent = (props) => {
       }, error => {
         console.error(error);
       });
+<<<<<<< HEAD
+=======
+      
+>>>>>>> testing/master
       return () => profileRef.off('value'); // Cleanup del listener
     }
   }, [user]);
@@ -61,6 +84,19 @@ const CustomDrawerContent = (props) => {
     navigation.navigate('Inicio', { screen: 'Home' });
   };
 
+<<<<<<< HEAD
+=======
+  const handleToggleRankedMode = () => {
+    dispatch(toggleRankedMode());
+    // Aquí puedes agregar lógica adicional si es necesario
+  };
+
+  const handleToggleDarkMode = () => {
+    dispatch(toggleDarkMode());
+    // Aquí puedes agregar lógica adicional si es necesario
+  };
+
+>>>>>>> testing/master
   return (
     <DrawerContentScrollView {...props} style={styles.containerItems}>
       <View style={styles.containerHeader}>
@@ -72,9 +108,46 @@ const CustomDrawerContent = (props) => {
           />
           <Text style={styles.profileText}>{profile?.username || user?.displayName || "Nombre de Usuario"}</Text>
           <Text style={styles.profileText}>{profile?.email || user?.email || "Correo Electrónico"}</Text>
+<<<<<<< HEAD
         </View>
       </View>
       
+=======
+          {isRankedMode && (
+            <View style={styles.coinsContainer}>
+              <Text style={styles.coinsText}>Boletos: {profile?.boletos || 0}</Text>
+              {/*onPress={() => navigation.navigate('AumentarCoins')*/}
+              <TouchableOpacity style={styles.addCoinsButton} >
+                <Text style={styles.addCoinsButtonText}>Añadir</Text>
+              </TouchableOpacity>
+          </View>
+          )}
+        </View>
+      </View>
+
+      {/* Switch para cambiar de modo */}
+      <View style={styles.switchContainer}>
+          <Text style={styles.switchLabel}>Modo Ranked</Text>
+          <Switch
+          trackColor={{ false: colors.gray, true: colors.orange }}
+          thumbColor={isRankedMode ? colors.black : colors.white}
+          ios_backgroundColor={colors.gray}
+          onValueChange={handleToggleRankedMode}
+          value={isRankedMode}
+        />
+      </View>
+      {/* Switch para cambiar Modo Oscuro 
+      <View style={styles.switchContainer}>
+        <Text style={styles.switchLabel}>Modo Oscuro</Text>
+        <Switch
+          trackColor={{ false: colors.gray, true: colors.orange }}
+          thumbColor={isDarkMode ? colors.black : colors.white}
+          ios_backgroundColor={colors.gray}
+          onValueChange={handleToggleDarkMode}
+          value={isDarkMode}
+        />
+      </View>*/}
+>>>>>>> testing/master
       <Drawer.Section>
         <Pressable style={[styles.drawerButton, activeRoute === 'Inicio' ? styles.drawerItemActive : styles.drawerItemInactive]} onPress={goToHome}>
           <DrawerIcon nameIcon="home" focused={activeRoute === 'Inicio'} />
@@ -93,7 +166,11 @@ const CustomDrawerContent = (props) => {
       <Drawer.Section>
         <Text style={styles.textGroups}>Cuenta</Text>
         <DrawerItem navigation={navigation} activeRoute={activeRoute} route='Editar Perfil' icon='user' title='Editar Perfil' />
+<<<<<<< HEAD
         <DrawerItem navigation={navigation} activeRoute={activeRoute} route='Preferencias' icon='cog' title='Preferencias' />
+=======
+        {/*<DrawerItem navigation={navigation} activeRoute={activeRoute} route='Preferencias' icon='cog' title='Preferencias' />*/}
+>>>>>>> testing/master
         {idToken && (
           <Pressable style={styles.drawerButton} onPress={onLogout}>
             <DrawerIcon nameIcon="log-out" focused={activeRoute === 'Cerrar Sesion'} />
@@ -121,7 +198,11 @@ const styles = StyleSheet.create({
     height: '90%',
     alignItems: 'flex-start',
     justifyContent: 'center',
+<<<<<<< HEAD
     padding: 10,
+=======
+    padding: 5
+>>>>>>> testing/master
   },
   profileImage: {
     width: 80,
@@ -135,7 +216,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '400',
     color: colors.white,
+<<<<<<< HEAD
     paddingTop: 5
+=======
+    paddingTop: 5,
+  },
+  boletosText: {
+    width: '100%',
+    textAlign: 'left',
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: colors.white,
+    paddingTop: 5,
+  },
+  sumText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.white,
+    paddingTop: 5,
+>>>>>>> testing/master
   },
   containerHeader: {
     flex: 1,
@@ -182,5 +281,46 @@ const styles = StyleSheet.create({
   },
   drawerItemInactive: {
     backgroundColor: colors.blackGray,
+<<<<<<< HEAD
   }
+=======
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 5,
+  },
+  switchLabel: {
+    fontSize: 14,
+    color: colors.white,
+  },
+  coinsContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+  },
+  coinsText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.white,
+  },
+  addCoinsButton: {
+    backgroundColor: colors.orange,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  addCoinsButtonText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.white,
+  },
+>>>>>>> testing/master
 });

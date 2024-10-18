@@ -11,8 +11,12 @@ import { loginSchema } from '../../utils/validations/authSchema'
 import { deleteSession, insertSession } from '../../utils/db'
 import ModalMessage from '../../components/presentational/modal/ModalMessage'
 import { GoogleSignin, statusCodes} from '@react-native-google-signin/google-signin'
+<<<<<<< HEAD
 import auth from '@react-native-firebase/auth'
 import { db } from '../../app/services/firebase/config'
+=======
+import { database, auth } from '../../app/services/firebase/config'
+>>>>>>> testing/master
 import LoadingSpinner from '../../components/presentational/LoadingSpinner2'
 
 const Login = ({navigation}) =>  {
@@ -24,13 +28,21 @@ const Login = ({navigation}) =>  {
     const [errorPassword, setErrorPassword] = useState("")
     const [modalVisible, setModalVisible] = useState(false)
     const [isLoggingIn, setIsLoggingIn] = useState(false)
+<<<<<<< HEAD
+=======
+    const db = database()
+>>>>>>> testing/master
 
     const handlerCloseModal = () => {
       setModalVisible(false)
     }
 
     const checkIfAdmin = async (userId) => {
+<<<<<<< HEAD
       const adminRef = db().ref(`admins/${userId}`);
+=======
+      const adminRef = db.ref(`admins/${userId}`);
+>>>>>>> testing/master
       const snapshot = await adminRef.once('value');
       return snapshot.exists();
     };
@@ -39,13 +51,27 @@ const Login = ({navigation}) =>  {
       try {
         await GoogleSignin.hasPlayServices()
         const userInfo = await GoogleSignin.signIn()
+<<<<<<< HEAD
         setIsLoggingIn(true)
         const googleCredential = auth.GoogleAuthProvider.credential(userInfo.idToken)
+=======
+
+        // Verifica si userInfo o userInfo.data.idToken son nulos o indefinidos
+        if (!userInfo || !userInfo.data || !userInfo.data.idToken) {
+          return; // Sale de la función si el usuario canceló la autenticación
+        }
+
+        setIsLoggingIn(true)
+        const googleCredential = auth.GoogleAuthProvider.credential(userInfo?.data?.idToken)
+>>>>>>> testing/master
         const userCredential = await auth().signInWithCredential(googleCredential)
         if (userCredential && userCredential.user) {
           const { email, uid, displayName, photoURL, emailVerified } = userCredential.user
           const idToken = await userCredential.user.getIdToken()
+<<<<<<< HEAD
           
+=======
+>>>>>>> testing/master
           await insertSession({
             email,
             idToken,
@@ -160,7 +186,11 @@ const Login = ({navigation}) =>  {
             <Text style={styles.title}>PRODESCO</Text>
             <View style={styles.container}>
               <InputForm
+<<<<<<< HEAD
                   label="Correo Electronico"
+=======
+                  label="Correo Electrónico"
+>>>>>>> testing/master
                   value={email}
                   onChangeText={(t) => setEmail(t)}
                   isSecure={false}
@@ -174,11 +204,19 @@ const Login = ({navigation}) =>  {
                   isSecure={true}
                   error={errorPassword}
               />
+<<<<<<< HEAD
               <SubmitButton  onPress={onSubmit} title="INICIAR SESION"/>
               
               <SubmitButtonBgn onPress={()=> navigation.navigate("Register")} title="REGISTRESE AQUI"/>
               <Pressable onPress={()=> navigation.navigate("ForgotYourPass")}>
                 <Text style={styles.btnText}>Olvido su contraseña?</Text>
+=======
+              <SubmitButton  onPress={onSubmit} title="INICIAR SESIÓN"/>
+              
+              <SubmitButtonBgn onPress={()=> navigation.navigate("Register")} title="REGÍSTRESE AQUÍ"/>
+              <Pressable onPress={()=> navigation.navigate("ForgotYourPass")}>
+                <Text style={styles.btnText}>¿Olvidó su contraseña?</Text>
+>>>>>>> testing/master
               </Pressable> 
             </View>
             <View style={styles.containerImages}>
@@ -227,7 +265,11 @@ const styles = StyleSheet.create({
       justifyContent:"center",
       alignItems:"center",
       width: '80%',
+<<<<<<< HEAD
       top: '20%'
+=======
+      top: '10%'
+>>>>>>> testing/master
     },
     title:{
       fontSize:50,
