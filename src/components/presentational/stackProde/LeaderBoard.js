@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useContext, useState, useEffect, useRef } from 'react'
 import { View, StyleSheet, Text, FlatList, ImageBackground, Dimensions, TouchableOpacity } from 'react-native'
 import LoadingSpinner from '../LoadingSpinner'
@@ -13,16 +14,29 @@ import DatesByLeader from '../DatesByLeader'
 import { database } from '../../../app/services/firebase/config'
 import colors from '../../../utils/globals/colors'
 import DatesByLeader from '../DatesByLeader'
+=======
+import React, { useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { View, StyleSheet, Text, FlatList, ImageBackground, Dimensions, TouchableOpacity } from 'react-native';
+import LoadingSpinner from '../LoadingSpinner';
+import EmptyListComponent from '../EmptyListComponent';
+import Error from '../Error';
+import { OrientationContext } from '../../../utils/globals/context';
+import ModalSelector from 'react-native-modal-selector';
+import { database } from '../../../app/services/firebase/config';
+import colors from '../../../utils/globals/colors';
+import DatesByLeader from './DatesByLeader';
+>>>>>>> testing/master
 import { useSelector } from 'react-redux';
 >>>>>>> testing/master
 
-const { width } = Dimensions.get('window')
+const { width } = Dimensions.get('window');
 
 const LeaderBoard = ({ navigation }) => {
 <<<<<<< HEAD
   const [categorySelected, setCategorySelected] = useState('Liga Casildense')
 =======
   const categorySelected = useSelector(state => state.category.selectedCategory);
+<<<<<<< HEAD
 >>>>>>> testing/master
   const [datos, setDatos] = useState(null)
   const [datos1, setDatos1] = useState(null)
@@ -39,91 +53,152 @@ const LeaderBoard = ({ navigation }) => {
   const [tournamentOptions, setTournamentOptions] = useState([])
 <<<<<<< HEAD
 =======
+=======
+  
+  // Estados para los datos
+  const [positionsData, setPositionsData] = useState(null);
+  const [fixtureData, setFixtureData] = useState(null);
+  const [teams, setTeams] = useState({});
+  
+  // Estados para la UI
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  
+  const portrait = useContext(OrientationContext);
+  
+  // Estados para selecciones
+  const [selectedDivision, setSelectedDivision] = useState(null);
+  const [selectedTournament, setSelectedTournament] = useState(null);
+  
+  const [positions, setPositions] = useState([]);
+  
+  const [divisionOptions, setDivisionOptions] = useState([]);
+  const [tournamentOptions, setTournamentOptions] = useState([]);
+  
+>>>>>>> testing/master
   const db = database();
 >>>>>>> testing/master
   
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const posicionesSnapshot = await db.ref('/datos/positions').once('value')
-        const equiposSnapshot = await db.ref(`/datos/fixture/${categorySelected}/equipos`).once('value')
-        const datosSnapshot = await db.ref(`/datos/fixture`).once('value')
-
-        if (posicionesSnapshot.exists() && categorySelected !== null && datosSnapshot.exists()) {
-          const posicionesData = posicionesSnapshot.val()
-          const equiposData = equiposSnapshot.val()
-          const data = datosSnapshot.val()
-          setDatos(posicionesData)
-          setEquipos(equiposData)
-          setDatos1(data)
-        } else {
-          setDatos(null)
-        }
-        setIsLoading(false)
-      } catch (error) {
-        console.error(error)
-        setIsError(true)
-        setIsLoading(false)
+  // Refs para los selectores
+  const divisionSelectorRef = useRef(null);
+  const tournamentSelectorRef = useRef(null);
+  
+  // Función para obtener datos desde Firebase
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const posicionesRef = db.ref('/datos/positions');
+      const equiposRef = db.ref(`/datos/fixture/${categorySelected}/equipos`);
+      const fixtureRef = db.ref('/datos/fixture');
+      
+      const [posicionesSnapshot, equiposSnapshot, fixtureSnapshot] = await Promise.all([
+        posicionesRef.once('value'),
+        equiposRef.once('value'),
+        fixtureRef.once('value'),
+      ]);
+      
+      if (posicionesSnapshot.exists() && categorySelected && fixtureSnapshot.exists()) {
+        setPositionsData(posicionesSnapshot.val());
+        setTeams(equiposSnapshot.val() || {});
+        setFixtureData(fixtureSnapshot.val());
+      } else {
+        setPositionsData(null);
+        setFixtureData(null);
+        setTeams({});
       }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchData()
-  }, [categorySelected])
-
+  }, [db, categorySelected]);
+  
+  // Efecto para obtener datos cuando cambia la categoría
   useEffect(() => {
-    if (datos1 && categorySelected) {
-      const divisions = Object.keys(datos1[categorySelected]?.partidos || {})
+    if (categorySelected) {
+      fetchData();
+    } else {
+      setPositionsData(null);
+      setFixtureData(null);
+      setTeams({});
+      setIsLoading(false);
+    }
+  }, [categorySelected, fetchData]);
+  
+  // Efecto para actualizar las opciones de divisiones
+  useEffect(() => {
+    if (fixtureData && categorySelected) {
+      const divisions = Object.keys(fixtureData[categorySelected]?.partidos || {})
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
-      setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
+      if (divisions.length > 0) {
+        setSelectedDivision(divisions[0].key);
+      } else {
+        setSelectedDivision(null);
+      }
     }
-  }, [datos1, categorySelected])
-
+  }, [fixtureData, categorySelected]);
+  
+  // Efecto para actualizar las opciones de torneos
   useEffect(() => {
-    if (datos1 && categorySelected && selectedDivision) {
-      const tournaments = Object.keys(datos1[categorySelected]?.partidos?.[selectedDivision] || {})
+    if (fixtureData && categorySelected && selectedDivision) {
+      const tournaments = Object.keys(fixtureData[categorySelected]?.partidos[selectedDivision] || {})
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setTournamentOptions(tournaments);
-
-      // Check if the currently selected tournament is still available
-      if (!tournaments.find(t => t.key === selectedTournament)) {
-        setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
+      if (tournaments.length > 0) {
+        setSelectedTournament(tournaments[0].key);
+      } else {
+        setSelectedTournament(null);
       }
     }
-  }, [datos1, categorySelected, selectedDivision])
-
+  }, [fixtureData, categorySelected, selectedDivision]);
+  
+  // Efecto para ordenar y combinar posiciones
   useEffect(() => {
-    if (datos && categorySelected && equipos) {
-      const posiciones = datos[categorySelected]?.[selectedDivision]?.[selectedTournament]?.equipos || {}
+    if (positionsData && categorySelected && teams && selectedDivision && selectedTournament) {
+      const posiciones = positionsData[categorySelected]?.[selectedDivision]?.[selectedTournament]?.equipos || {};
       const sortedPositions = Object.values(posiciones).sort((a, b) => {
         if (b.puntos === a.puntos) {
-          const diffA = a.golesFavor - a.golesContra
-          const diffB = b.golesFavor - b.golesContra
+          const diffA = a.golesFavor - a.golesContra;
+          const diffB = b.golesFavor - b.golesContra;
           if (diffB === diffA) {
-            return b.golesFavor - a.golesFavor
+            return b.golesFavor - a.golesFavor;
           }
-          return diffB - diffA
+          return diffB - diffA;
         }
-        return b.puntos - a.puntos
-      })
+        return b.puntos - a.puntos;
+      });
       const combinedPositions = sortedPositions.map(posicion => ({
         ...posicion,
-        ...equipos[posicion.nombre],
-      }))
-      setPositions(combinedPositions)
+        ...teams[posicion.nombre],
+      }));
+      setPositions(combinedPositions);
+    } else {
+      setPositions([]);
     }
-  }, [datos, categorySelected, selectedDivision, selectedTournament, equipos])
-
-  if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />
-  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Competencies')} />
-  if (!datos) return <EmptyListComponent message="No hay datos disponibles" />
+  }, [positionsData, categorySelected, selectedDivision, selectedTournament, teams]);
+  
+  // Función de reintento
+  const handleRetry = useCallback(() => {
+    fetchData();
+  }, [fetchData]);
+  
+  // Verificar si hay datos disponibles para renderizar los modales
+  const hasDataAvailable = fixtureData && fixtureData[categorySelected] && divisionOptions.length > 0 && tournamentOptions.length > 0;
+  
+  // Renderizado condicional basado en el estado
+  if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
+  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={handleRetry} />;
+  if (!hasDataAvailable) return <EmptyListComponent message="No hay datos disponibles" />;
   
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
       <View style={styles.containerPicker}>
+<<<<<<< HEAD
         <View style={styles.containerText}>
           <TouchableOpacity style={styles.touchableContainer} onPress={() => divisionSelectorRef.current.open()}>
             <ModalSelector
@@ -169,18 +244,61 @@ const LeaderBoard = ({ navigation }) => {
               cancelTextStyle={{ color: colors.black }}
               ref={tournamentSelectorRef}
             />
+=======
+        {/* Selector de División */}
+        <ModalSelector
+          data={divisionOptions}
+          initValue={selectedDivision || 'Selecciona División'}
+          onChange={(option) => setSelectedDivision(option.key)}
+          style={styles.picker}
+          optionTextStyle={styles.pickerText}
+          selectedItemTextStyle={styles.selectedItem}
+          initValueTextStyle={styles.initValueTextStyle}
+          animationType='fade'
+          cancelText='Salir'
+          cancelTextStyle={{ color: colors.black }}
+          ref={divisionSelectorRef}
+          accessible={true}
+          touchableAccessible={true}
+        >
+          <TouchableOpacity style={styles.touchableContainer}>
+            <Text style={styles.selectedItemText}>{selectedDivision || 'Selecciona División'}</Text>
             <Text style={styles.pickerArrow}>▼</Text>
           </TouchableOpacity>
-        </View>
+        </ModalSelector>
+
+        {/* Selector de Torneo */}
+        <ModalSelector
+          data={tournamentOptions}
+          initValue={selectedTournament || 'Selecciona Torneo'}
+          onChange={(option) => setSelectedTournament(option.key)}
+          style={styles.picker}
+          optionTextStyle={styles.pickerText}
+          selectedItemTextStyle={styles.selectedItem}
+          initValueTextStyle={styles.initValueTextStyle}
+          animationType='fade'
+          cancelText='Salir'
+          cancelTextStyle={{ color: colors.black }}
+          ref={tournamentSelectorRef}
+          accessible={true}
+          touchableAccessible={true}
+        >
+          <TouchableOpacity style={styles.touchableContainer}>
+            <Text style={styles.selectedItemText}>{selectedTournament || 'Selecciona Torneo'}</Text>
+>>>>>>> testing/master
+            <Text style={styles.pickerArrow}>▼</Text>
+          </TouchableOpacity>
+        </ModalSelector>
       </View>
+      
       {positions.length > 0 && (
         <View style={styles.header}>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Text style={styles.headerText}>Pos.</Text>
             <Text style={styles.headerText}></Text>
             <Text style={styles.headerText}>Club</Text>
           </View>
-          <View style={{flexDirection: 'row'}}>
+          <View style={{ flexDirection: 'row' }}>
             <Text style={styles.headerText}>Pts.</Text>
             <Text style={styles.headerText}>Jug.</Text>
             <Text style={styles.headerText}>Gan.</Text>
@@ -192,10 +310,11 @@ const LeaderBoard = ({ navigation }) => {
           </View>
         </View>
       )}
+      
       <View style={styles.containerFlatlist}>
         <FlatList
           data={positions}
-          keyExtractor={(_, index) => `posiciones-${index}`}
+          keyExtractor={(item) => `posicion-${item.nombre}-${item.id || item.key}`} // Asegúrate de que cada item tenga un identificador único
           renderItem={({ item, index }) => (
             <DatesByLeader
               posiciones={item}
@@ -208,10 +327,10 @@ const LeaderBoard = ({ navigation }) => {
         />
       </View>
     </ImageBackground>
-  )
-}
+  );
+};
 
-export default LeaderBoard
+export default LeaderBoard;
 
 const styles = StyleSheet.create({
   main: {
@@ -222,47 +341,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   containerPicker: {
-    width: width * 1,
+    width: '90%',
     justifyContent: 'center',
     alignItems: 'center',
+    marginVertical: 10,
   },
-  containerText: {
-    width: width * 0.95,
-    marginVertical: 5,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.orange,
+  touchableContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: 15,
+    borderRadius: 10,
     backgroundColor: colors.white,
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
-    borderColor: colors.gray,
-    flexDirection: 'row',
-    justifyContent: 'center'
-  },
-  touchableContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
+    borderColor: colors.orange,
+    borderWidth: 1,
   },
   selectedItem: {
     color: colors.orange,
   },
   picker: {
-    width: '90%',
+    width: '100%',
     borderRadius: 10,
+    marginVertical: 5,
   },
   pickerText: {
     color: colors.black,
-    textAlign: 'center', // Centra el texto dentro del picker
+    textAlign: 'left',
   },
   initValueTextStyle: {
     color: colors.black,
-    textAlign: 'center', // Centra el texto de valor inicial
+    fontSize: 16,
   },
   pickerArrow: {
     color: colors.black,
@@ -283,13 +396,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
-  headerTextStart: {
-    width: width * 0.3,
-    fontSize: 12,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    left: 45
-  },
   containerFlatlist: {
     width: '100%',
     flex: 1,
@@ -301,4 +407,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-})
+  selectedItemText: {
+    color: colors.black,
+    fontSize: 16,
+  }
+});

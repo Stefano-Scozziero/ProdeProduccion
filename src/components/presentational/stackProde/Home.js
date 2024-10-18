@@ -32,14 +32,25 @@ const Home = React.memo(({ navigation }) => {
           style={styles.predictionImage}
 =======
 import React, { useState, useContext, useEffect } from 'react';
-import {TouchableOpacity, StyleSheet, ImageBackground, Image, View, Dimensions, FlatList, Text, ActivityIndicator} from 'react-native';
+import { 
+  TouchableOpacity, 
+  StyleSheet, 
+  ImageBackground, 
+  Image, 
+  View, 
+  Dimensions, 
+  FlatList, 
+  Text, 
+  ActivityIndicator 
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCategories, setSelectedCategory } from '../../../features/category/categorySlice';
 import { closeCategoriesModal, openCategoriesModal } from '../../../features/slice/uiSlice';
 import { OrientationContext } from '../../../utils/globals/context';
-import colors from '../../../utils/globals/colors'
+import colors from '../../../utils/globals/colors';
 import ImageAnimation from '../animation/ImageAnimation';
-import CustomModal from '../modal/CustomModal'; // Importa tu modal personalizado
+import CustomModal from '../modal/CustomModal'; 
+import { CheckBox } from 'react-native-elements'; 
 
 const { width, height } = Dimensions.get('window');
 
@@ -72,16 +83,25 @@ const Home = React.memo(({ navigation }) => {
     }
   }, [categoriesStatus, dispatch]);
 
+  // **Nuevo useEffect para seleccionar la primera categoría automáticamente**
+  useEffect(() => {
+    if (categoriesStatus === 'succeeded' && categories.length > 0 && !selectedCategory) {
+      dispatch(setSelectedCategory(categories[0].title));
+    }
+  }, [categoriesStatus, categories, selectedCategory, dispatch]);
+
   const onRetry = () => {
     dispatch(fetchCategories());
   };
 
   const handleCategorySelect = (category) => {
-    dispatch(setSelectedCategory(category.title));
-    dispatch(closeCategoriesModal());
-    if (intendedNavigation) {
-      navigation.navigate(intendedNavigation);
-      setIntendedNavigation(null);
+    if (selectedCategory !== category.title) {
+      dispatch(setSelectedCategory(category.title));
+      dispatch(closeCategoriesModal());
+      if (intendedNavigation) {
+        navigation.navigate(intendedNavigation);
+        setIntendedNavigation(null);
+      }
     }
   };
 
@@ -94,8 +114,19 @@ const Home = React.memo(({ navigation }) => {
         <ImageLoader
           uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fmispredicciones.png?alt=media&token=ef9f815a-e80b-4f15-8981-4844c95695ad"
           style={[styles.predictionImage, !portrait && styles.predictionImageLandScape]}
+<<<<<<< HEAD
 >>>>>>> testing/master
           onPress={() => navigation.navigate('Competencies')}
+=======
+          onPress={() => {
+            if (!selectedCategory) {
+              setIntendedNavigation('Predictions');
+              dispatch(openCategoriesModal());
+            } else {
+              navigation.navigate('Predictions');
+            }
+          }}
+>>>>>>> testing/master
           loading={loading}
           setLoading={setLoading}
         />
@@ -108,16 +139,16 @@ const Home = React.memo(({ navigation }) => {
           onPress={() => navigation.navigate('LeaderBoard')}
 =======
 
-      <View style={[styles.buttonRow, !portrait && styles.buttonRowLandScape]}>
+      <View style={[styles.predictionContainerRow, !portrait && styles.predictionContainerRowLandScape]}>
         <ImageLoader
           uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Ftabladelideres.png?alt=media&token=6774c721-7422-40e7-b2e4-5373e17b50fe"
           style={[styles.predictionImageRow, !portrait && styles.predictionImageRowLandScape]}
           onPress={() => {
             if (!selectedCategory) {
-              setIntendedNavigation('LeaderBoard');
+              setIntendedNavigation('Leader');
               dispatch(openCategoriesModal());
             } else {
-              navigation.navigate('LeaderBoard');
+              navigation.navigate('Leader');
             }
           }}
 >>>>>>> testing/master
@@ -146,11 +177,24 @@ const Home = React.memo(({ navigation }) => {
         />
       </View>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <View style={styles.predictionContainer}>
         <ImageLoader
           uri='https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fnoticias.png?alt=media&token=b6a17432-35b6-4845-9548-f4b8173c9401'
           style={styles.predictionImage}
 =======
+=======
+      
+      <View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
+        <ImageLoader
+          uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fkeys.png?alt=media&token=30c64f04-0bbf-433a-a11f-1d281f081c51"
+          style={[styles.predictionImage, !portrait && styles.predictionImageLandScape]}
+          onPress={() => navigation.navigate('Keys')}
+          loading={loading}
+          setLoading={setLoading}
+        />
+      </View>
+>>>>>>> testing/master
 
       <View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
         <ImageLoader
@@ -185,13 +229,30 @@ const Home = React.memo(({ navigation }) => {
         {categoriesStatus === 'succeeded' && (
           <FlatList
             data={categories}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => handleCategorySelect(item)} style={styles.categoryItem}>
-                <Text style={styles.categoryText}>{item.title}</Text>
-              </TouchableOpacity>
-            )}
-            ListEmptyComponent={<Text>No hay categorías disponibles.</Text>}
+            keyExtractor={item => item.id.toString()}
+            renderItem={({ item }) => {
+              const isSelected = selectedCategory === item.title;
+              return (
+                <TouchableOpacity 
+                  onPress={() => handleCategorySelect(item)} 
+                  style={styles.categoryItemContainer}
+                >
+                  <CheckBox
+                    checked={isSelected}
+                    onPress={() => handleCategorySelect(item)}
+                    containerStyle={styles.checkboxContainer}
+                    checkedColor={colors.orange}
+                    uncheckedIcon="circle-o"       // Icono circular deseleccionado
+                    checkedIcon="dot-circle-o"     // Icono circular seleccionado
+                    iconType="font-awesome"        // Tipo de icono
+                  />
+                  <Text style={[styles.categoryText, isSelected && styles.selectedCategoryText]}>
+                    {item.title}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+            ListEmptyComponent={<Text>No hay Competencias disponibles.</Text>}
           />
         )}
       </CustomModal>
@@ -208,8 +269,7 @@ export default Home;
 
 const styles = StyleSheet.create({
   main: {
-    width: '100%',
-    height: '100%',
+    flex: 1,
     alignItems: 'center',
   },
 <<<<<<< HEAD
@@ -220,20 +280,26 @@ const styles = StyleSheet.create({
 >>>>>>> testing/master
   predictionContainer: {
     width: width * 0.95,
-    height: width * 0.45,
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: height * 0.17,
+    marginTop: 10
+  },
+  predictionContainerRow: {
+    width: width * 0.95,
+    flexDirection: 'row',
+    marginTop: 10,
+    justifyContent: 'space-between'
   },
   predictionImage: {
     width: width * 0.95,
-    height: height * 0.2,
+    height: height * 0.17,
     borderRadius: 10,
   },
   predictionImageRow: {
     width: width * 0.465,
-    height: width * 0.45,
+    height: height * 0.17,
     borderRadius: 10,
   },
+<<<<<<< HEAD
   buttonRow: {
     width: width * 0.95,
     flexDirection: 'row',
@@ -242,6 +308,8 @@ const styles = StyleSheet.create({
   },
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> testing/master
   predictionContainerLandScape: {
     width: width * 0.95,
     height: width * 0.18,
@@ -259,37 +327,30 @@ const styles = StyleSheet.create({
     height: width * 0.15,
     borderRadius: 10,
   },
-  buttonRowLandScape: {
+  predictionContainerRowLandScape: {
     width: width * 0.90,
   },
-  // Estilos para el modal
-  modalContainer: {
+  categoryItemContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '80%',
-    maxHeight: '80%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 20,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  categoryItem: {
+    flexDirection: 'row',
+    alignItems: 'center', 
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.blackgray,
+  },
+  checkboxContainer: {
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    padding: 0,
+    margin: 0,
   },
   categoryText: {
     fontSize: 18,
-    textAlign: 'center',
+    textAlign: 'left',
+    marginLeft: 10,
+    color: colors.black, 
+  },
+  selectedCategoryText: {
+    color: colors.orange, 
+    fontWeight: 'bold',
   },
   closeButton: {
     marginTop: 20,

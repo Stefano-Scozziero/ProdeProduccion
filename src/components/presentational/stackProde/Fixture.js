@@ -1,7 +1,7 @@
-import { StyleSheet,View,Image, ImageBackground, Text, Pressable, TouchableOpacity } from 'react-native'
+import { StyleSheet, ImageBackground } from 'react-native'
 import { OrientationContext } from '../../../utils/globals/context'
 import { useContext } from 'react'
-import FixtureDates from '../../logical/FixtureDates'
+import FixtureDates from './FixtureDates'
 
 
 const Fixture = ({navigation}) => {

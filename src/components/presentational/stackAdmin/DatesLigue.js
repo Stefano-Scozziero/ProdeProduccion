@@ -14,9 +14,10 @@ import { OrientationContext } from '../../../utils/globals/context';
 import { format } from 'date-fns';
 import ModalSelector from 'react-native-modal-selector';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { useSelector } from 'react-redux';
 
 const DatesLigue = () => {
-  const [categorySelected, setCategorySelected] = useState('Liga Casildense');
+  const categorySelected = useSelector(state => state.category.selectedCategory);
   const [selectedTournament, setSelectedTournament] = useState('Apertura');
   const [datos, setDatos] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -231,7 +232,7 @@ const DatesLigue = () => {
   };
   
   if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
-  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Competencies')} />;
+  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar"  />;
   if (!datos || Object.keys(datos).length === 0) return <EmptyListComponent message="No hay datos disponibles" />;
 
 

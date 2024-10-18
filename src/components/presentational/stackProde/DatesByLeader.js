@@ -1,7 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, Image, Dimensions } from 'react-native'
 import FastImage from 'react-native-fast-image'
-import colors from '../../utils/globals/colors'
+import colors from '../../../utils/globals/colors'
 
 const { width } = Dimensions.get('window')
 

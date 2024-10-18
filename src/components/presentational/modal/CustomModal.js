@@ -26,7 +26,9 @@ const CustomModal = ({
 
           {text && <Text style={styles.text}>{text}</Text>}
 
-          {children}
+          <View style={styles.childrenContainer}>
+            {children}
+          </View>
 
           {/* Mostrar botón principal si se pasa el texto */}
           {primaryButtonText && (
@@ -69,6 +71,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5
+  },
+  childrenContainer: {
+    width: '100%', // Ocupa todo el ancho del modal
+    alignItems: 'flex-start', // Alineación a la izquierda
+    justifyContent: 'flex-start',
+    marginBottom: 20, // Espacio entre children y botones
   },
   text: {
     width: '100%',
