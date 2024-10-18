@@ -4,9 +4,6 @@ import LoadingSpinner from '../LoadingSpinner';
 import EmptyListComponent from '../EmptyListComponent';
 import Error from '../Error';
 import DatesByCategory from '../DatesByCategory';
-import ModalAlert from '../modal/ModalAlert';
-
-// Contexto y utilidades
 import { OrientationContext } from '../../../utils/globals/context';
 import colors from '../../../utils/globals/colors';
 import ModalAlert from '../modal/ModalAlert';
@@ -73,15 +70,12 @@ const PredictsByCategory = ({ navigation }) => {
     };
   },  [categorySelected]);
 
-  const getEquipo = useCallback(
-    (id) => {
-      if (datos?.[categorySelected]?.equipos) {
-        return datos[categorySelected].equipos[id];
-      }
-      return null;
-    },
-    [datos, categorySelected]
-  );
+  const getEquipo = (id) => {
+    if (datos && datos?.[categorySelected] && datos?.[categorySelected]?.equipos) {
+      return datos?.[categorySelected]?.equipos[id];
+    }
+    return null;
+  };
 
   const handleSumarPuntos = (equipo, id) => {
     setPartidosEditados(prev => ({ ...prev, [id]: true }));
