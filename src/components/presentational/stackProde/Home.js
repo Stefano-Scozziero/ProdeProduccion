@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   predictionContainer: {
     width: width * 0.95,
-    height: height * 0.17,
+    height: height * 0.20,
     marginTop: 10
   },
   predictionContainerRow: {
@@ -216,12 +216,12 @@ const styles = StyleSheet.create({
   },
   predictionImage: {
     width: width * 0.95,
-    height: height * 0.17,
+    height: height * 0.20,
     borderRadius: 10,
   },
   predictionImageRow: {
     width: width * 0.465,
-    height: height * 0.17,
+    height: height * 0.20,
     borderRadius: 10,
   },
   predictionContainerLandScape: {

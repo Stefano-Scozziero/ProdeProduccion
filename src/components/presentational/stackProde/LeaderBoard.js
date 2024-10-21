@@ -14,33 +14,33 @@ const { width } = Dimensions.get('window');
 
 const LeaderBoard = ({ navigation }) => {
   const categorySelected = useSelector(state => state.category.selectedCategory);
-  
+
   // Estados para los datos
   const [positionsData, setPositionsData] = useState(null);
   const [fixtureData, setFixtureData] = useState(null);
   const [teams, setTeams] = useState({});
-  
+
   // Estados para la UI
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  
+
   const portrait = useContext(OrientationContext);
-  
+
   // Estados para selecciones
   const [selectedDivision, setSelectedDivision] = useState(null);
   const [selectedTournament, setSelectedTournament] = useState(null);
-  
+
   const [positions, setPositions] = useState([]);
-  
+
   const [divisionOptions, setDivisionOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
-  
+
   const db = database();
-  
+
   // Refs para los selectores
   const divisionSelectorRef = useRef(null);
   const tournamentSelectorRef = useRef(null);
-  
+
   // Función para obtener datos desde Firebase
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -49,13 +49,13 @@ const LeaderBoard = ({ navigation }) => {
       const posicionesRef = db.ref('/datos/positions');
       const equiposRef = db.ref(`/datos/fixture/${categorySelected}/equipos`);
       const fixtureRef = db.ref('/datos/fixture');
-      
+
       const [posicionesSnapshot, equiposSnapshot, fixtureSnapshot] = await Promise.all([
         posicionesRef.once('value'),
         equiposRef.once('value'),
         fixtureRef.once('value'),
       ]);
-      
+
       if (posicionesSnapshot.exists() && categorySelected && fixtureSnapshot.exists()) {
         setPositionsData(posicionesSnapshot.val());
         setTeams(equiposSnapshot.val() || {});
@@ -72,7 +72,7 @@ const LeaderBoard = ({ navigation }) => {
       setIsLoading(false);
     }
   }, [db, categorySelected]);
-  
+
   // Efecto para obtener datos cuando cambia la categoría
   useEffect(() => {
     if (categorySelected) {
@@ -84,26 +84,11 @@ const LeaderBoard = ({ navigation }) => {
       setIsLoading(false);
     }
   }, [categorySelected, fetchData]);
-  
-  // Efecto para actualizar las opciones de divisiones
-  useEffect(() => {
-    if (fixtureData && categorySelected) {
-      const divisions = Object.keys(fixtureData[categorySelected]?.partidos || {})
-        .map(key => ({ key, label: key }))
-        .sort((a, b) => a.label.localeCompare(b.label));
-      setDivisionOptions(divisions);
-      if (divisions.length > 0) {
-        setSelectedDivision(divisions[0].key);
-      } else {
-        setSelectedDivision(null);
-      }
-    }
-  }, [fixtureData, categorySelected]);
-  
+
   // Efecto para actualizar las opciones de torneos
   useEffect(() => {
-    if (fixtureData && categorySelected && selectedDivision) {
-      const tournaments = Object.keys(fixtureData[categorySelected]?.partidos[selectedDivision] || {})
+    if (positionsData && categorySelected) {
+      const tournaments = Object.keys(positionsData[categorySelected] || {})
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setTournamentOptions(tournaments);
@@ -113,71 +98,82 @@ const LeaderBoard = ({ navigation }) => {
         setSelectedTournament(null);
       }
     }
-  }, [fixtureData, categorySelected, selectedDivision]);
-  
-  // Efecto para ordenar y combinar posiciones
+  }, [positionsData, categorySelected]);
+
+  // Efecto para actualizar las opciones de divisiones
   useEffect(() => {
-    if (positionsData && categorySelected && teams && selectedDivision && selectedTournament) {
-      const posiciones = positionsData[categorySelected]?.[selectedDivision]?.[selectedTournament]?.equipos || {};
-      const sortedPositions = Object.values(posiciones).sort((a, b) => {
-        if (b.puntos === a.puntos) {
-          const diffA = a.golesFavor - a.golesContra;
-          const diffB = b.golesFavor - b.golesContra;
-          if (diffB === diffA) {
-            return b.golesFavor - a.golesFavor;
-          }
-          return diffB - diffA;
-        }
-        return b.puntos - a.puntos;
-      });
-      const combinedPositions = sortedPositions.map(posicion => ({
-        ...posicion,
-        ...teams[posicion.nombre],
-      }));
-      setPositions(combinedPositions);
-    } else {
-      setPositions([]);
+    if (positionsData && categorySelected && selectedTournament) {
+      const divisions = Object.keys(positionsData[categorySelected][selectedTournament] || {})
+        .map(key => ({ key, label: key }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+      setDivisionOptions(divisions);
+      if (divisions.length > 0) {
+        setSelectedDivision(divisions[0].key);
+      } else {
+        setSelectedDivision(null);
+      }
     }
-  }, [positionsData, categorySelected, selectedDivision, selectedTournament, teams]);
+  }, [positionsData, categorySelected, selectedTournament]);
+
+  // Efecto para ordenar y combinar posiciones
+useEffect(() => {
+  if (positionsData && categorySelected && teams && selectedDivision && selectedTournament) {
+    const posiciones = positionsData[categorySelected]?.[selectedTournament]?.[selectedDivision]?.equipos || {};
+
+    // Get the keys and sort them numerically
+    const sortedKeys = Object.keys(posiciones).sort((a, b) => Number(a) - Number(b));
+
+    // Map over the sorted keys to get the positions array
+    const sortedPositions = sortedKeys
+      .map(key => posiciones[key])
+      .filter(posicion => posicion != null); // Filtrar elementos nulos o indefinidos
+
+    // Proceed with sorting based on your criteria
+    const finalSortedPositions = sortedPositions.sort((a, b) => {
+      const puntosA = a.puntos ?? 0;
+      const puntosB = b.puntos ?? 0;
+
+      if (puntosB === puntosA) {
+        const diffA = (a.golesFavor ?? 0) - (a.golesContra ?? 0);
+        const diffB = (b.golesFavor ?? 0) - (b.golesContra ?? 0);
+
+        if (diffB === diffA) {
+          return (b.golesFavor ?? 0) - (a.golesFavor ?? 0);
+        }
+        return diffB - diffA;
+      }
+      return puntosB - puntosA;
+    });
+
+    const combinedPositions = finalSortedPositions.map(posicion => ({
+      ...posicion,
+      ...teams[posicion.nombre],
+    }));
+
+    setPositions(combinedPositions);
+  } else {
+    setPositions([]);
+  }
+}, [positionsData, categorySelected, selectedDivision, selectedTournament, teams]);
+
   
+
   // Función de reintento
   const handleRetry = useCallback(() => {
     fetchData();
   }, [fetchData]);
-  
+
   // Verificar si hay datos disponibles para renderizar los modales
-  const hasDataAvailable = fixtureData && fixtureData[categorySelected] && divisionOptions.length > 0 && tournamentOptions.length > 0;
-  
+  const hasDataAvailable = positionsData && positionsData[categorySelected] && tournamentOptions.length > 0 && divisionOptions.length > 0;
+
   // Renderizado condicional basado en el estado
   if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
   if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={handleRetry} />;
   if (!hasDataAvailable) return <EmptyListComponent message="No hay datos disponibles" />;
-  
+
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
       <View style={styles.containerPicker}>
-        {/* Selector de División */}
-        <ModalSelector
-          data={divisionOptions}
-          initValue={selectedDivision || 'Selecciona División'}
-          onChange={(option) => setSelectedDivision(option.key)}
-          style={styles.picker}
-          optionTextStyle={styles.pickerText}
-          selectedItemTextStyle={styles.selectedItem}
-          initValueTextStyle={styles.initValueTextStyle}
-          animationType='fade'
-          cancelText='Salir'
-          cancelTextStyle={{ color: colors.black }}
-          ref={divisionSelectorRef}
-          accessible={true}
-          touchableAccessible={true}
-        >
-          <TouchableOpacity style={styles.touchableContainer}>
-            <Text style={styles.selectedItemText}>{selectedDivision || 'Selecciona División'}</Text>
-            <Text style={styles.pickerArrow}>▼</Text>
-          </TouchableOpacity>
-        </ModalSelector>
-
         {/* Selector de Torneo */}
         <ModalSelector
           data={tournamentOptions}
@@ -199,8 +195,30 @@ const LeaderBoard = ({ navigation }) => {
             <Text style={styles.pickerArrow}>▼</Text>
           </TouchableOpacity>
         </ModalSelector>
+
+        {/* Selector de División */}
+        <ModalSelector
+          data={divisionOptions}
+          initValue={selectedDivision || 'Selecciona División'}
+          onChange={(option) => setSelectedDivision(option.key)}
+          style={styles.picker}
+          optionTextStyle={styles.pickerText}
+          selectedItemTextStyle={styles.selectedItem}
+          initValueTextStyle={styles.initValueTextStyle}
+          animationType='fade'
+          cancelText='Salir'
+          cancelTextStyle={{ color: colors.black }}
+          ref={divisionSelectorRef}
+          accessible={true}
+          touchableAccessible={true}
+        >
+          <TouchableOpacity style={styles.touchableContainer}>
+            <Text style={styles.selectedItemText}>{selectedDivision || 'Selecciona División'}</Text>
+            <Text style={styles.pickerArrow}>▼</Text>
+          </TouchableOpacity>
+        </ModalSelector>
       </View>
-      
+
       {positions.length > 0 && (
         <View style={styles.header}>
           <View style={{ flexDirection: 'row' }}>
@@ -220,11 +238,11 @@ const LeaderBoard = ({ navigation }) => {
           </View>
         </View>
       )}
-      
+
       <View style={styles.containerFlatlist}>
         <FlatList
           data={positions}
-          keyExtractor={(item) => `posicion-${item.nombre}-${item.id || item.key}`} // Asegúrate de que cada item tenga un identificador único
+          keyExtractor={(item) => `posicion-${item.nombre}-${item.id || item.key}`}
           renderItem={({ item, index }) => (
             <DatesByLeader
               posiciones={item}
@@ -241,6 +259,9 @@ const LeaderBoard = ({ navigation }) => {
 };
 
 export default LeaderBoard;
+
+// Estilos permanecen igual
+
 
 const styles = StyleSheet.create({
   main: {
