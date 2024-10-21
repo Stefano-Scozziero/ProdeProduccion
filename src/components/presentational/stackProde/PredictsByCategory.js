@@ -77,6 +77,8 @@ const PredictsByCategory = ({ navigation }) => {
     return null;
   };
 
+  const stagesOrder = ['Octavos', 'Cuartos', 'Semifinal y Final'];
+
   const handleSumarPuntos = (equipo, id) => {
     setPartidosEditados(prev => ({ ...prev, [id]: true }));
 
@@ -160,6 +162,9 @@ const PredictsByCategory = ({ navigation }) => {
     }
   };
   
+  const isNumeric = (value) => {
+    return !isNaN(value) && !isNaN(parseFloat(value));
+  };
 
   useEffect(() => {
     // Reiniciar los estados al iniciar el efecto
@@ -254,10 +259,32 @@ const PredictsByCategory = ({ navigation }) => {
   }, [datos, categorySelected]);
 
   const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
-    ? Object.keys(datos?.[categorySelected].partidos?.[selectedDivision]?.[selectedTournament])
-        .filter(key => !isNaN(key) && Number(key) >= 1)
-        .map(key => ({ key, label: `Fecha ${key}` }))
-    : [];
+  ? Object.keys(datos?.[categorySelected].partidos?.[selectedDivision]?.[selectedTournament])
+      .filter(key => key !== '0') // Excluir la clave '0'
+      .sort((a, b) => {
+        const isANumeric = isNumeric(a);
+        const isBNumeric = isNumeric(b);
+
+        if (isANumeric && isBNumeric) {
+          return Number(a) - Number(b);
+        } else if (isANumeric) {
+          return -1;
+        } else if (isBNumeric) {
+          return 1;
+        } else {
+          const indexA = stagesOrder.indexOf(a);
+          const indexB = stagesOrder.indexOf(b);
+          const orderA = indexA !== -1 ? indexA : Number.MAX_SAFE_INTEGER;
+          const orderB = indexB !== -1 ? indexB : Number.MAX_SAFE_INTEGER;
+          return orderA - orderB;
+        }
+      })
+      .map(key => ({
+        key,
+        label: isNumeric(key) ? `Fecha ${key}` : key,
+      }))
+  : [];
+
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
@@ -275,11 +302,10 @@ const PredictsByCategory = ({ navigation }) => {
 
   useEffect(() => {
     if (!pickerDataLoaded && datos && categorySelected) {
-      const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || [];
-      const fechasDisponibles = Object.keys(partidosDelTorneo).filter(key => !isNaN(key)).map(Number);
-      const fechasMostradas = fechasDisponibles.filter(fecha => fecha >= 1);
-      const primeraFechaDisponibleNoJugada = fechasMostradas.find(fecha => partidosDelTorneo[fecha] && !partidosDelTorneo[fecha].hasPlayed);
-      setSelectedDate(primeraFechaDisponibleNoJugada || fechasMostradas[0]);
+      const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+      const fechasDisponibles = Object.keys(partidosDelTorneo).filter(fecha => fecha !== '0'); // Excluir la fecha '0'
+      const primeraFechaDisponibleNoJugada = fechasDisponibles.find(fecha => partidosDelTorneo[fecha] && !partidosDelTorneo[fecha].hasPlayed);
+      setSelectedDate(primeraFechaDisponibleNoJugada || fechasDisponibles[0]);
       setPickerDataLoaded(true);
     }
   }, [categorySelected, datos, pickerDataLoaded, selectedDivision, selectedTournament]);
@@ -357,24 +383,24 @@ const PredictsByCategory = ({ navigation }) => {
 
        
         <ModalSelector
-          data={dateOptions}
-          initValue={dateOptions.length > 0 ? `Fecha ${selectedDate}` : 'Selecciona una Fecha'}
-          onChange={(option) => setSelectedDate(option.key)}
-          style={dateOptions.length === 0 ? styles.disabledPicker : styles.picker}
-          optionTextStyle={styles.pickerText}
-          selectedItemTextStyle={styles.selectedItem}
-          initValueTextStyle={styles.initValueTextStyle}
-          animationType='fade'
-          cancelText='Salir'
-          cancelTextStyle={{ color: colors.black }}
-          disabled={dateOptions.length === 0}
-          ref={dateSelectorRef}
-          accessible={true}
-          touchableAccessible={true}
-        >
+            data={dateOptions}
+            initValue={dateOptions.length > 0 ? (isNumeric(selectedDate) ? `Fecha ${selectedDate}` : selectedDate) : 'Selecciona una Fecha'}
+            onChange={(option) => setSelectedDate(option.key)}
+            style={dateOptions.length === 0 ? styles.disabledPicker : styles.picker}
+            optionTextStyle={styles.pickerText}
+            selectedItemTextStyle={styles.selectedItem}
+            initValueTextStyle={styles.initValueTextStyle}
+            animationType='fade'
+            cancelText='Salir'
+            cancelTextStyle={{ color: colors.black }}
+            disabled={dateOptions.length === 0}
+            ref={dateSelectorRef}
+            accessible={true}
+            touchableAccessible={true}
+          >
           <TouchableOpacity style={styles.touchableContainer} disabled={dateOptions.length === 0}>
             <Text style={styles.selectedItemText}>
-              {dateOptions.length > 0 ? `Fecha ${selectedDate}` : 'Sin Fechas Disponibles'}
+              {dateOptions.length > 0 ? (isNumeric(selectedDate) ? `Fecha ${selectedDate}` : selectedDate) : 'Sin Fechas Disponibles'}
             </Text>
             {dateOptions.length !== 0 && <Text style={styles.pickerArrow}>▼</Text>}
           </TouchableOpacity>
