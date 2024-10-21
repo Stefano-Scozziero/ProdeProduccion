@@ -29,6 +29,27 @@ const DatesLigue = () => {
   const [divisionOptions, setDivisionOptions] = useState([])
   const [tournamentOptions, setTournamentOptions] = useState([])
   const db = database();
+  const stagesOrder = [
+    'Apertura',
+    'Clausura',
+    'Repechaje Apertura',
+    'Repechaje Clausura',
+    'Octavos de final - Ida',
+    'Octavos de final - Vuelta',
+    'Cuartos de final',
+    'Semifinal y Final',
+  ];
+
+  const tournamentsWithoutDate = [
+    'Octavos de final - Ida', 
+    'Octavos de final - Vuelta', 
+    'Cuartos de final', 
+    'Semifinal y Final'
+  ];
+
+  const isNumeric = (value) => {
+    return !isNaN(value) && !isNaN(parseFloat(value));
+  };
 
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture/').on('value', (snapshot) => {
@@ -142,18 +163,34 @@ const DatesLigue = () => {
   }, [datos, categorySelected]);
 
   useEffect(() => {
-    if (datos && categorySelected && selectedDivision) {
-      const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
-        .map(key => ({ key, label: key }))
-        .sort((a, b) => a.label.localeCompare(b.label));
-      setTournamentOptions(tournaments);
-  
-      // Solo actualizar selectedTournament si no está establecido o si ya no es válido
-      if (!selectedTournament || !tournaments.find(t => t.key === selectedTournament)) {
-        setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
+      if (datos && categorySelected && selectedDivision) {
+        const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
+          .map((key) => ({ key, label: key }))
+          .sort((a, b) => {
+            const indexA = stagesOrder.indexOf(a.key);
+            const indexB = stagesOrder.indexOf(b.key);
+    
+            // Si ambos están en stagesOrder, ordenar según su posición en el arreglo
+            if (indexA !== -1 && indexB !== -1) {
+              return indexA - indexB;
+            }
+    
+            // Si solo uno está en stagesOrder, ese va primero
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+    
+            // Si ninguno está en stagesOrder, ordenar alfabéticamente
+            return a.label.localeCompare(b.label);
+          });
+    
+        setTournamentOptions(tournaments);
+    
+        // Actualizar selectedTournament si es necesario
+        if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
+          setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
+        }
       }
-    }
-  }, [datos, categorySelected, selectedDivision]);
+    }, [datos, categorySelected, selectedDivision]);
 
   const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
   ? Object.keys(datos?.[categorySelected]?.partidos[selectedDivision][selectedTournament])
@@ -261,31 +298,48 @@ const DatesLigue = () => {
           
         </View>
         <View  style={[styles.containerText, dateOptions.length === 0 ? styles.disabledPicker : null]}>
+          {!tournamentsWithoutDate.includes(selectedTournament) && (
           <ModalSelector
             data={dateOptions}
-            initValue={dateOptions.length > 0 ? `Fecha ${selectedDate}` : 'Selecciona una Fecha'}
+            initValue={
+              dateOptions.length > 0
+                ? isNumeric(selectedDate)
+                  ? `Fecha ${selectedDate}`
+                  : selectedDate
+                : 'Selecciona una Fecha'
+            }
             onChange={(option) => setSelectedDate(option.key)}
-            style={dateOptions.length === 0 ? styles.disabledPicker : styles.picker}
+            style={
+              dateOptions.length === 0 ? styles.disabledPicker : styles.picker
+            }
             optionTextStyle={styles.pickerText}
             selectedItemTextStyle={styles.selectedItem}
             initValueTextStyle={styles.initValueTextStyle}
-            animationType='fade'
-            cancelText='Salir'
+            animationType="fade"
+            cancelText="Salir"
             cancelTextStyle={{ color: colors.black }}
             disabled={dateOptions.length === 0}
             ref={dateSelectorRef}
             accessible={true}
             touchableAccessible={true}
           >
-            <TouchableOpacity style={styles.touchableContainer} disabled={dateOptions.length === 0}>
+            <TouchableOpacity
+              style={styles.touchableContainer}
+              disabled={dateOptions.length === 0}
+            >
               <Text style={styles.selectedItemText}>
-                {dateOptions.length > 0 ? `Fecha ${selectedDate}` : 'Sin Fechas Disponibles'}
+                {dateOptions.length > 0
+                  ? isNumeric(selectedDate)
+                    ? `Fecha ${selectedDate}`
+                    : selectedDate
+                  : 'Sin Fechas Disponibles'}
               </Text>
-              {dateOptions.length !== 0 && <Text style={styles.pickerArrow}>▼</Text>}
+              {dateOptions.length !== 0 && (
+                <Text style={styles.pickerArrow}>▼</Text>
+              )}
             </TouchableOpacity>
           </ModalSelector>
-          
-          
+        )} 
         </View>
       </View>
 
