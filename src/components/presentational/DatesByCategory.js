@@ -54,11 +54,11 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
       return (
         <View style={styles.containerMatching}>
           <BallAnimation />
-          <View style={{width: '60%',flexDirection: 'row', alignItems: 'center', justifyContent: 'left'}}>
-            <Text style={styles.scoreTextReal}>{encuentros.goles1}</Text>
-            <LineAnimation />
-            <Text style={styles.scoreTextReal}>{encuentros.goles2}</Text>
+          <View style={styles.containerResult}>
+          <View style={{backgroundColor: colors.green, padding: 2, borderRadius: 5}}>
+            <Text style={styles.headerLabel}>{puntosWin} pts.</Text>
           </View>
+        </View>
           
         </View>
       );
@@ -101,7 +101,7 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
   );
 
   const renderScoreSection = () => {
-    if (hasMatchEnded) {
+    if (hasMatchEnded || encuentros.isPlaying) {
       return (
         <View style={styles.resultContainer}>
           <Text style={styles.resultText}>Resultado:</Text>
@@ -241,15 +241,15 @@ const styles = StyleSheet.create({
   },
   scoreContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   scoreBoxLeft: {
     alignItems: 'center',
-    marginRight: 20,
+    marginRight: 5,
   },
   scoreBoxRight: {
     alignItems: 'center',
-    marginLeft: 20,
+    marginLeft: 5,
   },
   buttonLeft: {
     backgroundColor: colors.white,
