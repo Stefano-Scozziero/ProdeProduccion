@@ -437,7 +437,7 @@ const PredictsByCategory = ({ navigation }) => {
         )}
       </View>
 
-      <View style={styles.containerFlatlist}>
+      <View style={{ flex: 1, width: '100%' }}>
         <FlatList
           data={filteredPartidos}
           keyExtractor={(item) => `partidos-${item.id}`}
@@ -456,13 +456,13 @@ const PredictsByCategory = ({ navigation }) => {
           maxToRenderPerBatch={8}
           windowSize={8}
         />
-      </View>
 
-      {guardarPronosticos && Object.keys(partidosEditados).length > 0 && 
-        <TouchableOpacity activeOpacity={0.8} style={styles.guardarButton} onPress={guardarPronosticosEnDB}>
-          <Text style={styles.guardarButtonText}>Guardar Pronósticos</Text>
-        </TouchableOpacity>
-      }
+        {guardarPronosticos && Object.keys(partidosEditados).length > 0 && 
+          <TouchableOpacity activeOpacity={0.8} style={styles.guardarButton} onPress={guardarPronosticosEnDB}>
+            <Text style={styles.guardarButtonText}>Guardar Pronósticos</Text>
+          </TouchableOpacity>
+        }
+      </View>
     </ImageBackground>
   );
 }
@@ -471,8 +471,8 @@ export default PredictsByCategory;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     width: '100%',
-    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -526,15 +526,14 @@ const styles = StyleSheet.create({
     fontSize: 15, 
   },
   containerFlatlist: {
-    flex: 1, // Use flex to fill the remaining space
-    width: '100%', // Ensure flat list takes full width
+    flex: 1, 
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   guardarButton: {
-    position: 'absolute',
     width: '90%',
-    bottom: 20,
+    alignSelf: 'center',
     backgroundColor: colors.green,
     padding: 15,
     borderRadius: 10,
@@ -545,6 +544,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    marginVertical: 10
   },
   guardarButtonText: {
     textAlign: 'center',
