@@ -36,12 +36,11 @@ const Profile = () => {
   const db = database();
   const storageInstance = storage();
   const dispatch = useDispatch();
-  const [accountDeletedModalVisible, setAccountDeletedModalVisible] = useState(false);
 
   // useEffect para cargar los datos de perfil desde la base de datos
   useEffect(() => {
     if (user && user.uid) {
-      const profileRef = db.ref(`/profiles/${user.uid}`);
+      const profileRef = db.ref(`/profiles/${user.uid}/user`);
       profileRef.on('value', snapshot => {
         if (snapshot.exists()) {
           const data = snapshot.val();
@@ -84,7 +83,7 @@ const Profile = () => {
     try {
       if (user) {
         // Eliminar datos del perfil en la base de datos
-        await db.ref(`/profiles/${user.uid}`).remove();
+        await db.ref(`/profiles/${user.uid}/user`).remove();
 
         // Verificar si hay una imagen antes de intentar eliminarla
         if (image) {
@@ -170,7 +169,7 @@ const Profile = () => {
         const imageUrl = await reference.getDownloadURL();
 
         // Actualiza la imagen en la base de datos
-        db.ref(`/profiles/${user.uid}`).update({
+        db.ref(`/profiles/${user.uid}/user`).update({
           image: imageUrl
         });
 
@@ -199,7 +198,7 @@ const Profile = () => {
   const onSubmit = async () => {
     if (user && user.uid) {
       setIsLoading(true);
-      db.ref(`/profiles/${user.uid}`).update({
+      db.ref(`/profiles/${user.uid}/user`).update({
         username: username,
         phone: phone,
         image: image

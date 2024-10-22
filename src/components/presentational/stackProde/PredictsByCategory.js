@@ -137,7 +137,7 @@ const PredictsByCategory = ({ navigation }) => {
     if (!categorySelected || !selectedDate || !filteredPartidos) return;
   
     try {
-      const pronosticosRef = db.ref(`/profiles/${user.uid}/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`);
+      const pronosticosRef = db.ref(`/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`);
   
       const snapshot = await pronosticosRef.once('value');
       const pronosticosExistentes = snapshot.val() || {};
@@ -190,7 +190,7 @@ const PredictsByCategory = ({ navigation }) => {
 
     // Referencia a la ruta específica en Firebase
     const pronosticosRef = db.ref(
-      `/profiles/${user.uid}/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`
+      `/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`
     );
 
     // Escuchar cambios en los datos

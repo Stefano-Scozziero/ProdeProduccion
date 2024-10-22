@@ -18,26 +18,30 @@ export const profileApi = createApi({
     endpoints: (builder) => ({
         putImage: builder.mutation({
             query: ({ image, localId, username }) => ({
-                url: `/profile/${localId}.json`,
+                // Cambiar la URL para reflejar la nueva estructura
+                url: `/profiles/${localId}/user.json`,
                 method: "PATCH",
                 body: { image, username }
             }),
             invalidatesTags: ["userImage"]
         }),
         getImage: builder.query({
-            query: (localId) => `/profile/${localId}.json`,
+            // Cambiar la URL para reflejar la nueva estructura
+            query: (localId) => `/profiles/${localId}/user.json`,
             providesTags: ["userImage"]
         }),
         putUsername: builder.mutation({
             query: ({ username, localId, phone }) => ({
-                url: `/profile/${localId}.json`,
+                // Cambiar la URL para reflejar la nueva estructura
+                url: `/profiles/${localId}/user.json`,
                 method: "PATCH",
                 body: { username, phone }
             }),
             invalidatesTags: ["userName"]
         }),
         getUsername: builder.query({
-            query: (localId) => `/profile/${localId}.json`,
+            // Cambiar la URL para reflejar la nueva estructura
+            query: (localId) => `/profiles/${localId}/user.json`,
             providesTags: ["userName"]
         }),
     })
@@ -49,3 +53,4 @@ export const {
     usePutUsernameMutation,
     useGetUsernameQuery
 } = profileApi;
+

@@ -22,13 +22,19 @@ const CustomDrawerContent = (props) => {
   const isRankedMode = useSelector((state) => state.preferences.isRankedMode); // Obtén el estado de Redux
   const isDarkMode = useSelector((state) => state.preferences.isDarkMode);
   const [profile, setProfile] = useState({});
+  const [tickets, setTickets] = useState({});
   const user = auth().currentUser;
   const db = database();
 
 
   useEffect(() => {
     if (user && user.uid) {
-      const profileRef = db.ref(`/profiles/${user.uid}`);
+      // Referencia al perfil del usuario
+      const profileRef = db.ref(`/profiles/${user.uid}/user`);
+      // Referencia a los boletos
+      const ticketsRef = db.ref(`/profiles/${user.uid}/prode`);
+  
+      // Listener para el perfil del usuario
       profileRef.on('value', snapshot => {
         if (snapshot.exists()) {
           setProfile({
@@ -39,10 +45,24 @@ const CustomDrawerContent = (props) => {
       }, error => {
         console.error(error);
       });
-      
-      return () => profileRef.off('value'); // Cleanup del listener
+  
+      // Listener para los boletos
+      ticketsRef.on('value', snapshot => {
+        if (snapshot.exists()) {
+          setTickets(snapshot.val()); // Asegúrate de tener un estado llamado setTickets
+        }
+      }, error => {
+        console.error(error);
+      });
+  
+      // Cleanup de los listeners al desmontar el componente
+      return () => {
+        profileRef.off('value');
+        ticketsRef.off('value');
+      };
     }
   }, [user]);
+  
 
   const onLogout = async () => {
     try {
@@ -89,7 +109,7 @@ const CustomDrawerContent = (props) => {
           <Text style={styles.profileText}>{profile?.email || user?.email || "Correo Electrónico"}</Text>
           {isRankedMode && (
             <View style={styles.coinsContainer}>
-              <Text style={styles.coinsText}>Boletos: {profile?.boletos || 0}</Text>
+              <Text style={styles.coinsText}>Boletos: {tickets?.boletos || 0}</Text>
               {/*onPress={() => navigation.navigate('AumentarCoins')*/}
               <TouchableOpacity style={styles.addCoinsButton} >
                 <Text style={styles.addCoinsButtonText}>Añadir</Text>

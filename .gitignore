@@ -21,7 +21,7 @@ android/app/google-services.json
 android/app/debug.keystore
 src/app/services/authGoogle/config.js
 src/app/services/firebase/config.js
-functions/
+firebase/
 
 # Metro
 .metro-health-check*
