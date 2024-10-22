@@ -11,7 +11,6 @@ import uiReducer from '../features/slice/uiSlice';
 
 // Importa tus APIs existentes
 import { profileApi } from './services/profile';
-import { predictApi } from './services/predict';
 
 // Importa el reducer de preferencias
 import preferencesReducer from '../features/preferences/preferencesSlice';
@@ -30,7 +29,6 @@ const rootReducer = combineReducers({
   preferences: preferencesReducer, 
   ui: uiReducer,
   [profileApi.reducerPath]: profileApi.reducer,
-  [predictApi.reducerPath]: predictApi.reducer,
 });
 
 // Aplica persistReducer al rootReducer
@@ -45,7 +43,7 @@ export const store = configureStore({
         // Ignora las acciones específicas de redux-persist
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat(profileApi.middleware, predictApi.middleware),
+    }).concat(profileApi.middleware),
 });
 
 // Configura el persistor
