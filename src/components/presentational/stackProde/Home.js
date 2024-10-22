@@ -127,7 +127,7 @@ const Home = React.memo(({ navigation }) => {
       
       <View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
         <ImageLoader
-          uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fkeys.png?alt=media&token=30c64f04-0bbf-433a-a11f-1d281f081c51"
+          uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fkeys.png?alt=media&token=5663afa3-4d7b-4114-9ddc-d66372f46b1d"
           style={[styles.predictionImage, !portrait && styles.predictionImageLandScape]}
           onPress={() => navigation.navigate('Keys')}
           loading={loading}
