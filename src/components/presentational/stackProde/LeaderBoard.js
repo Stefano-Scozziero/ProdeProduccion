@@ -27,7 +27,7 @@ const LeaderBoard = ({ navigation }) => {
   const portrait = useContext(OrientationContext);
 
   // Estados para selecciones
-  const [selectedDivision, setSelectedDivision] = useState(null);
+  const [selectedDivision, setSelectedDivision] = useState('Primera Division');
   const [selectedTournament, setSelectedTournament] = useState(null);
 
   const [positions, setPositions] = useState([]);
@@ -88,7 +88,8 @@ const LeaderBoard = ({ navigation }) => {
   // Efecto para actualizar las opciones de torneos
   useEffect(() => {
     if (positionsData && categorySelected) {
-      const tournaments = Object.keys(positionsData[categorySelected] || {})
+      const tournaments = Object.keys(positionsData[categorySelected][selectedDivision] || {})
+      
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setTournamentOptions(tournaments);
@@ -102,8 +103,8 @@ const LeaderBoard = ({ navigation }) => {
 
   // Efecto para actualizar las opciones de divisiones
   useEffect(() => {
-    if (positionsData && categorySelected && selectedTournament) {
-      const divisions = Object.keys(positionsData[categorySelected][selectedTournament] || {})
+    if (positionsData && categorySelected && selectedDivision) {
+      const divisions = Object.keys(positionsData[categorySelected] || {})
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
@@ -113,12 +114,12 @@ const LeaderBoard = ({ navigation }) => {
         setSelectedDivision(null);
       }
     }
-  }, [positionsData, categorySelected, selectedTournament]);
+  }, [positionsData, categorySelected, selectedDivision]);
 
   // Efecto para ordenar y combinar posiciones
 useEffect(() => {
   if (positionsData && categorySelected && teams && selectedDivision && selectedTournament) {
-    const posiciones = positionsData[categorySelected]?.[selectedTournament]?.[selectedDivision]?.equipos || {};
+    const posiciones = positionsData[categorySelected]?.[selectedDivision]?.[selectedTournament]?.equipos || {};
 
     // Get the keys and sort them numerically
     const sortedKeys = Object.keys(posiciones).sort((a, b) => Number(a) - Number(b));
@@ -174,28 +175,6 @@ useEffect(() => {
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.main, !portrait && styles.mainLandScape]}>
       <View style={styles.containerPicker}>
-        {/* Selector de Torneo */}
-        <ModalSelector
-          data={tournamentOptions}
-          initValue={selectedTournament || 'Selecciona Torneo'}
-          onChange={(option) => setSelectedTournament(option.key)}
-          style={styles.picker}
-          optionTextStyle={styles.pickerText}
-          selectedItemTextStyle={styles.selectedItem}
-          initValueTextStyle={styles.initValueTextStyle}
-          animationType='fade'
-          cancelText='Salir'
-          cancelTextStyle={{ color: colors.black }}
-          ref={tournamentSelectorRef}
-          accessible={true}
-          touchableAccessible={true}
-        >
-          <TouchableOpacity style={styles.touchableContainer}>
-            <Text style={styles.selectedItemText}>{selectedTournament || 'Selecciona Torneo'}</Text>
-            <Text style={styles.pickerArrow}>▼</Text>
-          </TouchableOpacity>
-        </ModalSelector>
-
         {/* Selector de División */}
         <ModalSelector
           data={divisionOptions}
@@ -214,6 +193,28 @@ useEffect(() => {
         >
           <TouchableOpacity style={styles.touchableContainer}>
             <Text style={styles.selectedItemText}>{selectedDivision || 'Selecciona División'}</Text>
+            <Text style={styles.pickerArrow}>▼</Text>
+          </TouchableOpacity>
+        </ModalSelector>
+        
+        {/* Selector de Torneo */}
+        <ModalSelector
+          data={tournamentOptions}
+          initValue={selectedTournament || 'Selecciona Torneo'}
+          onChange={(option) => setSelectedTournament(option.key)}
+          style={styles.picker}
+          optionTextStyle={styles.pickerText}
+          selectedItemTextStyle={styles.selectedItem}
+          initValueTextStyle={styles.initValueTextStyle}
+          animationType='fade'
+          cancelText='Salir'
+          cancelTextStyle={{ color: colors.black }}
+          ref={tournamentSelectorRef}
+          accessible={true}
+          touchableAccessible={true}
+        >
+          <TouchableOpacity style={styles.touchableContainer}>
+            <Text style={styles.selectedItemText}>{selectedTournament || 'Selecciona Torneo'}</Text>
             <Text style={styles.pickerArrow}>▼</Text>
           </TouchableOpacity>
         </ModalSelector>
@@ -247,6 +248,7 @@ useEffect(() => {
             <DatesByLeader
               posiciones={item}
               index={index + 1}
+              isGeneralTournament={selectedTournament === 'General'}
             />
           )}
           ListEmptyComponent={<Text style={styles.emptyListText}>No hay datos disponibles</Text>}
