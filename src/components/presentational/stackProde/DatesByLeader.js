@@ -5,14 +5,25 @@ import colors from '../../../utils/globals/colors'
 
 const { width } = Dimensions.get('window')
 
-const DatesByLeader = ({ posiciones, index }) => {
+const DatesByLeader = ({ posiciones, index, isGeneralTournament }) => {
   const containerStyle = [styles.container]
-  if (index > 4 && index <= 12) {
-    containerStyle.push(styles.containerMiddle)
-  } else if (index <= 4) {
-    containerStyle.push(styles.containerTop)
+
+  if (!isGeneralTournament) {
+    if (index > 4 && index <= 12) {
+      containerStyle.push(styles.containerMiddle);
+    } else if (index <= 4) {
+      containerStyle.push(styles.containerTop);
+    } else {
+      containerStyle.push(styles.containerBottom);
+    }
   } else {
-    containerStyle.push(styles.containerBottom)
+    if (index > 3 && index <= 13) {
+      containerStyle.push(styles.containerMiddle);
+    } else if (index <= 3) {
+      containerStyle.push(styles.containerTop);
+    } else {
+      containerStyle.push(styles.containerBottom);
+    }
   }
 
   return (
