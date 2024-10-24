@@ -39,7 +39,7 @@ xmlns:tools="http://schemas.android.com/tools">
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
-        <data android:scheme="ProdeSCO"/>
+        <data android:scheme="prodesco"/>
         <data android:scheme="com.krefrim.ProdeReactNative"/>
       </intent-filter>
     </activity>

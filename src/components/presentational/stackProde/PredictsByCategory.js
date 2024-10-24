@@ -29,11 +29,11 @@ const PredictsByCategory = ({ navigation }) => {
   const db = database();
   const [guardarPronosticos, setGuardarPronosticos] = useState(false);
   const [partidosEditados, setPartidosEditados] = useState({});
-  
+
   const divisionSelectorRef = useRef(null);
   const tournamentSelectorRef = useRef(null);
   const dateSelectorRef = useRef(null);
-  
+
   const [divisionOptions, setDivisionOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
 
@@ -68,7 +68,7 @@ const PredictsByCategory = ({ navigation }) => {
         setIsLoading(false);
       }, 2000);
     };
-  },  [categorySelected]);
+  }, [categorySelected]);
 
   const getEquipo = (id) => {
     if (datos && datos?.[categorySelected] && datos?.[categorySelected]?.equipos) {
@@ -89,9 +89,9 @@ const PredictsByCategory = ({ navigation }) => {
   ];
 
   const tournamentsWithoutDate = [
-    'Octavos de final - Ida', 
-    'Octavos de final - Vuelta', 
-    'Cuartos de final', 
+    'Octavos de final - Ida',
+    'Octavos de final - Vuelta',
+    'Cuartos de final',
     'Semifinal y Final'
   ];
 
@@ -135,13 +135,13 @@ const PredictsByCategory = ({ navigation }) => {
 
   const guardarPronosticosEnDB = async () => {
     if (!categorySelected || !selectedDate || !filteredPartidos) return;
-  
+
     try {
       const pronosticosRef = db.ref(`/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`);
-  
+
       const snapshot = await pronosticosRef.once('value');
       const pronosticosExistentes = snapshot.val() || {};
-  
+
       const pronosticosArray = filteredPartidos
         .filter(partido => partido !== null && partido !== undefined)
         .reduce((obj, partido) => {
@@ -167,17 +167,17 @@ const PredictsByCategory = ({ navigation }) => {
           }
           return obj;
         }, {});
-  
+
       await pronosticosRef.set(pronosticosArray);
-  
+
       setGuardarPronosticos(false);
       setModalAlert(true);
-  
+
     } catch (error) {
       console.error('Error al guardar los pronósticos:', error);
     }
   };
-  
+
   const isNumeric = (value) => {
     return !isNaN(value) && !isNaN(parseFloat(value));
   };
@@ -247,7 +247,7 @@ const PredictsByCategory = ({ navigation }) => {
     selectedDivision,
     selectedTournament
   ]);
-  
+
 
   useEffect(() => {
     const puntosEq1Definidos = Object.values(puntos.eq1).length > 0;
@@ -266,7 +266,7 @@ const PredictsByCategory = ({ navigation }) => {
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
-  
+
       // Solo actualizar selectedDivision si no está establecido o ya no es válido
       if (!selectedDivision || !divisions.find(d => d.key === selectedDivision)) {
         setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
@@ -276,40 +276,40 @@ const PredictsByCategory = ({ navigation }) => {
 
   const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
     ? Object.keys(datos?.[categorySelected].partidos?.[selectedDivision]?.[selectedTournament])
-        .filter(key => !isNaN(key) && Number(key) >= 1)
-        .map(key => ({ key, label: `Fecha ${key}` }))
+      .filter(key => !isNaN(key) && Number(key) >= 1)
+      .map(key => ({ key, label: `Fecha ${key}` }))
     : [];
 
 
-    useEffect(() => {
-      if (datos && categorySelected && selectedDivision) {
-        const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
-          .map((key) => ({ key, label: key }))
-          .sort((a, b) => {
-            const indexA = stagesOrder.indexOf(a.key);
-            const indexB = stagesOrder.indexOf(b.key);
-    
-            // Si ambos están en stagesOrder, ordenar según su posición en el arreglo
-            if (indexA !== -1 && indexB !== -1) {
-              return indexA - indexB;
-            }
-    
-            // Si solo uno está en stagesOrder, ese va primero
-            if (indexA !== -1) return -1;
-            if (indexB !== -1) return 1;
-    
-            // Si ninguno está en stagesOrder, ordenar alfabéticamente
-            return a.label.localeCompare(b.label);
-          });
-    
-        setTournamentOptions(tournaments);
-    
-        // Actualizar selectedTournament si es necesario
-        if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
-          setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
-        }
+  useEffect(() => {
+    if (datos && categorySelected && selectedDivision) {
+      const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
+        .map((key) => ({ key, label: key }))
+        .sort((a, b) => {
+          const indexA = stagesOrder.indexOf(a.key);
+          const indexB = stagesOrder.indexOf(b.key);
+
+          // Si ambos están en stagesOrder, ordenar según su posición en el arreglo
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+
+          // Si solo uno está en stagesOrder, ese va primero
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+
+          // Si ninguno está en stagesOrder, ordenar alfabéticamente
+          return a.label.localeCompare(b.label);
+        });
+
+      setTournamentOptions(tournaments);
+
+      // Actualizar selectedTournament si es necesario
+      if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
+        setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
       }
-    }, [datos, categorySelected, selectedDivision]);
+    }
+  }, [datos, categorySelected, selectedDivision]);
 
   useEffect(() => {
     if (!pickerDataLoaded && datos && categorySelected) {
@@ -338,7 +338,7 @@ const PredictsByCategory = ({ navigation }) => {
   if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Home')} />;
   if (!datos) return <EmptyListComponent message="No hay datos disponibles" />
 
-  
+
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.container, !portrait && styles.landScape]}>
       {modalAlert && (
@@ -370,7 +370,7 @@ const PredictsByCategory = ({ navigation }) => {
           </TouchableOpacity>
         </ModalSelector>
 
-        
+
         <ModalSelector
           data={tournamentOptions}
           initValue={selectedTournament}
@@ -392,7 +392,7 @@ const PredictsByCategory = ({ navigation }) => {
           </TouchableOpacity>
         </ModalSelector>
 
-       
+
         {!tournamentsWithoutDate.includes(selectedTournament) && (
           <ModalSelector
             data={dateOptions}
@@ -457,7 +457,7 @@ const PredictsByCategory = ({ navigation }) => {
           windowSize={8}
         />
 
-        {guardarPronosticos && Object.keys(partidosEditados).length > 0 && 
+        {guardarPronosticos && Object.keys(partidosEditados).length > 0 &&
           <TouchableOpacity activeOpacity={0.8} style={styles.guardarButton} onPress={guardarPronosticosEnDB}>
             <Text style={styles.guardarButtonText}>Guardar Pronósticos</Text>
           </TouchableOpacity>
@@ -523,10 +523,10 @@ const styles = StyleSheet.create({
   },
   pickerArrow: {
     color: colors.black,
-    fontSize: 15, 
+    fontSize: 15,
   },
   containerFlatlist: {
-    flex: 1, 
+    flex: 1,
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   disabledPicker: {
-    backgroundColor: 'rgba(0,0,0,0.1)', 
+    backgroundColor: 'rgba(0,0,0,0.1)',
     borderWidth: 1,
     borderColor: colors.gray,
   },
