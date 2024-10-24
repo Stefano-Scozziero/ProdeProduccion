@@ -22,7 +22,7 @@ android/app/debug.keystore
 src/app/services/authGoogle/config.js
 src/app/services/firebase/config.js
 firebase/
-
+package-lock.json/
 # Metro
 .metro-health-check*
 
