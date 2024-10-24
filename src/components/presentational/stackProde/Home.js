@@ -1,14 +1,14 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { 
-  TouchableOpacity, 
-  StyleSheet, 
-  ImageBackground, 
-  Image, 
-  View, 
-  Dimensions, 
-  FlatList, 
-  Text, 
-  ActivityIndicator 
+import {
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+  Image,
+  View,
+  Dimensions,
+  FlatList,
+  Text,
+  ActivityIndicator
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCategories, setSelectedCategory } from '../../../features/category/categorySlice';
@@ -16,8 +16,8 @@ import { closeCategoriesModal, openCategoriesModal } from '../../../features/sli
 import { OrientationContext } from '../../../utils/globals/context';
 import colors from '../../../utils/globals/colors';
 import ImageAnimation from '../animation/ImageAnimation';
-import CustomModal from '../modal/CustomModal'; 
-import { CheckBox } from 'react-native-elements'; 
+import CustomModal from '../modal/CustomModal';
+import { CheckBox } from 'react-native-elements';
 
 const { width, height } = Dimensions.get('window');
 
@@ -124,7 +124,7 @@ const Home = React.memo(({ navigation }) => {
           setLoading={setLoading}
         />
       </View>
-      
+
       <View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
         <ImageLoader
           uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fkeys.png?alt=media&token=5663afa3-4d7b-4114-9ddc-d66372f46b1d"
@@ -169,8 +169,8 @@ const Home = React.memo(({ navigation }) => {
             renderItem={({ item }) => {
               const isSelected = selectedCategory === item.title;
               return (
-                <TouchableOpacity 
-                  onPress={() => handleCategorySelect(item)} 
+                <TouchableOpacity
+                  onPress={() => handleCategorySelect(item)}
                   style={styles.categoryItemContainer}
                 >
                   <CheckBox
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   categoryItemContainer: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center', 
+    alignItems: 'center',
     paddingVertical: 10,
   },
   checkboxContainer: {
@@ -260,10 +260,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'left',
     marginLeft: 10,
-    color: colors.black, 
+    color: colors.black,
   },
   selectedCategoryText: {
-    color: colors.orange, 
+    color: colors.orange,
     fontWeight: 'bold',
   },
   closeButton: {

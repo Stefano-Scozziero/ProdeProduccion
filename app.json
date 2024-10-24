@@ -2,7 +2,7 @@
   "expo": {
     "name": "ProdeSCO",
     "slug": "Prode-React-Native",
-    "scheme": "ProdeSCO",
+    "scheme": "prodesco",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
