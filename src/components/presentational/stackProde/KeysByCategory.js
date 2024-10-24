@@ -13,6 +13,7 @@ import DatesByKeys from './DatesByKeys';
 const phases = ['Octavos de final', 'Cuartos de final', 'Semifinal', 'Final'];
 
 const KeysByCategory = ({ navigation }) => {
+   const DEFAULT_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2FiconEsc.png?alt=media&token=4c508bf7-059e-451e-b726-045eaf79beae';
    const portrait = useContext(OrientationContext);
    const categorySelected = useSelector(state => state.category.selectedCategory);
    const [datos, setDatos] = useState(null);
@@ -55,8 +56,8 @@ const KeysByCategory = ({ navigation }) => {
          'Cuartos de final': Array(4).fill({
             equipo1: 'Por Definir',
             equipo2: 'Por Definir',
-            imagen1: 'https://via.placeholder.com/30',
-            imagen2: 'https://via.placeholder.com/30',
+            imagen1: DEFAULT_IMAGE,
+            imagen2: DEFAULT_IMAGE,
             goles1: '-',
             goles2: '-',
             fecha: 'Por Definir',
@@ -64,8 +65,8 @@ const KeysByCategory = ({ navigation }) => {
          'Semifinal': Array(2).fill({
             equipo1: 'Por Definir',
             equipo2: 'Por Definir',
-            imagen1: 'https://via.placeholder.com/30',
-            imagen2: 'https://via.placeholder.com/30',
+            imagen1: DEFAULT_IMAGE,
+            imagen2: DEFAULT_IMAGE,
             goles1: '-',
             goles2: '-',
             fecha: 'Por Definir',
@@ -73,8 +74,8 @@ const KeysByCategory = ({ navigation }) => {
          'Final': Array(1).fill({
             equipo1: 'Por Definir',
             equipo2: 'Por Definir',
-            imagen1: 'https://via.placeholder.com/30',
-            imagen2: 'https://via.placeholder.com/30',
+            imagen1: DEFAULT_IMAGE,
+            imagen2: DEFAULT_IMAGE,
             goles1: '-',
             goles2: '-',
             fecha: 'Por Definir',
@@ -99,8 +100,8 @@ const KeysByCategory = ({ navigation }) => {
             return {
                equipo1: equipos[encuentroIda.equipo1]?.nombre || 'Por Definir',
                equipo2: equipos[encuentroIda.equipo2]?.nombre || 'Por Definir',
-               imagen1: equipos[encuentroIda.equipo1]?.imagen || undefined, // Aseguramos undefined si no hay imagen
-               imagen2: equipos[encuentroIda.equipo2]?.imagen || undefined, // Igual aquí
+               imagen1: equipos[encuentroIda.equipo1]?.imagen || DEFAULT_IMAGE, // Aseguramos undefined si no hay imagen
+               imagen2: equipos[encuentroIda.equipo2]?.imagen || DEFAULT_IMAGE, // Igual aquí
                goles1: (encuentroIda.goles1 || 0) + (vueltaMatch.goles1 || 0),
                goles2: (encuentroIda.goles2 || 0) + (vueltaMatch.goles2 || 0),
                fecha: vueltaMatch.fecha || encuentroIda.fecha,

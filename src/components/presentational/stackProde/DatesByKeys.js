@@ -2,31 +2,45 @@ import React, { useState, useContext, useEffect } from 'react';
 import { View, StyleSheet, Text, Image, Dimensions, FlatList, ScrollView, ActivityIndicator } from 'react-native';
 import { Card } from 'react-native-paper';
 import colors from '../../../utils/globals/colors';
+import FastImage from 'react-native-fast-image';
 
-// URL predeterminada desde Firebase Storage
-const DEFAULT_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2FiconEsc.png?alt=media&token=4c508bf7-059e-451e-b726-045eaf79beae';
 
 const ImageLoader = ({ uri, style }) => {
     const [loading, setLoading] = useState(true);
- 
+    const [error, setError] = useState(false);
+
     return (
-       <View>
-          {loading && <ActivityIndicator size="small" color={colors.orange} />}
-          <Image
-             source={{ uri }}
-             style={[style, loading && { display: 'none' }]}
-             resizeMode="contain"
+       <View style={[style, styles.imageContainer]}>
+          {loading && (
+              <ActivityIndicator
+                  size="small"
+                  color={colors.orange}
+                  style={styles.activityIndicator}
+              />
+          )}
+          <FastImage
+             style={[styles.image, loading && styles.imageHidden]}
+             source={{
+                 uri: error ? DEFAULT_IMAGE : uri,
+                 priority: FastImage.priority.normal,
+             }}
+             resizeMode={FastImage.resizeMode.contain}
              onLoad={() => setLoading(false)}
-             onError={(error) => console.log('Error cargando imagen:', error.nativeEvent.error)}
+             onError={(e) => {
+                 console.log('Error cargando imagen:', e.nativeEvent.error);
+                 setError(true);
+                 setLoading(false);
+             }}
           />
        </View>
     );
- };
+};
 
  
 
  
 const DatesByKeys = ({ encuentros }) => {
+    
     const renderFase = ({ item }) => (
         <View style={styles.roundContainer}>
             <Text style={styles.roundTitle}>{item.fase}</Text>
@@ -35,13 +49,13 @@ const DatesByKeys = ({ encuentros }) => {
                     <View key={idx} style={styles.matchContainer}>
                         <Card style={styles.card}>
                             <View style={styles.teamRow}>
-                                <ImageLoader uri={match.imagen1 || DEFAULT_IMAGE} style={styles.teamImage} />
+                                <ImageLoader uri={match.imagen1} style={styles.teamImage} />
                                 <Text numberOfLines={1} style={styles.teamName}>
                                     {match.equipo1 || 'Por Definir'}
                                 </Text>
                             </View>
                             <View style={styles.teamRow}>
-                                <ImageLoader uri={match.imagen2 || DEFAULT_IMAGE} style={styles.teamImage} />
+                                <ImageLoader uri={match.imagen2} style={styles.teamImage} />
                                 <Text numberOfLines={1} style={styles.teamName}>
                                     {match.equipo2 || 'Por Definir'}
                                 </Text>
@@ -127,5 +141,19 @@ const styles = StyleSheet.create({
     },
     line: {
         marginLeft: 10,
+    },
+    imageContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    activityIndicator: {
+        position: 'absolute',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+    },
+    imageHidden: {
+        opacity: 0,
     },
 });
