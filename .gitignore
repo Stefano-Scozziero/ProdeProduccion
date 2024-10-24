@@ -19,6 +19,7 @@ web-build/
 *.mobileprovision
 android/app/google-services.json
 android/app/debug.keystore
+android/gradle.properties
 src/app/services/authGoogle/config.js
 src/app/services/firebase/config.js
 firebase/
