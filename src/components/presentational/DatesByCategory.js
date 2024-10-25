@@ -5,13 +5,16 @@ import colors from '../../utils/globals/colors';
 import { parseISO, format, differenceInHours } from 'date-fns';
 import { es } from 'date-fns/locale';
 import BallAnimation from './animation/BallAnimation';
-import LineAnimation from './animation/LineAnimation';
 
 const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1, puntosEq2, puntosWin }) => {
   const fechaPartido = parseISO(encuentros.fecha);
   const ahora = new Date();
   const diferenciaHoras = differenceInHours(fechaPartido, ahora);
-  
+  const isEquipoDefinido = encuentros.equipo1.nombre !== 'Por definir' && encuentros.equipo2.nombre !== 'Por definir';
+
+  // Combinar condiciones para deshabilitar botones
+  const botonesDeshabilitados = encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying || !isEquipoDefinido;
+
   const formatoFechaPersonalizado = (fecha) => {
     const diaAbreviado = format(fecha, "eee", { locale: es });
     const diaCapitalizado = diaAbreviado.charAt(0).toUpperCase() + diaAbreviado.slice(1);
@@ -44,10 +47,9 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
         <View style={styles.containerMatching}>
           <Image style={styles.icon} source={require('../../../assets/pelota.png')} />
           <Text style={styles.headerLabel}>POR COMENZAR:</Text>
-          <View style={{width: '55%',flexDirection: 'row', alignItems: 'center', justifyContent: 'left'}}>
+          <View style={{width: '55%', flexDirection: 'row', alignItems: 'center', justifyContent: 'left'}}>
             <Text style={styles.headerValue}>{format(fechaPartido, 'HH:mm')}</Text>
           </View>
-          
         </View>
       );
     } else if (isMatchInProgress) {
@@ -55,11 +57,10 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
         <View style={styles.containerMatching}>
           <BallAnimation />
           <View style={styles.containerResult}>
-          <View style={{backgroundColor: colors.green, padding: 2, borderRadius: 5}}>
-            <Text style={styles.headerLabel}>{puntosWin} pts.</Text>
+            <View style={{backgroundColor: colors.green, padding: 2, borderRadius: 5}}>
+              <Text style={styles.headerLabel}>{puntosWin} pts.</Text>
+            </View>
           </View>
-        </View>
-          
         </View>
       );
     } else if (hasMatchEnded) {
@@ -76,25 +77,51 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
     }
   };
 
-  const ScoreButtons = ({ team, onSumarPuntos, onRestarPuntos, puntos, disabled }) => (
+  const renderEquipo = (equipo) => {
+    if (equipo.nombre === 'Por definir') {
+      return (
+        <View style={styles.teamContainer}>
+          {/* Opcional: Usar una imagen por defecto */}
+          <FastImage
+            style={styles.teamImage}
+            source={require('../../../assets/iconEsc.png')} // Asegúrate de tener esta imagen
+            resizeMode='contain'
+          />
+          <Text style={styles.teamName}>{equipo.nombre.toUpperCase()}</Text>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.teamContainer}>
+        <FastImage
+          style={styles.teamImage}
+          source={{ uri: equipo.imagen }}
+          resizeMode='contain'
+        />
+        <Text style={styles.teamName}>{equipo.nombre}</Text>
+      </View>
+    );
+  };
+  
+  const ScoreButtons = ({ team, onSumarPuntos, onRestarPuntos, puntos }) => (
     <View style={team === 'equipo1' ? styles.scoreBoxLeft : styles.scoreBoxRight}>
       <TouchableOpacity
         style={team === 'equipo1' ? styles.buttonLeft : styles.buttonRight}
         onPress={() => onSumarPuntos(team)}
-        disabled={disabled}
+        disabled={botonesDeshabilitados}
       >
         <View style={styles.buttonContent}>
-          <Text style={[styles.buttonText, disabled && styles.disabledText]}>+</Text>
+          <Text style={[styles.buttonText, botonesDeshabilitados && styles.disabledText]}>+</Text>
         </View>
       </TouchableOpacity>
       <Text style={styles.scoreText}>{puntos == undefined ? '-' : puntos}</Text>
       <TouchableOpacity
         style={team === 'equipo1' ? styles.buttonLeft : styles.buttonRight}
         onPress={() => onRestarPuntos(team)}
-        disabled={disabled}
+        disabled={botonesDeshabilitados}
       >
         <View style={styles.buttonContent}>
-          <Text style={[styles.buttonText, disabled && styles.disabledText]}>-</Text>
+          <Text style={[styles.buttonText, botonesDeshabilitados && styles.disabledText]}>-</Text>
         </View>
       </TouchableOpacity>
     </View>
@@ -120,14 +147,12 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
             onSumarPuntos={onSumarPuntos}
             onRestarPuntos={onRestarPuntos}
             puntos={puntosEq1}
-            disabled={encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying}
           />
           <ScoreButtons
             team="equipo2"
             onSumarPuntos={onSumarPuntos}
             onRestarPuntos={onRestarPuntos}
             puntos={puntosEq2}
-            disabled={encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying}
           />
         </View>
       );
@@ -143,25 +168,11 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
         {renderHeader()}
         <View style={styles.encuentroContainer}>
           <View style={styles.containerMatch}>
-            <View style={styles.teamContainer}>
-              <FastImage
-                style={styles.teamImage}
-                source={{ uri: encuentros.equipo1.imagen }}
-                resizeMode='contain'
-              />
-              <Text style={styles.teamName}>{encuentros.equipo1.nombre}</Text>
-            </View>
+            {renderEquipo(encuentros.equipo1)}
           </View>
           {renderScoreSection()}
           <View style={styles.containerMatch}>
-            <View style={styles.teamContainer}>
-              <FastImage
-                style={styles.teamImage}
-                source={{ uri: encuentros.equipo2.imagen }}
-                resizeMode='contain'
-              />
-              <Text style={styles.teamName}>{encuentros.equipo2.nombre}</Text>
-            </View>
+            {renderEquipo(encuentros.equipo2)}
           </View>
         </View>
       </View>
@@ -306,7 +317,6 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 14,
     bottom: 5
-    
   },
   predictionText: {
     color: colors.black,

@@ -1,55 +1,71 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View, StyleSheet, Text, Image, Dimensions, FlatList, ScrollView, ActivityIndicator } from 'react-native';
+import React, {useEffect} from 'react';
+import { View, StyleSheet, Text, Dimensions, FlatList, ScrollView, ActivityIndicator } from 'react-native';
 import { Card } from 'react-native-paper';
 import colors from '../../../utils/globals/colors';
+import FastImage from 'react-native-fast-image';
 
-// URL predeterminada desde Firebase Storage
+// Asegúrate de que DEFAULT_IMAGE está definido
 const DEFAULT_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2FiconEsc.png?alt=media&token=4c508bf7-059e-451e-b726-045eaf79beae';
 
 const ImageLoader = ({ uri, style }) => {
-    const [loading, setLoading] = useState(true);
- 
+    const [loading, setLoading] = React.useState(true);
+    const [error, setError] = React.useState(false);
+
     return (
-       <View>
-          {loading && <ActivityIndicator size="small" color={colors.orange} />}
-          <Image
-             source={{ uri }}
-             style={[style, loading && { display: 'none' }]}
-             resizeMode="contain"
-             onLoad={() => setLoading(false)}
-             onError={(error) => console.log('Error cargando imagen:', error.nativeEvent.error)}
-          />
-       </View>
+        <View style={[style, styles.imageContainer]}>
+            {loading && (
+                <ActivityIndicator
+                    size="small"
+                    color={colors.orange}
+                    style={styles.activityIndicator}
+                />
+            )}
+            <FastImage
+                style={[styles.image, loading && styles.imageHidden]}
+                source={{
+                    uri: error ? DEFAULT_IMAGE : uri,
+                    priority: FastImage.priority.normal,
+                }}
+                resizeMode={FastImage.resizeMode.contain}
+                onLoad={() => setLoading(false)}
+                onError={(e) => {
+                    console.log('Error cargando imagen:', e.nativeEvent.error);
+                    setError(true);
+                    setLoading(false);
+                }}
+            />
+        </View>
     );
- };
+};
 
- 
-
- 
 const DatesByKeys = ({ encuentros }) => {
+
     const renderFase = ({ item }) => (
         <View style={styles.roundContainer}>
             <Text style={styles.roundTitle}>{item.fase}</Text>
             <ScrollView contentContainerStyle={styles.phaseScrollContainer}>
-                {item.encuentros.map((match, idx) => (
-                    <View key={idx} style={styles.matchContainer}>
-                        <Card style={styles.card}>
-                            <View style={styles.teamRow}>
-                                <ImageLoader uri={match.imagen1 || DEFAULT_IMAGE} style={styles.teamImage} />
-                                <Text numberOfLines={1} style={styles.teamName}>
-                                    {match.equipo1 || 'Por Definir'}
-                                </Text>
-                            </View>
-                            <View style={styles.teamRow}>
-                                <ImageLoader uri={match.imagen2 || DEFAULT_IMAGE} style={styles.teamImage} />
-                                <Text numberOfLines={1} style={styles.teamName}>
-                                    {match.equipo2 || 'Por Definir'}
-                                </Text>
-                            </View>
-                            <Text style={styles.score}>{`${match.goles1} - ${match.goles2}`}</Text>
-                        </Card>
-                    </View>
-                ))}
+                {item.encuentros.map((match, idx) => {
+                    if (!match) return null; // Ignorar encuentros nulos
+                    return (
+                        <View key={idx} style={styles.matchContainer}>
+                            <Card style={styles.card}>
+                                <View style={styles.teamRow}>
+                                    <ImageLoader uri={match.imagen1} style={styles.teamImage} />
+                                    <Text numberOfLines={1} style={styles.teamName}>
+                                        {match.equipo1 || 'Por Definir'}
+                                    </Text>
+                                </View>
+                                <View style={styles.teamRow}>
+                                    <ImageLoader uri={match.imagen2} style={styles.teamImage} />
+                                    <Text numberOfLines={1} style={styles.teamName}>
+                                        {match.equipo2 || 'Por Definir'}
+                                    </Text>
+                                </View>
+                                <Text style={styles.score}>{`${match.goles1} - ${match.goles2}`}</Text>
+                            </Card>
+                        </View>
+                    );
+                })}
             </ScrollView>
         </View>
     );
@@ -66,6 +82,7 @@ const DatesByKeys = ({ encuentros }) => {
     );
 };
 
+
 export default DatesByKeys;
 
 const styles = StyleSheet.create({
@@ -74,15 +91,15 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     roundContainer: {
-        marginHorizontal: 5,
         alignItems: 'center',
-        width: Dimensions.get('window').width * 0.7, // Ancho de cada fase en el FlatList
+        width: Dimensions.get('window').width * 0.7,
+        borderRadius: 5,
     },
     roundTitle: {
         fontSize: 18,
         marginBottom: 10,
         fontWeight: 'bold',
-        color: colors.orange,
+        color: colors.white,
     },
     phaseScrollContainer: {
         alignItems: 'center',
@@ -91,7 +108,7 @@ const styles = StyleSheet.create({
     matchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 10
     },
     card: {
         width: 250,
@@ -111,11 +128,10 @@ const styles = StyleSheet.create({
     teamImage: {
         width: 30, // Aumentamos el tamaño para verificar
         height: 30,
-        borderRadius: 25, // Imagen circular
         marginRight: 15,
     },
     teamName: {
-        fontSize: 13,
+        fontSize: 11,
         color: colors.black,
         flexShrink: 1, // Evitar que el texto desborde
     },
@@ -127,5 +143,19 @@ const styles = StyleSheet.create({
     },
     line: {
         marginLeft: 10,
+    },
+    imageContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    activityIndicator: {
+        position: 'absolute',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+    },
+    imageHidden: {
+        opacity: 0,
     },
 });
