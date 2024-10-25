@@ -88,9 +88,10 @@ const PredictsByCategory = ({ navigation }) => {
     'Octavos de final - Ida',
     'Octavos de final - Vuelta',
     'Cuartos de final',
-    'Semifinal y Final',
+    'Semifinal',
+    'Final'
   ];
-
+  
   const tournamentsWithoutDate = [
     'Octavos de final - Ida',
     'Octavos de final - Vuelta',
