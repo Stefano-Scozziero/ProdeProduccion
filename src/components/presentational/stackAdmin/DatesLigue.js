@@ -164,34 +164,33 @@ const DatesLigue = () => {
   }, [datos, categorySelected]);
 
   useEffect(() => {
-      if (datos && categorySelected && selectedDivision) {
-        const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
-          .map((key) => ({ key, label: key }))
-          .sort((a, b) => {
-            const indexA = stagesOrder.indexOf(a.key);
-            const indexB = stagesOrder.indexOf(b.key);
-    
-            // Si ambos están en stagesOrder, ordenar según su posición en el arreglo
-            if (indexA !== -1 && indexB !== -1) {
-              return indexA - indexB;
-            }
-    
-            // Si solo uno está en stagesOrder, ese va primero
-            if (indexA !== -1) return -1;
-            if (indexB !== -1) return 1;
-    
-            // Si ninguno está en stagesOrder, ordenar alfabéticamente
-            return a.label.localeCompare(b.label);
-          });
-    
-        setTournamentOptions(tournaments);
-    
-        // Actualizar selectedTournament si es necesario
-        if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
-          setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
-        }
+    if (datos && categorySelected && selectedDivision) {
+      const torneosExcluidos = ['lastMatchId']; // Lista de torneos a excluir
+  
+      const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
+        .filter((key) => !torneosExcluidos.includes(key)) // Filtramos los torneos no deseados
+        .map((key) => ({ key, label: key }))
+        .sort((a, b) => {
+          const indexA = stagesOrder.indexOf(a.key);
+          const indexB = stagesOrder.indexOf(b.key);
+  
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+  
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+  
+          return a.label.localeCompare(b.label);
+        });
+  
+      setTournamentOptions(tournaments);
+  
+      if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
+        setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
       }
-    }, [datos, categorySelected, selectedDivision]);
+    }
+  }, [datos, categorySelected, selectedDivision]);
 
   const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
   ? Object.keys(datos?.[categorySelected]?.partidos[selectedDivision][selectedTournament])
