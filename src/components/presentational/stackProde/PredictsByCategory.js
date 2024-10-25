@@ -29,7 +29,7 @@ const PredictsByCategory = ({ navigation }) => {
   const db = database();
   const [guardarPronosticos, setGuardarPronosticos] = useState(false);
   const [partidosEditados, setPartidosEditados] = useState({});
-
+  const DEFAULT_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2FiconEsc.png?alt=media&token=4c508bf7-059e-451e-b726-045eaf79beae';
   const divisionSelectorRef = useRef(null);
   const tournamentSelectorRef = useRef(null);
   const dateSelectorRef = useRef(null);
@@ -71,10 +71,13 @@ const PredictsByCategory = ({ navigation }) => {
   }, [categorySelected]);
 
   const getEquipo = (id) => {
-    if (datos && datos?.[categorySelected] && datos?.[categorySelected]?.equipos) {
-      return datos?.[categorySelected]?.equipos[id];
+    if (id === 'Por definir') {
+      return { nombre: 'Por definir', imagen: DEFAULT_IMAGE }; // URL de una imagen por defecto
     }
-    return null;
+    if (datos && datos[categorySelected] && datos[categorySelected].equipos) {
+      return datos[categorySelected].equipos[id] || { nombre: 'Por definir', imagen: DEFAULT_IMAGE };
+    }
+    return { nombre: 'Por definir', imagen: DEFAULT_IMAGE };
   };
 
   const stagesOrder = [
@@ -135,15 +138,20 @@ const PredictsByCategory = ({ navigation }) => {
 
   const guardarPronosticosEnDB = async () => {
     if (!categorySelected || !selectedDate || !filteredPartidos) return;
-
+  
     try {
       const pronosticosRef = db.ref(`/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`);
-
+  
       const snapshot = await pronosticosRef.once('value');
       const pronosticosExistentes = snapshot.val() || {};
-
+  
       const pronosticosArray = filteredPartidos
-        .filter(partido => partido !== null && partido !== undefined)
+        .filter(partido => 
+          partido !== null && 
+          partido !== undefined && 
+          partido.equipo1.nombre !== 'Por definir' && 
+          partido.equipo2.nombre !== 'Por definir'
+        )
         .reduce((obj, partido) => {
           if (partidosEditados[partido.id]) {
             obj[partido.id.toString()] = {
@@ -155,9 +163,8 @@ const PredictsByCategory = ({ navigation }) => {
                 nombre: partido.equipo2.nombre,
                 puntos: puntos.eq2.hasOwnProperty(partido.id) ? puntos.eq2[partido.id] : undefined
               },
-              // Añadir el campo `processed` y posiblemente `points`
-              processed: false, // Restablecer a false para nuevas predicciones
-              points: 0 // Opcional: Inicializar puntos
+              processed: false,
+              points: 0
             };
           } else {
             const pronosticoExistente = pronosticosExistentes[partido.id];
@@ -167,12 +174,12 @@ const PredictsByCategory = ({ navigation }) => {
           }
           return obj;
         }, {});
-
+  
       await pronosticosRef.set(pronosticosArray);
-
+  
       setGuardarPronosticos(false);
       setModalAlert(true);
-
+  
     } catch (error) {
       console.error('Error al guardar los pronósticos:', error);
     }
