@@ -14,6 +14,7 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
 
   // Combinar condiciones para deshabilitar botones
   const botonesDeshabilitados = encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying || !isEquipoDefinido;
+  const tarjetaDeshabilitada = encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying || !isEquipoDefinido;
 
   const formatoFechaPersonalizado = (fecha) => {
     const diaAbreviado = format(fecha, "eee", { locale: es });
@@ -163,7 +164,7 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
     <View style={styles.container}>
       <View style={[
         styles.cardContainer,
-        (encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying) && styles.cardContainerDisable
+        tarjetaDeshabilitada && styles.cardContainerDisable
       ]}>
         {renderHeader()}
         <View style={styles.encuentroContainer}>
