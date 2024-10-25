@@ -24,6 +24,17 @@ const FixtureDates = ({ navigation }) => {
   const [divisionOptions, setDivisionOptions] = useState([])
   const [tournamentOptions, setTournamentOptions] = useState([])
   const db = database();
+  const stagesOrder = [
+    'Apertura',
+    'Clausura',
+    'Repechaje Apertura',
+    'Repechaje Clausura',
+    'Octavos de final - Ida',
+    'Octavos de final - Vuelta',
+    'Cuartos de final',
+    'Semifinal',
+    'Final'
+  ];
 
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture').on('value', (snapshot) => {
@@ -75,15 +86,29 @@ const FixtureDates = ({ navigation }) => {
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
-      const tournaments = Object.keys(datos[categorySelected].partidos[selectedDivision] || {})
-        .map(key => ({ key, label: key }))
-        .sort((a, b) => a.label.localeCompare(b.label));
+      const torneosExcluidos = ['lastMatchId']; // Lista de torneos a excluir
+  
+      const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
+        .filter((key) => !torneosExcluidos.includes(key)) // Filtramos los torneos no deseados
+        .map((key) => ({ key, label: key }))
+        .sort((a, b) => {
+          const indexA = stagesOrder.indexOf(a.key);
+          const indexB = stagesOrder.indexOf(b.key);
+  
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+  
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+  
+          return a.label.localeCompare(b.label);
+        });
+  
       setTournamentOptions(tournaments);
   
-      if (tournaments.length > 0) {
-        setSelectedTournament(prev => prev ? prev : tournaments[0].key); // Solo establece si prev es null
-      } else {
-        setSelectedTournament(null);
+      if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
+        setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
       }
     }
   }, [datos, categorySelected, selectedDivision]);

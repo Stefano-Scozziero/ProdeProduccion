@@ -37,7 +37,8 @@ const DatesLigue = () => {
     'Octavos de final - Ida',
     'Octavos de final - Vuelta',
     'Cuartos de final',
-    'Semifinal y Final',
+    'Semifinal',
+    'Final'
   ];
 
   const tournamentsWithoutDate = [
