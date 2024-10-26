@@ -13,44 +13,62 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import { useSelector } from 'react-redux';
 
 const DatesLigue = () => {
+  const DEFAULT_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2FiconEsc.png?alt=media&token=4c508bf7-059e-451e-b726-045eaf79beae';
   const categorySelected = useSelector(state => state.category.selectedCategory);
   const [selectedTournament, setSelectedTournament] = useState('Apertura');
   const [datos, setDatos] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedSubStage, setSelectedSubStage] = useState(null); // Renombrado
   const [isError, setIsError] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [selectedDivision, setSelectedDivision] = useState('Primera Division');
   const [pickerDataLoaded, setPickerDataLoaded] = useState(false);
   const [filteredPartidos, setFilteredPartidos] = useState([]);
   const portrait = useContext(OrientationContext);
-  const divisionSelectorRef = useRef(null)
-  const tournamentSelectorRef = useRef(null)
-  const dateSelectorRef = useRef(null)
-  const [divisionOptions, setDivisionOptions] = useState([])
-  const [tournamentOptions, setTournamentOptions] = useState([])
+  const divisionSelectorRef = useRef(null);
+  const tournamentSelectorRef = useRef(null);
+  const dateSelectorRef = useRef(null);
+  const [divisionOptions, setDivisionOptions] = useState([]);
+  const [tournamentOptions, setTournamentOptions] = useState([]);
   const db = database();
   const stagesOrder = [
     'Apertura',
     'Clausura',
     'Repechaje Apertura',
     'Repechaje Clausura',
-    'Octavos de final - Ida',
-    'Octavos de final - Vuelta',
+    'Octavos de final',
     'Cuartos de final',
     'Semifinal',
     'Final'
   ];
 
   const tournamentsWithoutDate = [
-    'Octavos de final - Ida', 
-    'Octavos de final - Vuelta', 
-    'Cuartos de final', 
-    'Semifinal y Final'
+    'Cuartos de final',
+    'Semifinal',
+    'Final'
   ];
 
-  const isNumeric = (value) => {
-    return !isNaN(value) && !isNaN(parseFloat(value));
+  // Función auxiliar para encontrar el camino del encuentro con logs
+  const findEncounterPath = (partidosDelTorneo, encounterId) => {
+    for (const [subEtapaKey, subEtapa] of Object.entries(partidosDelTorneo)) {
+      // Ignorar sub-etapas inválidas como "0" o null
+      if (subEtapaKey === '0' || !subEtapa) {
+        continue;
+      }
+  
+      if (subEtapa.encuentros && Array.isArray(subEtapa.encuentros)) {
+        const encuentroIndex = subEtapa.encuentros.findIndex(encuentro => encuentro.id === encounterId);
+        if (encuentroIndex !== -1) {
+          return { subEtapaKey, encuentroIndex };
+        }
+      } else {
+        console.warn(`'encuentros' no existe o no es un array en la sub-etapa "${subEtapaKey}".`);
+      }
+    }
+    console.warn(`Encuentro ID ${encounterId} no encontrado en ninguna sub-etapa.`);
+    return null;
   };
+  
 
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture/').on('value', (snapshot) => {
@@ -69,8 +87,8 @@ const DatesLigue = () => {
         }
       } else {
         setTimeout(() => {
-            setIsLoading(false);
-          }, 2000);
+          setIsLoading(false);
+        }, 2000);
         setIsError(true);
       }
     }, (error) => {
@@ -89,73 +107,150 @@ const DatesLigue = () => {
   }, [categorySelected]);
 
   const getEquipo = (id) => {
-    if (datos && datos && datos?.[categorySelected]?.equipos) {
-      return datos?.[categorySelected]?.equipos[id];
+    if (id === 'Por definir') {
+      return { nombre: 'Por definir', imagen: DEFAULT_IMAGE }; // URL de una imagen por defecto
     }
-    return null;
+    if (datos && datos[categorySelected] && datos[categorySelected].equipos) {
+      return datos[categorySelected].equipos[id] || { nombre: 'Por definir', imagen: DEFAULT_IMAGE };
+    }
+    return { nombre: 'Por definir', imagen: DEFAULT_IMAGE };
   };
 
   useEffect(() => {
-    if (!pickerDataLoaded && datos ) {
-      const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || [];
-      const fechasDisponibles = Object.keys(partidosDelTorneo).filter(key => !isNaN(key)).map(Number);
-      const fechasMostradas = fechasDisponibles.filter(fecha => fecha >= 1);
-      const primeraFechaDisponibleNoJugada = fechasMostradas.find(fecha => partidosDelTorneo[fecha] && !partidosDelTorneo[fecha].hasPlayed);
-      setSelectedDate(primeraFechaDisponibleNoJugada || fechasMostradas[0]);
+    if (!pickerDataLoaded && datos) {
+      const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+      const subStagesAvailable = Object.keys(partidosDelTorneo);
+      
+      if (selectedTournament.toLowerCase() === 'octavos de final') {
+        // Para Octavos de final, las sub-etapas son 'ida' y 'vuelta'
+        setSelectedSubStage('ida');
+      } else {
+        // Para otros torneos, seleccionar la primera sub-etapa disponible que no ha sido jugada
+        const primeraSubEtapaDisponible = subStagesAvailable.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed) || subStagesAvailable[0];
+        setSelectedSubStage(primeraSubEtapaDisponible || null);
+      }
       setPickerDataLoaded(true);
     }
   }, [categorySelected, datos, pickerDataLoaded, selectedDivision, selectedTournament]);
 
   useEffect(() => {
-    if (selectedDate !== null && datos) {
+    if (selectedSubStage !== null && datos) {
       const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-      const encuentrosDeLaFecha = partidosDelTorneo[selectedDate]?.encuentros || [];
-      const partidosConEquipos = encuentrosDeLaFecha.map(partido => ({
+      const encuentrosDeLaSubEtapa = partidosDelTorneo[selectedSubStage]?.encuentros || [];
+      const partidosConEquipos = encuentrosDeLaSubEtapa.map(partido => ({
         ...partido,
         equipo1: getEquipo(partido.equipo1),
         equipo2: getEquipo(partido.equipo2),
       }));
       setFilteredPartidos(partidosConEquipos);
     }
-  }, [selectedDate, datos, selectedDivision, selectedTournament]);
+  }, [selectedSubStage, datos, selectedDivision, selectedTournament]);
+
+  useEffect(() => {
+    if (datos && categorySelected && selectedDivision && selectedTournament) {
+      if (selectedTournament.toLowerCase() === 'octavos de final') {
+        // Preseleccionar 'ida' al seleccionar 'Octavos de final'
+        setSelectedSubStage('ida');
+      } else {
+        // Para otros torneos, seleccionar la primera sub-etapa disponible no jugada o la primera sub-etapa
+        const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+        const subStagesAvailable = Object.keys(partidosDelTorneo).filter(key => key !== '0'); // Excluir la sub-etapa '0' si existe
+        const primeraSubEtapaDisponibleNoJugada = subStagesAvailable.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed);
+        setSelectedSubStage(primeraSubEtapaDisponibleNoJugada || subStagesAvailable[0] || null);
+      }
+    }
+  }, [selectedTournament, categorySelected, datos, selectedDivision]);
 
   const updateDate = (encounterId, newDate) => {
     const formattedDate = format(newDate, 'yyyy-MM-dd HH:mm:ss');
-    const updatedDatos = { ...datos };
+    // Clonación profunda para evitar mutaciones directas
+    const updatedDatos = JSON.parse(JSON.stringify(datos));
     const partidosDelTorneo = updatedDatos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament];
-  
-    let partido = null;
-    let indexNum = null;
-    for (let i = 1; i <= 15; i++) {
-      if (partidosDelTorneo?.[i]) {
-        partido = partidosDelTorneo[i].encuentros.find(encuentro => encuentro.id === encounterId);
-        if (partido) {
-          indexNum = i;
-          break;
-        }
-      }
+
+    if (!partidosDelTorneo) {
+      console.error('Partidos del torneo no encontrados.');
+      return;
     }
-  
-    if (partido) {
-      const encounterIndex = partidosDelTorneo[indexNum].encuentros.findIndex(encuentro => encuentro.id === encounterId);
-      const encuentro = partidosDelTorneo[indexNum].encuentros[encounterIndex];
-      encuentro.fecha = formattedDate;
-  
-      setDatos(updatedDatos);
-  
-      db.ref(`/datos/fixture/${categorySelected}/partidos/${selectedDivision}/${selectedTournament}/${indexNum}/encuentros/${encounterIndex}/fecha`)
-        .set(formattedDate)
-        .catch(error => console.error(error));
+
+    const path = findEncounterPath(partidosDelTorneo, encounterId);
+
+    if (path) {
+      const { subEtapaKey, encuentroIndex } = path;
+      console.log(`Sub-etapa encontrada: ${subEtapaKey}, Índice del encuentro: ${encuentroIndex}`);
+      const encounterPath = `/datos/fixture/${categorySelected}/partidos/${selectedDivision}/${selectedTournament}/${subEtapaKey}/encuentros/${encuentroIndex}/fecha`;
+
+      // Verificar que 'encuentros' existe y es un array
+      if (updatedDatos[categorySelected].partidos[selectedDivision][selectedTournament][subEtapaKey].encuentros && 
+          Array.isArray(updatedDatos[categorySelected].partidos[selectedDivision][selectedTournament][subEtapaKey].encuentros)) {
+        
+        updatedDatos[categorySelected].partidos[selectedDivision][selectedTournament][subEtapaKey].encuentros[encuentroIndex].fecha = formattedDate;
+        setDatos(updatedDatos);
+
+        // Actualizar en Firebase
+        db.ref(encounterPath)
+          .set(formattedDate)
+          .then(() => console.log('Fecha actualizada exitosamente en Firebase.'))
+          .catch(error => console.error('Error al actualizar fecha en Firebase:', error));
+      } else {
+        console.error(`'encuentros' no existe o no es un array en la sub-etapa "${subEtapaKey}".`);
+      }
+    } else {
+      console.error('Encuentro no encontrado.');
     }
   };
-  
+
+  const updateScore = (encounterId, teamNumber, increment) => {
+    // Clonación profunda para evitar mutaciones directas
+    const updatedDatos = JSON.parse(JSON.stringify(datos));
+    const partidosDelTorneo = updatedDatos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament];
+
+    if (!partidosDelTorneo) {
+      console.error('Partidos del torneo no encontrados.');
+      return;
+    }
+
+    const path = findEncounterPath(partidosDelTorneo, encounterId);
+
+    if (path) {
+      const { subEtapaKey, encuentroIndex } = path;
+      const encounter = partidosDelTorneo[subEtapaKey].encuentros[encuentroIndex];
+      const equipoKey = `goles${teamNumber}`;
+
+      // Inicializar goles si está indefinido
+      if (encounter[equipoKey] === undefined) {
+        encounter[equipoKey] = 0;
+      }
+
+      // Actualizar goles
+      encounter[equipoKey] = Math.max(0, encounter[equipoKey] + increment);
+
+      // Verificar que 'encuentros' existe y es un array
+      if (updatedDatos[categorySelected].partidos[selectedDivision][selectedTournament][subEtapaKey].encuentros && 
+          Array.isArray(updatedDatos[categorySelected].partidos[selectedDivision][selectedTournament][subEtapaKey].encuentros)) {
+        
+        updatedDatos[categorySelected].partidos[selectedDivision][selectedTournament][subEtapaKey].encuentros[encuentroIndex][equipoKey] = encounter[equipoKey];
+        setDatos(updatedDatos);
+
+        // Actualizar en Firebase
+        db.ref(`/datos/fixture/${categorySelected}/partidos/${selectedDivision}/${selectedTournament}/${subEtapaKey}/encuentros/${encuentroIndex}/${equipoKey}`)
+          .set(encounter[equipoKey])
+          .then(() => console.log(`Goles del equipo ${teamNumber} actualizados exitosamente en Firebase.`))
+          .catch(error => console.error('Error al actualizar goles en Firebase:', error));
+      } else {
+        console.error(`'encuentros' no existe o no es un array en la sub-etapa "${subEtapaKey}".`);
+      }
+    } else {
+      console.error('Encuentro no encontrado.');
+    }
+  };
+
   useEffect(() => {
     if (datos && categorySelected) {
       const divisions = Object.keys(datos?.[categorySelected]?.partidos || {})
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
-  
+
       // Solo actualizar selectedDivision si no está establecido o ya no es válido
       if (!selectedDivision || !divisions.find(d => d.key === selectedDivision)) {
         setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
@@ -166,88 +261,83 @@ const DatesLigue = () => {
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
       const torneosExcluidos = ['lastMatchId']; // Lista de torneos a excluir
-  
+
       const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
         .filter((key) => !torneosExcluidos.includes(key)) // Filtramos los torneos no deseados
         .map((key) => ({ key, label: key }))
         .sort((a, b) => {
           const indexA = stagesOrder.indexOf(a.key);
           const indexB = stagesOrder.indexOf(b.key);
-  
+
           if (indexA !== -1 && indexB !== -1) {
             return indexA - indexB;
           }
-  
+
           if (indexA !== -1) return -1;
           if (indexB !== -1) return 1;
-  
+
           return a.label.localeCompare(b.label);
         });
-  
+
       setTournamentOptions(tournaments);
-  
+
       if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
         setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
       }
     }
   }, [datos, categorySelected, selectedDivision]);
 
-  const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
-  ? Object.keys(datos?.[categorySelected]?.partidos[selectedDivision][selectedTournament])
-      .filter(key => !isNaN(key) && Number(key) >= 1)
-      .map(key => ({ key, label: `Fecha ${key}` }))
-  : [];
+  useEffect(() => {
+    if (datos && categorySelected && selectedDivision && selectedTournament) {
+      const partidosDelTorneo = 
+        datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+  
+      const fechasDisponibles = Object.keys(partidosDelTorneo)
+        .filter(fecha => fecha !== '0') // Excluir fechas inválidas
+        .sort((a, b) => {
+          // Dar prioridad a 'ida' y luego ordenar las demás fechas numéricamente
+          if (a === 'ida') return -1;
+          if (b === 'ida') return 1;
+  
+          const numA = parseInt(a.match(/\d+/)?.[0] || 0);
+          const numB = parseInt(b.match(/\d+/)?.[0] || 0);
+          return numA - numB;
+        });
+  
+      // Seleccionar automáticamente la primera fecha disponible
+      if (fechasDisponibles.length > 0) {
+        setSelectedDate(fechasDisponibles[0]); // Establecer la fecha 'ida' o la primera disponible
+      }
+    }
+  }, [datos, categorySelected, selectedDivision, selectedTournament]);
+  
 
-  const updateScore = (encounterId, teamNumber, increment) => {
-    const updatedDatos = { ...datos };
-    const partidosDelTorneo = updatedDatos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament];
-  
-    if (!partidosDelTorneo) {
-      console.error('Partidos del torneo no encontrados.');
-      return;
-    }
-  
-    let partido = null;
-    let indexNum = null;
-    for (let i = 1; i <= 15; i++) {
-      if (partidosDelTorneo?.[i]) {
-        partido = partidosDelTorneo[i].encuentros.find(encuentro => encuentro.id === encounterId);
-        if (partido) {
-          indexNum = i;
-          break;
-        }
-      }
-    }
-  
-    if (partido) {
-      const encounterIndex = partidosDelTorneo[indexNum].encuentros.findIndex(encuentro => encuentro.id === encounterId);
-      const equipoKey = `goles${teamNumber}`;
-  
-      // Initialize puntos if undefined
-      if (partidosDelTorneo[indexNum].encuentros[encounterIndex][equipoKey] === undefined) {
-        partidosDelTorneo[indexNum].encuentros[encounterIndex][equipoKey] = 0;
-      }
-  
-      // Update puntos
-      partidosDelTorneo[indexNum].encuentros[encounterIndex][equipoKey] = Math.max(0, partidosDelTorneo[indexNum].encuentros[encounterIndex][equipoKey] + increment);
-  
-      setDatos(updatedDatos);
-  
-      // Ensure puntos is defined before setting it
-      db.ref(`/datos/fixture/${categorySelected}/partidos/${selectedDivision}/${selectedTournament}/${indexNum}/encuentros/${encounterIndex}/${equipoKey}`)
-        .set(partidosDelTorneo[indexNum].encuentros[encounterIndex][equipoKey])
-        .catch(error => console.error(error));
-    } else {
-      console.error('Partido no encontrado.');
-    }
-  };
-  
+  const dateOptions =
+  categorySelected &&
+  datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
+    ? Object.keys(
+        datos[categorySelected].partidos[selectedDivision][selectedTournament]
+      )
+        .filter((fecha) => fecha !== '0') // Excluir fechas inválidas
+        .sort((a, b) => {
+          // Dar prioridad a 'ida'
+          if (a === 'ida') return -1;
+          if (b === 'ida') return 1;
+
+          // Ordenar numéricamente las demás fechas
+          const numA = parseInt(a.match(/\d+/)?.[0] || 0);
+          const numB = parseInt(b.match(/\d+/)?.[0] || 0);
+          return numA - numB;
+        })
+        .map((key) => ({
+          key,
+          label: key.charAt(0).toUpperCase() + key.slice(1), // Capitalizar 'ida' y 'vuelta'
+        }))
+    : [];
+
   if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
-  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar"  />;
+  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" />;
   if (!datos || Object.keys(datos).length === 0) return <EmptyListComponent message="No hay datos disponibles" />;
-
-
- 
 
   return (
     <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.container, !portrait && styles.landScape]}>
@@ -295,17 +385,18 @@ const DatesLigue = () => {
               <Text style={styles.pickerArrow}>▼</Text>
             </TouchableOpacity>
           </ModalSelector>
-          
         </View>
-        <View  style={[styles.containerText, dateOptions.length === 0 ? styles.disabledPicker : null]}>
-          {!tournamentsWithoutDate.includes(selectedTournament) && (
+        <View style={[styles.containerText, dateOptions.length === 0 ? styles.disabledPicker : null]}>
+        {!tournamentsWithoutDate.includes(selectedTournament) && (
           <ModalSelector
             data={dateOptions}
             initValue={
               dateOptions.length > 0
-                ? isNumeric(selectedDate)
-                  ? `Fecha ${selectedDate}`
-                  : selectedDate
+                ? selectedDate
+                  ? selectedTournament === 'Octavos de final' || selectedTournament === 'Repechaje Apertura' || selectedTournament === 'Repechaje Clausura'
+                    ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
+                    : `${selectedDate}`
+                  : 'Selecciona una Fecha'
                 : 'Selecciona una Fecha'
             }
             onChange={(option) => setSelectedDate(option.key)}
@@ -329,9 +420,11 @@ const DatesLigue = () => {
             >
               <Text style={styles.selectedItemText}>
                 {dateOptions.length > 0
-                  ? isNumeric(selectedDate)
-                    ? `Fecha ${selectedDate}`
-                    : selectedDate
+                  ? selectedDate
+                    ? selectedTournament === 'Octavos de final' || selectedTournament === 'Repechaje Apertura' || selectedTournament === 'Repechaje Clausura'
+                      ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
+                      : `${selectedDate}`
+                    : 'Selecciona una Fecha'
                   : 'Sin Fechas Disponibles'}
               </Text>
               {dateOptions.length !== 0 && (
@@ -339,7 +432,8 @@ const DatesLigue = () => {
               )}
             </TouchableOpacity>
           </ModalSelector>
-        )} 
+
+        )}
         </View>
       </View>
 
@@ -347,10 +441,10 @@ const DatesLigue = () => {
         <FlatList
           data={filteredPartidos}
           renderItem={({ item }) => (
-            <DatesByCategoryAdm 
-              encuentros={item} 
-              updateScore={updateScore} 
-              updateDate={updateDate} 
+            <DatesByCategoryAdm
+              encuentros={item}
+              updateScore={updateScore}
+              updateDate={updateDate}
             />
           )}
           ListEmptyComponent={<Text style={{ fontSize: 20 }}>No hay encuentros disponibles</Text>}
@@ -430,7 +524,7 @@ const styles = StyleSheet.create({
     color: colors.orange,
   },
   disabledPicker: {
-    backgroundColor: 'rgba(0,0,0,0.1)', 
+    backgroundColor: 'rgba(0,0,0,0.1)',
     borderWidth: 1,
     borderColor: colors.gray,
   },
