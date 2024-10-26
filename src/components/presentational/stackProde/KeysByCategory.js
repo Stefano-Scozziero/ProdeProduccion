@@ -144,17 +144,16 @@ const KeysByCategory = ({ navigation }) => {
     useEffect(() => {
       if (datos && selectedDivision) {
           const partidos = datos.partidos?.[selectedDivision] || {};
-  
+    
           const mergedEncuentros = {};
-  
+    
           phases.forEach(fase => {
               if (fase === 'Octavos de final') {
-                  const idaKey = `${fase} - Ida`;
-                  const vueltaKey = `${fase} - Vuelta`;
-  
-                  const faseIda = (partidos[idaKey] && partidos[idaKey][1] && partidos[idaKey][1].encuentros) ? partidos[idaKey][1].encuentros : [];
-                  const faseVuelta = (partidos[vueltaKey] && partidos[vueltaKey][1] && partidos[vueltaKey][1].encuentros) ? partidos[vueltaKey][1].encuentros : [];
-  
+                  // Acceder directamente a 'ida' y 'vuelta' dentro de la fase
+                  const faseData = partidos[fase] || {};
+                  const faseIda = faseData.ida?.encuentros || [];
+                  const faseVuelta = faseData.vuelta?.encuentros || [];
+    
                   if (faseIda.length > 0 || faseVuelta.length > 0) {
                       mergedEncuentros[fase] = mergeRounds(faseIda, faseVuelta);
                   } else {
@@ -170,8 +169,8 @@ const KeysByCategory = ({ navigation }) => {
                       });
                   }
               } else {
-                  // Para fases sin Ida y Vuelta
-                  const faseData = (partidos[fase] && partidos[fase][1] && partidos[fase][1].encuentros) ? partidos[fase][1].encuentros : [];
+                  // Manejo de otras fases sin Ida y Vuelta
+                  const faseData = (partidos[fase] && partidos[fase].stage1 && partidos[fase].stage1.encuentros) ? partidos[fase].stage1.encuentros : [];
                   const validEncuentros = faseData.filter(match => match !== null && match !== undefined);
                   mergedEncuentros[fase] = validEncuentros.map(match => ({
                       equipo1: equipos[match.equipo1]?.nombre || 'Por Definir',
@@ -182,7 +181,7 @@ const KeysByCategory = ({ navigation }) => {
                       goles2: match.goles2,
                       fecha: match.fecha,
                   }));
-  
+    
                   // Si no hay encuentros, asignar placeholders
                   if (mergedEncuentros[fase].length === 0) {
                       const expectedCounts = {
@@ -204,13 +203,13 @@ const KeysByCategory = ({ navigation }) => {
                   }
               }
           });
-  
-  
+    
           // Preparar todas las fases, incluyendo marcadores de posición donde sea necesario
           const formattedEncuentros = preparePhases(mergedEncuentros);
           setEncuentros(formattedEncuentros);
       }
-  }, [datos, selectedDivision, equipos]);
+    }, [datos, selectedDivision, equipos]);
+    
   
   
 

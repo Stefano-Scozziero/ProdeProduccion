@@ -22,7 +22,6 @@ const PredictsByCategory = ({ navigation }) => {
   const [selectedDivision, setSelectedDivision] = useState('Primera Division');
   const [selectedTournament, setSelectedTournament] = useState('Apertura');
   const [filteredPartidos, setFilteredPartidos] = useState([]);
-  const [pickerDataLoaded, setPickerDataLoaded] = useState(false);
   const [puntos, setPuntos] = useState({ eq1: {}, eq2: {} });
   const [puntosWin, setPuntosWin] = useState({});
   const user = auth().currentUser;
@@ -36,7 +35,23 @@ const PredictsByCategory = ({ navigation }) => {
 
   const [divisionOptions, setDivisionOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
+  const stagesOrder = [
+    'Apertura',
+    'Clausura',
+    'Repechaje Apertura',
+    'Repechaje Clausura',
+    'Octavos de final',
+    'Cuartos de final',
+    'Semifinal',
+    'Final'
+  ];
 
+  const tournamentsWithoutDate = [
+    'Cuartos de final',
+    'Semifinal',
+    'Final'
+  ];
+  
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture').on('value', (snapshot) => {
       if (snapshot.exists() && categorySelected !== null) {
@@ -80,24 +95,7 @@ const PredictsByCategory = ({ navigation }) => {
     return { nombre: 'Por definir', imagen: DEFAULT_IMAGE };
   };
 
-  const stagesOrder = [
-    'Apertura',
-    'Clausura',
-    'Repechaje Apertura',
-    'Repechaje Clausura',
-    'Octavos de final - Ida',
-    'Octavos de final - Vuelta',
-    'Cuartos de final',
-    'Semifinal',
-    'Final'
-  ];
-  
-  const tournamentsWithoutDate = [
-    'Octavos de final - Ida',
-    'Octavos de final - Vuelta',
-    'Cuartos de final',
-    'Semifinal y Final'
-  ];
+ 
 
   const handleSumarPuntos = (equipo, id) => {
     setPartidosEditados(prev => ({ ...prev, [id]: true }));
@@ -139,18 +137,30 @@ const PredictsByCategory = ({ navigation }) => {
 
   const guardarPronosticosEnDB = async () => {
     if (!categorySelected || !selectedDate || !filteredPartidos) return;
-  
+
     try {
-      const pronosticosRef = db.ref(`/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`);
-  
+      let fechaKey;
+      if (selectedTournament === 'Octavos de final') {
+        // Para 'Octavos de final', usar 'ida' o 'vuelta'
+        fechaKey = selectedDate; // 'ida' o 'vuelta'
+      } else {
+        // Para otros torneos, usar 'Fecha X'
+        fechaKey = `Fecha:${selectedDate}`;
+      }
+
+      // Construye la ruta correctamente
+      const pronosticosRef = db.ref(
+        `/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/${selectedTournament === 'Octavos de final' ? fechaKey : fechaKey}`
+      );
+
       const snapshot = await pronosticosRef.once('value');
       const pronosticosExistentes = snapshot.val() || {};
-  
+
       const pronosticosArray = filteredPartidos
-        .filter(partido => 
-          partido !== null && 
-          partido !== undefined && 
-          partido.equipo1.nombre !== 'Por definir' && 
+        .filter(partido =>
+          partido !== null &&
+          partido !== undefined &&
+          partido.equipo1.nombre !== 'Por definir' &&
           partido.equipo2.nombre !== 'Por definir'
         )
         .reduce((obj, partido) => {
@@ -175,19 +185,15 @@ const PredictsByCategory = ({ navigation }) => {
           }
           return obj;
         }, {});
-  
+
       await pronosticosRef.set(pronosticosArray);
-  
+
       setGuardarPronosticos(false);
       setModalAlert(true);
-  
+
     } catch (error) {
       console.error('Error al guardar los pronósticos:', error);
     }
-  };
-
-  const isNumeric = (value) => {
-    return !isNaN(value) && !isNaN(parseFloat(value));
   };
 
   useEffect(() => {
@@ -196,9 +202,17 @@ const PredictsByCategory = ({ navigation }) => {
     setPuntosWin({});
     setIsLoading(true);
 
-    // Referencia a la ruta específica en Firebase
+    // Determinar la clave de fecha según el torneo seleccionado
+    let fechaKey;
+    if (selectedTournament.toLowerCase() === 'octavos de final') {
+      fechaKey = selectedDate; // 'ida' o 'vuelta'
+    } else {
+      fechaKey = `Fecha:${selectedDate}`;
+    }
+
+    // Construir la ruta correctamente
     const pronosticosRef = db.ref(
-      `/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/Fecha:${selectedDate}`
+      `/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/${fechaKey}`
     );
 
     // Escuchar cambios en los datos
@@ -215,7 +229,7 @@ const PredictsByCategory = ({ navigation }) => {
           Object.keys(pronosticosObj).forEach((id) => {
             const pronostico = pronosticosObj[id];
             if (pronostico) {
-              // Obtener los goles predichos para cada equipo
+              // Obtener los puntos predichos para cada equipo
               nuevosPuntosEq1[id] = pronostico.equipo1.puntos || 0;
               nuevosPuntosEq2[id] = pronostico.equipo2.puntos || 0;
 
@@ -257,6 +271,7 @@ const PredictsByCategory = ({ navigation }) => {
   ]);
 
 
+
   useEffect(() => {
     const puntosEq1Definidos = Object.values(puntos.eq1).length > 0;
     const puntosEq2Definidos = Object.values(puntos.eq2).length > 0;
@@ -282,52 +297,102 @@ const PredictsByCategory = ({ navigation }) => {
     }
   }, [datos, categorySelected]);
 
-  const dateOptions = categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
-    ? Object.keys(datos?.[categorySelected].partidos?.[selectedDivision]?.[selectedTournament])
-      .filter(key => !isNaN(key) && Number(key) >= 1)
-      .map(key => ({ key, label: `Fecha ${key}` }))
+  const dateOptions =
+  categorySelected &&
+  datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
+    ? Object.keys(
+        datos[categorySelected].partidos[selectedDivision][selectedTournament]
+      )
+        .filter((fecha) => fecha !== '0') // Excluir fechas inválidas
+        .sort((a, b) => {
+          // Dar prioridad a 'ida'
+          if (a === 'ida') return -1;
+          if (b === 'ida') return 1;
+
+          // Ordenar numéricamente las demás fechas
+          const numA = parseInt(a.match(/\d+/)?.[0] || 0);
+          const numB = parseInt(b.match(/\d+/)?.[0] || 0);
+          return numA - numB;
+        })
+        .map((key) => ({
+          key,
+          label: key.charAt(0).toUpperCase() + key.slice(1), // Capitalizar 'ida' y 'vuelta'
+        }))
     : [];
 
 
-    useEffect(() => {
-      if (datos && categorySelected && selectedDivision) {
-        const torneosExcluidos = ['lastMatchId']; // Lista de torneos a excluir
-    
-        const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
-          .filter((key) => !torneosExcluidos.includes(key)) // Filtramos los torneos no deseados
-          .map((key) => ({ key, label: key }))
-          .sort((a, b) => {
-            const indexA = stagesOrder.indexOf(a.key);
-            const indexB = stagesOrder.indexOf(b.key);
-    
-            if (indexA !== -1 && indexB !== -1) {
-              return indexA - indexB;
-            }
-    
-            if (indexA !== -1) return -1;
-            if (indexB !== -1) return 1;
-    
-            return a.label.localeCompare(b.label);
-          });
-    
-        setTournamentOptions(tournaments);
-    
-        if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
-          setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
-        }
-      }
-    }, [datos, categorySelected, selectedDivision]);
-    
+
 
   useEffect(() => {
-    if (!pickerDataLoaded && datos && categorySelected) {
-      const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-      const fechasDisponibles = Object.keys(partidosDelTorneo).filter(fecha => fecha !== '0'); // Excluir la fecha '0'
-      const primeraFechaDisponibleNoJugada = fechasDisponibles.find(fecha => partidosDelTorneo[fecha] && !partidosDelTorneo[fecha].hasPlayed);
-      setSelectedDate(primeraFechaDisponibleNoJugada || fechasDisponibles[0]);
-      setPickerDataLoaded(true);
+    if (datos && categorySelected && selectedDivision) {
+      const torneosExcluidos = ['lastMatchId']; // Lista de torneos a excluir
+
+      const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
+        .filter((key) => !torneosExcluidos.includes(key)) // Filtramos los torneos no deseados
+        .map((key) => ({ key, label: key }))
+        .sort((a, b) => {
+          const indexA = stagesOrder.indexOf(a.key);
+          const indexB = stagesOrder.indexOf(b.key);
+
+          if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+          }
+
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+
+          return a.label.localeCompare(b.label);
+        });
+
+      setTournamentOptions(tournaments);
+
+      if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
+        setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
+      }
     }
-  }, [categorySelected, datos, pickerDataLoaded, selectedDivision, selectedTournament]);
+  }, [datos, categorySelected, selectedDivision]);
+
+  useEffect(() => {
+    if (datos && categorySelected && selectedDivision && selectedTournament) {
+      if (selectedTournament.toLowerCase() === 'octavos de final') {
+        // Preseleccionar 'ida' al seleccionar 'Octavos de final'
+        setSelectedDate('ida');
+      } else {
+        // Para otros torneos, seleccionar la primera fecha disponible no jugada o la primera fecha
+        const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+        const fechasDisponibles = Object.keys(partidosDelTorneo).filter(fecha => fecha !== '0'); // Excluir la fecha '0'
+        const primeraFechaDisponibleNoJugada = fechasDisponibles.find(fecha => partidosDelTorneo[fecha] && !partidosDelTorneo[fecha].hasPlayed);
+        setSelectedDate(primeraFechaDisponibleNoJugada || fechasDisponibles[0]);
+      }
+    }
+  }, [selectedTournament, categorySelected, datos, selectedDivision]);
+
+
+  useEffect(() => {
+    if (datos && categorySelected && selectedDivision && selectedTournament) {
+      const partidosDelTorneo = 
+        datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+  
+      const fechasDisponibles = Object.keys(partidosDelTorneo)
+        .filter(fecha => fecha !== '0') // Excluir fechas inválidas
+        .sort((a, b) => {
+          // Dar prioridad a 'ida' y luego ordenar las demás fechas numéricamente
+          if (a === 'ida') return -1;
+          if (b === 'ida') return 1;
+  
+          const numA = parseInt(a.match(/\d+/)?.[0] || 0);
+          const numB = parseInt(b.match(/\d+/)?.[0] || 0);
+          return numA - numB;
+        });
+  
+      // Seleccionar automáticamente la primera fecha disponible
+      if (fechasDisponibles.length > 0) {
+        setSelectedDate(fechasDisponibles[0]); // Establecer la fecha 'ida' o la primera disponible
+      }
+    }
+  }, [datos, categorySelected, selectedDivision, selectedTournament]);
+  
+  
 
   useEffect(() => {
     if (selectedDate !== null && datos && categorySelected) {
@@ -406,9 +471,11 @@ const PredictsByCategory = ({ navigation }) => {
             data={dateOptions}
             initValue={
               dateOptions.length > 0
-                ? isNumeric(selectedDate)
-                  ? `Fecha ${selectedDate}`
-                  : selectedDate
+                ? selectedDate
+                  ? selectedTournament === 'Octavos de final' || selectedTournament === 'Repechaje Apertura' || selectedTournament === 'Repechaje Clausura'
+                    ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
+                    : `${selectedDate}`
+                  : 'Selecciona una Fecha'
                 : 'Selecciona una Fecha'
             }
             onChange={(option) => setSelectedDate(option.key)}
@@ -432,9 +499,11 @@ const PredictsByCategory = ({ navigation }) => {
             >
               <Text style={styles.selectedItemText}>
                 {dateOptions.length > 0
-                  ? isNumeric(selectedDate)
-                    ? `Fecha ${selectedDate}`
-                    : selectedDate
+                  ? selectedDate
+                    ? selectedTournament === 'Octavos de final' || selectedTournament === 'Repechaje Apertura' || selectedTournament === 'Repechaje Clausura'
+                      ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
+                      : `${selectedDate}`
+                    : 'Selecciona una Fecha'
                   : 'Sin Fechas Disponibles'}
               </Text>
               {dateOptions.length !== 0 && (
@@ -442,6 +511,7 @@ const PredictsByCategory = ({ navigation }) => {
               )}
             </TouchableOpacity>
           </ModalSelector>
+
         )}
       </View>
 

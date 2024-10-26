@@ -1,36 +1,36 @@
-import React, { useContext, useState, useEffect, useRef } from 'react'
-import { View, StyleSheet, Text, FlatList, TouchableOpacity } from 'react-native'
-import LoadingSpinner from '../LoadingSpinner'
-import EmptyListComponent from '../EmptyListComponent'
-import Error from '../Error'
-import { OrientationContext } from '../../../utils/globals/context'
-import ModalSelector from 'react-native-modal-selector'
-import CardFixture from '../CardFixture'
-import { database } from '../../../app/services/firebase/config'
+import React, { useContext, useState, useEffect, useRef } from 'react';
+import { View, StyleSheet, Text, FlatList, TouchableOpacity } from 'react-native';
+import LoadingSpinner from '../LoadingSpinner';
+import EmptyListComponent from '../EmptyListComponent';
+import Error from '../Error';
+import { OrientationContext } from '../../../utils/globals/context';
+import ModalSelector from 'react-native-modal-selector';
+import CardFixture from '../CardFixture';
+import { database } from '../../../app/services/firebase/config';
 import { useSelector } from 'react-redux';
-import colors from '../../../utils/globals/colors'
+import colors from '../../../utils/globals/colors';
 
 const FixtureDates = ({ navigation }) => {
+  const DEFAULT_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2FiconEsc.png?alt=media&token=4c508bf7-059e-451e-b726-045eaf79beae';
   const categorySelected = useSelector(state => state.category.selectedCategory);
-  const [datos, setDatos] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isError, setIsError] = useState(false)
-  const portrait = useContext(OrientationContext)
-  const [selectedDivision, setSelectedDivision] = useState('Primera Division')
-  const [selectedTournament, setSelectedTournament] = useState('Apertura')
-  const [filteredFechas, setFilteredFechas] = useState([])
-  const divisionSelectorRef = useRef(null)
-  const tournamentSelectorRef = useRef(null)
-  const [divisionOptions, setDivisionOptions] = useState([])
-  const [tournamentOptions, setTournamentOptions] = useState([])
+  const [datos, setDatos] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const portrait = useContext(OrientationContext);
+  const [selectedDivision, setSelectedDivision] = useState('Primera Division');
+  const [selectedTournament, setSelectedTournament] = useState('Apertura');
+  const [filteredFechas, setFilteredFechas] = useState([]);
+  const divisionSelectorRef = useRef(null);
+  const tournamentSelectorRef = useRef(null);
+  const [divisionOptions, setDivisionOptions] = useState([]);
+  const [tournamentOptions, setTournamentOptions] = useState([]);
   const db = database();
   const stagesOrder = [
     'Apertura',
     'Clausura',
     'Repechaje Apertura',
     'Repechaje Clausura',
-    'Octavos de final - Ida',
-    'Octavos de final - Vuelta',
+    'Octavos de final',
     'Cuartos de final',
     'Semifinal',
     'Final'
@@ -39,35 +39,38 @@ const FixtureDates = ({ navigation }) => {
   useEffect(() => {
     const onValueChange = db.ref('/datos/fixture').on('value', (snapshot) => {
       if (snapshot.exists() && categorySelected !== null) {
-        const data = snapshot.val()
+        const data = snapshot.val();
         if (data[categorySelected]) {
-          setDatos(data)
-          setIsLoading(false)
+          setDatos(data);
+          setIsLoading(false);
         } else {
-          setDatos(null)
-          setIsLoading(false)
+          setDatos(null);
+          setIsLoading(false);
         }
       } else {
-        setIsError(true)
-        setIsLoading(false)
+        setIsError(true);
+        setIsLoading(false);
       }
     }, (error) => {
-      console.error(error)
-      setIsError(true)
-      setIsLoading(false)
-    })
+      console.error(error);
+      setIsError(true);
+      setIsLoading(false);
+    });
 
     return () => {
-      db.ref('/datos/fixture').off('value', onValueChange)
-    }
-  }, [categorySelected])
+      db.ref('/datos/fixture').off('value', onValueChange);
+    };
+  }, [categorySelected]);
 
   const getEquipo = (id) => {
-    if (datos && datos[categorySelected] && datos[categorySelected].equipos) {
-      return datos[categorySelected].equipos[id]
+    if (id === 'Por definir') {
+      return { nombre: 'Por Definir', imagen: DEFAULT_IMAGE };
     }
-    return null
-  }
+    if (datos && datos[categorySelected] && datos[categorySelected].equipos) {
+      return datos[categorySelected].equipos[id] || { nombre: 'Por Definir', imagen: DEFAULT_IMAGE };
+    }
+    return { nombre: 'Por Definir', imagen: DEFAULT_IMAGE };
+  };
 
   useEffect(() => {
     if (datos && categorySelected) {
@@ -75,7 +78,7 @@ const FixtureDates = ({ navigation }) => {
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
-  
+
       if (divisions.length > 0) {
         setSelectedDivision(prev => prev ? prev : divisions[0].key);
       } else {
@@ -87,26 +90,26 @@ const FixtureDates = ({ navigation }) => {
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
       const torneosExcluidos = ['lastMatchId']; // Lista de torneos a excluir
-  
+
       const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
         .filter((key) => !torneosExcluidos.includes(key)) // Filtramos los torneos no deseados
         .map((key) => ({ key, label: key }))
         .sort((a, b) => {
           const indexA = stagesOrder.indexOf(a.key);
           const indexB = stagesOrder.indexOf(b.key);
-  
+
           if (indexA !== -1 && indexB !== -1) {
             return indexA - indexB;
           }
-  
+
           if (indexA !== -1) return -1;
           if (indexB !== -1) return 1;
-  
+
           return a.label.localeCompare(b.label);
         });
-  
+
       setTournamentOptions(tournaments);
-  
+
       if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
         setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
       }
@@ -116,38 +119,104 @@ const FixtureDates = ({ navigation }) => {
   useEffect(() => {
     if (datos && categorySelected) {
       const partidosDelTorneo = datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-      const fechas = Object.keys(partidosDelTorneo)
-        .filter(key => !isNaN(key) && Number(key) >= 1)
-        .map(Number);
+      let fechasConPartidos = [];
   
-      const fechasConPartidos = fechas.map(fecha => {
+      const fechas = Object.keys(partidosDelTorneo);
+  
+      // Separar 'Ida' y 'Vuelta' del resto de las fechas
+      const faseIda = fechas.find(fecha => fecha.toLowerCase() === 'ida');
+      const faseVuelta = fechas.find(fecha => fecha.toLowerCase() === 'vuelta');
+      const stages = fechas.filter(fecha => fecha.toLowerCase().startsWith('stage'));
+      const fechasNumericas = fechas
+        .filter(fecha => fecha.toLowerCase().startsWith('fecha')) // Solo fechas numéricas
+        .sort((a, b) => {
+          const numA = parseInt(a.replace('Fecha: ', ''), 10);
+          const numB = parseInt(b.replace('Fecha: ', ''), 10);
+          return numA - numB; // Ordenar de menor a mayor
+        });
+  
+      // Primero agregamos 'Ida' y 'Vuelta' si existen
+      if (faseIda) {
+        const encuentrosIda = partidosDelTorneo[faseIda]?.encuentros || [];
+        const partidosIdaConEquipos = encuentrosIda.map(partido => ({
+          ...partido,
+          equipo1: getEquipo(partido.equipo1),
+          equipo2: getEquipo(partido.equipo2),
+          tipo: 'Ida',
+        }));
+        fechasConPartidos.push({ fecha: 'Ida', partidos: partidosIdaConEquipos });
+      }
+  
+      if (faseVuelta) {
+        const encuentrosVuelta = partidosDelTorneo[faseVuelta]?.encuentros || [];
+        const partidosVueltaConEquipos = encuentrosVuelta.map(partido => ({
+          ...partido,
+          equipo1: getEquipo(partido.equipo1),
+          equipo2: getEquipo(partido.equipo2),
+          tipo: 'Vuelta',
+        }));
+        fechasConPartidos.push({ fecha: 'Vuelta', partidos: partidosVueltaConEquipos });
+      }
+  
+      // Agregar los stages en el orden que aparezcan
+      stages.forEach(stage => {
+        const encuentrosStage = partidosDelTorneo[stage]?.encuentros || [];
+        const partidosStageConEquipos = encuentrosStage.map(partido => ({
+          ...partido,
+          equipo1: getEquipo(partido.equipo1),
+          equipo2: getEquipo(partido.equipo2),
+        }));
+        fechasConPartidos.push({ fecha: stage, partidos: partidosStageConEquipos, mostrarFecha: false });
+      });
+  
+      // Luego agregamos las fechas numéricas en orden
+      fechasNumericas.forEach(fecha => {
         const encuentrosDeLaFecha = partidosDelTorneo[fecha]?.encuentros || [];
         const partidosConEquipos = encuentrosDeLaFecha.map(partido => ({
           ...partido,
           equipo1: getEquipo(partido.equipo1),
           equipo2: getEquipo(partido.equipo2),
         }));
-        return { fecha, partidos: partidosConEquipos };
+        fechasConPartidos.push({ fecha, partidos: partidosConEquipos, mostrarFecha: true });
       });
+  
       setFilteredFechas(fechasConPartidos);
     }
   }, [datos, categorySelected, selectedDivision, selectedTournament]);
   
+  
+  
+  
 
-  const renderItem = ({ item }) => (
-    <View style={{backgroundColor: colors.blackGray, borderRadius: 10, marginVertical: 10}}>
-      <Text style={styles.fechaTitle}>Fecha {item.fecha}</Text>
-      {item.partidos.length > 0 && (
-        item.partidos.map((partido, index) => (
-          <CardFixture key={`partido-${index}`} encuentro={partido} />
-        ))
-      )}
-    </View>
-  )
+  const renderItem = ({ item }) => {
+    const esStage = item.fecha.toLowerCase().startsWith('stage'); // Detectar solo los stages
+  
+    return (
+      <View style={styles.fechaContainer}>
+        {/* Mostramos la fecha solo si no es un stage */}
+        {!esStage && <Text style={styles.fechaTitle}>{item.fecha}</Text>}
+        {item.partidos.length > 0 ? (
+          item.partidos.map((partido, index) => (
+            <CardFixture 
+              key={`partido-${partido.id || index}`} 
+              encuentro={partido} 
+              tipo={partido.tipo} 
+            />
+          ))
+        ) : (
+          <Text style={styles.emptyListText}>No hay encuentros disponibles</Text>
+        )}
+      </View>
+    );
+  };
+  
+  
+  
+  
 
-  if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />
-  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Home')} />
-  if (!datos) return <EmptyListComponent message="No hay datos disponibles" />
+  if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
+  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Home')} />;
+  if (!datos) return <EmptyListComponent message="No hay datos disponibles" />;
 
   return (
     <View style={[styles.container, !portrait && styles.landScape]}>
@@ -208,10 +277,10 @@ const FixtureDates = ({ navigation }) => {
         />
       </View>
     </View>
-  )
-}
+  );
+};
 
-export default FixtureDates
+export default FixtureDates;
 
 const styles = StyleSheet.create({
   container: {
@@ -219,6 +288,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     padding: 10,
+    backgroundColor: colors.background, // Asegúrate de tener un color de fondo adecuado
   },
   landScape: {
     height: '60%',
@@ -243,6 +313,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     borderColor: colors.orange,
     borderWidth: 1,
+    marginVertical: 5,
   },
   selectedItem: {
     color: colors.orange,
@@ -266,17 +337,24 @@ const styles = StyleSheet.create({
   },
   pickerArrow: {
     color: colors.black,
-    fontSize: 15, 
+    fontSize: 15,
   },
   containerFlatlist: {
     width: '100%',
     flex: 1,
+  },
+  fechaContainer: {
+    backgroundColor: colors.blackGray,
+    borderRadius: 10,
+    marginVertical: 10,
+    padding: 10,
   },
   fechaTitle: {
     fontSize: 18,
     color: colors.white,
     marginVertical: 5,
     textAlign: 'center',
+    fontWeight: 'bold',
   },
   emptyListText: {
     flex: 1,
@@ -284,5 +362,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     justifyContent: 'center',
     alignItems: 'center',
+    color: colors.gray, // Asegúrate de tener un color adecuado
   },
-})
+});
