@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
       justifyContent:"center",
       alignItems:"center",
       width: '80%',
-      top: '10%'
+      top: '15%'
     },
     title:{
       fontSize:50,
