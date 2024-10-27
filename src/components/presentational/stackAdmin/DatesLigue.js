@@ -1,5 +1,5 @@
 import { StyleSheet, ImageBackground, View, FlatList, Text } from 'react-native';
-import { useContext, useState, useEffect, useRef } from 'react';
+import { useContext, useState, useEffect, useRef, useMemo } from 'react';
 import LoadingSpinner from '../LoadingSpinner';
 import EmptyListComponent from '../EmptyListComponent';
 import Error from '../Error';
@@ -20,7 +20,6 @@ const DatesLigue = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSubStage, setSelectedSubStage] = useState(null); // Renombrado
   const [isError, setIsError] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
   const [selectedDivision, setSelectedDivision] = useState('Primera Division');
   const [pickerDataLoaded, setPickerDataLoaded] = useState(false);
   const [filteredPartidos, setFilteredPartidos] = useState([]);
@@ -119,19 +118,23 @@ const DatesLigue = () => {
   useEffect(() => {
     if (!pickerDataLoaded && datos) {
       const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-      const subStagesAvailable = Object.keys(partidosDelTorneo);
-      
-      if (selectedTournament.toLowerCase() === 'octavos de final') {
-        // Para Octavos de final, las sub-etapas son 'ida' y 'vuelta'
-        setSelectedSubStage('ida');
+      const subStagesAvailable = Object.keys(partidosDelTorneo).filter(key => key !== '0' && key !== 'lastMatchId');
+  
+      // Priorizar 'ida' si está disponible
+      let defaultSubStage = null;
+      if (subStagesAvailable.includes('ida')) {
+        defaultSubStage = 'ida';
       } else {
-        // Para otros torneos, seleccionar la primera sub-etapa disponible que no ha sido jugada
-        const primeraSubEtapaDisponible = subStagesAvailable.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed) || subStagesAvailable[0];
-        setSelectedSubStage(primeraSubEtapaDisponible || null);
+        // Seleccionar la primera sub-etapa disponible que no ha sido jugada
+        defaultSubStage = subStagesAvailable.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed) || subStagesAvailable[0];
       }
+  
+      setSelectedSubStage(defaultSubStage || null);
       setPickerDataLoaded(true);
     }
   }, [categorySelected, datos, pickerDataLoaded, selectedDivision, selectedTournament]);
+  
+  
 
   useEffect(() => {
     if (selectedSubStage !== null && datos) {
@@ -154,12 +157,22 @@ const DatesLigue = () => {
       } else {
         // Para otros torneos, seleccionar la primera sub-etapa disponible no jugada o la primera sub-etapa
         const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-        const subStagesAvailable = Object.keys(partidosDelTorneo).filter(key => key !== '0'); // Excluir la sub-etapa '0' si existe
-        const primeraSubEtapaDisponibleNoJugada = subStagesAvailable.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed);
-        setSelectedSubStage(primeraSubEtapaDisponibleNoJugada || subStagesAvailable[0] || null);
+        const subStagesAvailable = Object.keys(partidosDelTorneo).filter(key => key !== '0' && key !== 'lastMatchId'); // Excluir sub-etapas no válidas
+  
+        // Ordenar subStagesAvailable según dateOptions
+        const sortedSubStages = dateOptions
+          .map(option => option.key)
+          .filter(key => subStagesAvailable.includes(key));
+  
+        // Encontrar la primera sub-etapa que no ha sido jugada
+        const primeraSubEtapaDisponibleNoJugada = sortedSubStages.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed);
+  
+        // Seleccionar la sub-etapa disponible o la primera sub-etapa ordenada
+        setSelectedSubStage(primeraSubEtapaDisponibleNoJugada || sortedSubStages[0] || null);
       }
     }
   }, [selectedTournament, categorySelected, datos, selectedDivision]);
+  
 
   const updateDate = (encounterId, newDate) => {
     const formattedDate = format(newDate, 'yyyy-MM-dd HH:mm:ss');
@@ -287,53 +300,44 @@ const DatesLigue = () => {
     }
   }, [datos, categorySelected, selectedDivision]);
 
-  useEffect(() => {
-    if (datos && categorySelected && selectedDivision && selectedTournament) {
-      const partidosDelTorneo = 
-        datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-  
-      const fechasDisponibles = Object.keys(partidosDelTorneo)
-        .filter(fecha => fecha !== '0') // Excluir fechas inválidas
-        .sort((a, b) => {
-          // Dar prioridad a 'ida' y luego ordenar las demás fechas numéricamente
-          if (a === 'ida') return -1;
-          if (b === 'ida') return 1;
-  
-          const numA = parseInt(a.match(/\d+/)?.[0] || 0);
-          const numB = parseInt(b.match(/\d+/)?.[0] || 0);
-          return numA - numB;
-        });
-  
-      // Seleccionar automáticamente la primera fecha disponible
-      if (fechasDisponibles.length > 0) {
-        setSelectedDate(fechasDisponibles[0]); // Establecer la fecha 'ida' o la primera disponible
-      }
-    }
-  }, [datos, categorySelected, selectedDivision, selectedTournament]);
-  
+  const subStagePriority = {
+    'ida': 1,
+    'vuelta': 2,
+    // Puedes agregar más sub-etapas nombradas aquí si es necesario
+  };
 
-  const dateOptions =
-  categorySelected &&
-  datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
-    ? Object.keys(
-        datos[categorySelected].partidos[selectedDivision][selectedTournament]
-      )
-        .filter((fecha) => fecha !== '0') // Excluir fechas inválidas
-        .sort((a, b) => {
-          // Dar prioridad a 'ida'
-          if (a === 'ida') return -1;
-          if (b === 'ida') return 1;
-
-          // Ordenar numéricamente las demás fechas
-          const numA = parseInt(a.match(/\d+/)?.[0] || 0);
-          const numB = parseInt(b.match(/\d+/)?.[0] || 0);
-          return numA - numB;
-        })
-        .map((key) => ({
-          key,
-          label: key.charAt(0).toUpperCase() + key.slice(1), // Capitalizar 'ida' y 'vuelta'
+  const dateOptions = useMemo(() => {
+    if (categorySelected && datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]) {
+      return Object.keys(datos[categorySelected].partidos[selectedDivision][selectedTournament])
+        .filter(key => key !== '0' && key !== 'lastMatchId')
+        .map(key => ({
+          key: key.toString(),
+          label: key.startsWith('Fecha: ') ? key.replace('Fecha: ', 'Fecha ') : key.charAt(0).toUpperCase() + key.slice(1),
         }))
-    : [];
+        .sort((a, b) => {
+          const keyA = a.key.toLowerCase();
+          const keyB = b.key.toLowerCase();
+          const priorityA = subStagePriority[keyA] || 999;
+          const priorityB = subStagePriority[keyB] || 999;
+  
+          if (priorityA !== priorityB) return priorityA - priorityB;
+  
+          const numA = parseInt(a.key.replace('Fecha: ', ''), 10);
+          const numB = parseInt(b.key.replace('Fecha: ', ''), 10);
+  
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          if (a.label < b.label) return -1;
+          if (a.label > b.label) return 1;
+          return 0;
+        });
+    }
+    return [];
+  }, [categorySelected, datos, selectedDivision, selectedTournament]);
+  
+
+
+
+
 
   if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
   if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" />;
@@ -387,19 +391,19 @@ const DatesLigue = () => {
           </ModalSelector>
         </View>
         <View style={[styles.containerText, dateOptions.length === 0 ? styles.disabledPicker : null]}>
-        {!tournamentsWithoutDate.includes(selectedTournament) && (
-          <ModalSelector
+          {!tournamentsWithoutDate.includes(selectedTournament) && (
+            <ModalSelector
             data={dateOptions}
             initValue={
               dateOptions.length > 0
-                ? selectedDate
-                  ? selectedTournament === 'Octavos de final' || selectedTournament === 'Repechaje Apertura' || selectedTournament === 'Repechaje Clausura'
-                    ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
-                    : `${selectedDate}`
-                  : 'Selecciona una Fecha'
-                : 'Selecciona una Fecha'
+                ? selectedSubStage
+                  ? selectedSubStage.startsWith('Fecha: ')
+                    ? `Fecha ${selectedSubStage.replace('Fecha: ', '')}`
+                    : selectedSubStage.charAt(0).toUpperCase() + selectedSubStage.slice(1)
+                  : 'Selecciona una Sub-etapa'
+                : 'Selecciona una Sub-etapa'
             }
-            onChange={(option) => setSelectedDate(option.key)}
+            onChange={(option) => setSelectedSubStage(option.key)}
             style={
               dateOptions.length === 0 ? styles.disabledPicker : styles.picker
             }
@@ -420,20 +424,20 @@ const DatesLigue = () => {
             >
               <Text style={styles.selectedItemText}>
                 {dateOptions.length > 0
-                  ? selectedDate
-                    ? selectedTournament === 'Octavos de final' || selectedTournament === 'Repechaje Apertura' || selectedTournament === 'Repechaje Clausura'
-                      ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
-                      : `${selectedDate}`
-                    : 'Selecciona una Fecha'
-                  : 'Sin Fechas Disponibles'}
+                  ? selectedSubStage
+                    ? selectedSubStage.startsWith('Fecha: ')
+                      ? `Fecha ${selectedSubStage.replace('Fecha: ', '')}`
+                      : selectedSubStage.charAt(0).toUpperCase() + selectedSubStage.slice(1)
+                    : 'Selecciona una Sub-etapa'
+                  : 'Sin Sub-etapas Disponibles'}
               </Text>
               {dateOptions.length !== 0 && (
                 <Text style={styles.pickerArrow}>▼</Text>
               )}
             </TouchableOpacity>
           </ModalSelector>
-
-        )}
+          
+          )}
         </View>
       </View>
 

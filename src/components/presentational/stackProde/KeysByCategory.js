@@ -50,28 +50,45 @@ const KeysByCategory = ({ navigation }) => {
 
     // Función para calcular los puntos acumulados
     const mergeRounds = (ida, vuelta) => {
-      if (!ida.length && !vuelta.length) return [];
-  
-      // Filtrar encuentros nulos
-      const validIda = ida.filter(match => match !== null && match !== undefined);
-      const validVuelta = vuelta.filter(match => match !== null && match !== undefined);
-  
-      const merged = validIda.map((idaMatch, index) => {
-          const vueltaMatch = validVuelta[index] || {};
-  
-          return {
-              equipo1: equipos[idaMatch.equipo1]?.nombre || 'Por Definir',
-              equipo2: equipos[idaMatch.equipo2]?.nombre || 'Por Definir',
-              imagen1: equipos[idaMatch.equipo1]?.imagen || DEFAULT_IMAGE,
-              imagen2: equipos[idaMatch.equipo2]?.imagen || DEFAULT_IMAGE,
-              goles1: (idaMatch.goles1 || 0) + (vueltaMatch.goles1 || 0),
-              goles2: (idaMatch.goles2 || 0) + (vueltaMatch.goles2 || 0),
-              fecha: vueltaMatch.fecha || idaMatch.fecha,
-          };
-      });
-  
-      return merged;
-  };
+        if (!ida.length && !vuelta.length) return [];
+      
+        // Filtrar encuentros nulos
+        const validIda = ida.filter(match => match !== null && match !== undefined);
+        const validVuelta = vuelta.filter(match => match !== null && match !== undefined);
+      
+        const merged = validIda.map((idaMatch) => {
+            // Buscar el partido de vuelta correspondiente donde los equipos están invertidos
+            const vueltaMatch = validVuelta.find(vm => 
+                vm.equipo1 === idaMatch.equipo2 && vm.equipo2 === idaMatch.equipo1
+            ) || {};
+      
+            // Obtener nombres e imágenes de los equipos
+            const equipo1Name = equipos[idaMatch.equipo1]?.nombre || 'Por Definir';
+            const equipo2Name = equipos[idaMatch.equipo2]?.nombre || 'Por Definir';
+            const imagen1 = equipos[idaMatch.equipo1]?.imagen || DEFAULT_IMAGE;
+            const imagen2 = equipos[idaMatch.equipo2]?.imagen || DEFAULT_IMAGE;
+      
+            // Sumar goles correctamente
+            const golesEquipo1 = (idaMatch.goles1 || 0) + (vueltaMatch.goles2 || 0);
+            const golesEquipo2 = (idaMatch.goles2 || 0) + (vueltaMatch.goles1 || 0);
+      
+            // Asignar la fecha del partido de vuelta si existe, sino la de ida
+            const fecha = vueltaMatch.fecha || idaMatch.fecha;
+      
+            return {
+                equipo1: equipo1Name,
+                equipo2: equipo2Name,
+                imagen1,
+                imagen2,
+                goles1: golesEquipo1,
+                goles2: golesEquipo2,
+                fecha,
+            };
+        });
+      
+        return merged;
+      };
+      
   
 
     const preparePhases = (mergedEncuentros) => {
