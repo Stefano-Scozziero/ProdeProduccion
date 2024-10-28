@@ -149,6 +149,9 @@ const Login = ({navigation}) =>  {
             case "auth/invalid-credential":
               setErrorPassword("Email o Contraseña invalido")
               break
+            case "auth/user-disabled":
+              setErrorEmail("Email deshabilitado");
+              break;
             default:
               console.error("Error durante la autenticación con Firebase:", error)
               setModalVisible(true)
