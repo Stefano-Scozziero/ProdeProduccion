@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     },
     card: {
         width: 250,
-        height: 110, // Ajuste de altura para consistencia
+        height: 130, // Ajuste de altura para consistencia
         marginBottom: 10,
         padding: 10,
         backgroundColor: colors.white,
@@ -132,6 +132,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 5,
+        padding: 5,
+        borderRadius: 5
     },
     teamImage: {
         width: 30, // Aumentamos el tamaño para verificar
