@@ -355,26 +355,28 @@ const PredictsByCategory = ({ navigation }) => {
   useEffect(() => {
     if (datos && categorySelected && selectedDivision && selectedTournament) {
       if (selectedTournament.toLowerCase() === 'octavos de final') {
-        // Preseleccionar 'ida' al seleccionar 'Octavos de final'
-        setSelectedDate('ida');
+        if (selectedDate !== 'ida' && selectedDate !== 'vuelta') {
+          setSelectedDate('ida');
+        }
       } else {
-        // Para otros torneos, seleccionar la primera fecha disponible no jugada o la primera fecha
-        const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-        const fechasDisponibles = Object.keys(partidosDelTorneo).filter(fecha => fecha !== '0'); // Excluir la fecha '0'
+        const partidosDelTorneo = datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+        const fechasDisponibles = Object.keys(partidosDelTorneo).filter(fecha => fecha !== '0');
         const primeraFechaDisponibleNoJugada = fechasDisponibles.find(fecha => partidosDelTorneo[fecha] && !partidosDelTorneo[fecha].hasPlayed);
-        setSelectedDate(primeraFechaDisponibleNoJugada || fechasDisponibles[0]);
+  
+        if (!fechasDisponibles.includes(selectedDate)) {
+          setSelectedDate(primeraFechaDisponibleNoJugada || fechasDisponibles[0]);
+        }
       }
     }
   }, [selectedTournament, categorySelected, datos, selectedDivision]);
+  
 
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision && selectedTournament) {
-      const partidosDelTorneo = 
-        datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-  
+      const partidosDelTorneo = datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
       const fechasDisponibles = Object.keys(partidosDelTorneo)
-        .filter(fecha => fecha !== '0') // Excluir fechas inválidas
+        .filter(fecha => fecha !== '0')
         .sort((a, b) => {
           // Dar prioridad a 'ida' y luego ordenar las demás fechas numéricamente
           if (a === 'ida') return -1;
@@ -385,12 +387,13 @@ const PredictsByCategory = ({ navigation }) => {
           return numA - numB;
         });
   
-      // Seleccionar automáticamente la primera fecha disponible
-      if (fechasDisponibles.length > 0) {
-        setSelectedDate(fechasDisponibles[0]); // Establecer la fecha 'ida' o la primera disponible
+        if (fechasDisponibles.length > 0) {
+          if (!fechasDisponibles.includes(selectedDate)) {
+            setSelectedDate(fechasDisponibles[0]);
+          }
+        }
       }
-    }
-  }, [datos, categorySelected, selectedDivision, selectedTournament]);
+    }, [datos, categorySelected, selectedDivision, selectedTournament]);
   
   
 
@@ -500,7 +503,7 @@ const PredictsByCategory = ({ navigation }) => {
               <Text style={styles.selectedItemText}>
                 {dateOptions.length > 0
                   ? selectedDate
-                    ? selectedTournament === 'Octavos de final' || selectedTournament === 'Repechaje Apertura' || selectedTournament === 'Repechaje Clausura'
+                    ? selectedTournament === 'Octavos de final' || selectedTournament.includes('Repechaje')
                       ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
                       : `${selectedDate}`
                     : 'Selecciona una Fecha'
