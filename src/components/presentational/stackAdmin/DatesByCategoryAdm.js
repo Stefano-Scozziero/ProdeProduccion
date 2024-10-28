@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import PropTypes from 'prop-types'
-import colors from '../../utils/globals/colors'
+import colors from '../../../utils/globals/colors'
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { format } from 'date-fns';
 
@@ -21,7 +21,7 @@ const ScoreButton = ({ onPress, label }) => (
   </TouchableOpacity>
 )
 
-const DatesByCategoryAdm = ({ encuentros, updateScore, updateDate }) => {
+const DatesByCategoryAdm = ({ encuentros, updateScore, updateDate, updateDuration }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [date, setDate] = useState(new Date(encuentros.fecha));
@@ -87,9 +87,11 @@ const DatesByCategoryAdm = ({ encuentros, updateScore, updateDate }) => {
           <TouchableOpacity style={styles.applyButton} onPress={applyDateTime}>
             <Text style={styles.dateText}>Aplicar</Text>
           </TouchableOpacity>
+          
         </View>
 
         <View style={styles.encuentroContainer}>
+          
           <TeamInfo imageUri={encuentros.equipo1.imagen} teamName={encuentros.equipo1.nombre} />
 
           <View style={styles.scoreContainer}>
@@ -108,11 +110,20 @@ const DatesByCategoryAdm = ({ encuentros, updateScore, updateDate }) => {
 
           <TeamInfo imageUri={encuentros.equipo2.imagen} teamName={encuentros.equipo2.nombre} />
         </View>
+        <View style={styles.durationContainer}>
+        <Text style={styles.durationText}>Duración: {encuentros.duration || 0} min.</Text>
+          <TouchableOpacity style={styles.durationButton} onPress={() => updateDuration(encuentros.id, -1)}>
+            <Text style={styles.durationButtonText}>-1 Min.</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.durationButton} onPress={() => updateDuration(encuentros.id, 1)}>
+            <Text style={styles.durationButtonText}>+1 Min.</Text>
+          </TouchableOpacity>
+        </View>
+
       </View>
     </View>
   );
 };
-
 
 DatesByCategoryAdm.propTypes = {
   encuentros: PropTypes.shape({
@@ -129,9 +140,11 @@ DatesByCategoryAdm.propTypes = {
     hasPlayed: PropTypes.bool.isRequired,
     isUpComing: PropTypes.bool.isRequired,
     isPlaying: PropTypes.bool.isRequired,
+    duration: PropTypes.number, // Añadido
   }).isRequired,
   updateScore: PropTypes.func.isRequired,
   updateDate: PropTypes.func.isRequired,
+  updateDuration: PropTypes.func.isRequired, // Añadido
 };
 
 const styles = StyleSheet.create({
@@ -162,8 +175,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   cardContainer: {
-    width: '100%',
-    height: 155,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.blackGray,
@@ -254,7 +266,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.orange, 
     borderRadius: 5, 
     width: '20%'
-  }
+  },
+  durationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    justifyContent: 'center',
+  },
+  durationText: {
+    fontSize: 13,
+    color: colors.white,
+    marginRight: 10,
+  },
+  durationButton: {
+    backgroundColor: colors.orange,
+    padding: 5,
+    borderRadius: 5,
+    marginHorizontal: 5
+  },
+  durationButtonText: {
+    color: colors.white,
+    fontWeight: 'bold',
+  },
 })
 
 export default DatesByCategoryAdm
