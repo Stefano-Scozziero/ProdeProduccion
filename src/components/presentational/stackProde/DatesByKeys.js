@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, Text, Dimensions, FlatList, ScrollView, ActivityIndicator } from 'react-native';
 import { Card } from 'react-native-paper';
 import colors from '../../../utils/globals/colors';
@@ -46,16 +46,19 @@ const DatesByKeys = ({ encuentros }) => {
             <ScrollView contentContainerStyle={styles.phaseScrollContainer}>
                 {item.encuentros.map((match, idx) => {
                     if (!match) return null; // Ignorar encuentros nulos
+                    const team1Style = match.winner === 'equipo1' ? styles.winningTeam : styles.losingTeam;
+                    const team2Style = match.winner === 'equipo2' ? styles.winningTeam : styles.losingTeam;
+
                     return (
                         <View key={idx} style={styles.matchContainer}>
                             <Card style={styles.card}>
-                                <View style={styles.teamRow}>
+                                <View style={[styles.teamRow, team1Style]}>
                                     <ImageLoader uri={match.imagen1} style={styles.teamImage} />
                                     <Text numberOfLines={1} style={styles.teamName}>
                                         {match.equipo1 || 'Por Definir'}
                                     </Text>
                                 </View>
-                                <View style={styles.teamRow}>
+                                <View style={[styles.teamRow, team2Style]}>
                                     <ImageLoader uri={match.imagen2} style={styles.teamImage} />
                                     <Text numberOfLines={1} style={styles.teamName}>
                                         {match.equipo2 || 'Por Definir'}
@@ -119,6 +122,11 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         elevation: 5,
         justifyContent: 'space-between',
+    },
+    winningTeam: {
+        backgroundColor: colors.green,
+    },
+    losingTeam: {
     },
     teamRow: {
         flexDirection: 'row',
