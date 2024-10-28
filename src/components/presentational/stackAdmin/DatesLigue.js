@@ -5,7 +5,7 @@ import EmptyListComponent from '../EmptyListComponent';
 import Error from '../Error';
 import { database } from '../../../app/services/firebase/config';
 import colors from '../../../utils/globals/colors';
-import DatesByCategoryAdm from '../DatesByCategoryAdm';
+import DatesByCategoryAdm from './DatesByCategoryAdm';
 import { OrientationContext } from '../../../utils/globals/context';
 import { format } from 'date-fns';
 import ModalSelector from 'react-native-modal-selector';
@@ -257,6 +257,45 @@ const DatesLigue = () => {
     }
   };
 
+  const updateDuration = (encounterId, increment) => {
+    // Clonación profunda para evitar mutaciones directas
+    const updatedDatos = JSON.parse(JSON.stringify(datos));
+    const partidosDelTorneo = updatedDatos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament];
+  
+    if (!partidosDelTorneo) {
+      console.error('Partidos del torneo no encontrados.');
+      return;
+    }
+  
+    const path = findEncounterPath(partidosDelTorneo, encounterId);
+  
+    if (path) {
+      const { subEtapaKey, encuentroIndex } = path;
+      const encounter = partidosDelTorneo[subEtapaKey].encuentros[encuentroIndex];
+  
+      // Inicializar duration si está indefinido
+      if (encounter.duration === undefined) {
+        encounter.duration = 0;
+      }
+  
+      // Actualizar duration
+      encounter.duration = Math.max(0, encounter.duration + increment);
+  
+      // Actualizar en el estado local
+      updatedDatos[categorySelected].partidos[selectedDivision][selectedTournament][subEtapaKey].encuentros[encuentroIndex].duration = encounter.duration;
+      setDatos(updatedDatos);
+  
+      // Actualizar en Firebase
+      db.ref(`/datos/fixture/${categorySelected}/partidos/${selectedDivision}/${selectedTournament}/${subEtapaKey}/encuentros/${encuentroIndex}/duration`)
+        .set(encounter.duration)
+        .then(() => console.log(`Duración del encuentro actualizada exitosamente en Firebase.`))
+        .catch(error => console.error('Error al actualizar la duración en Firebase:', error));
+    } else {
+      console.error('Encuentro no encontrado.');
+    }
+  };
+  
+
   useEffect(() => {
     if (datos && categorySelected) {
       const divisions = Object.keys(datos?.[categorySelected]?.partidos || {})
@@ -449,6 +488,7 @@ const DatesLigue = () => {
               encuentros={item}
               updateScore={updateScore}
               updateDate={updateDate}
+              updateDuration={updateDuration}
             />
           )}
           ListEmptyComponent={<Text style={{ fontSize: 20 }}>No hay encuentros disponibles</Text>}
