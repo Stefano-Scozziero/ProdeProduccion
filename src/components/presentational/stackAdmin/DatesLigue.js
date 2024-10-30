@@ -42,8 +42,6 @@ const DatesLigue = () => {
   ];
 
   const tournamentsWithoutDate = [
-    'Cuartos de final',
-    'Semifinal',
     'Final'
   ];
 

@@ -47,8 +47,6 @@ const PredictsByCategory = ({ navigation }) => {
   ];
 
   const tournamentsWithoutDate = [
-    'Cuartos de final',
-    'Semifinal',
     'Final'
   ];
   
@@ -475,7 +473,7 @@ const PredictsByCategory = ({ navigation }) => {
             initValue={
               dateOptions.length > 0
                 ? selectedDate
-                  ? selectedTournament === 'Octavos de final' || selectedTournament === 'Repechaje Apertura' || selectedTournament === 'Repechaje Clausura'
+                  ? selectedTournament === 'Octavos de final' || selectedTournament.includes('Repechaje') || selectedTournament.includes('Cuartos')
                     ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
                     : `${selectedDate}`
                   : 'Selecciona una Fecha'
@@ -503,7 +501,7 @@ const PredictsByCategory = ({ navigation }) => {
               <Text style={styles.selectedItemText}>
                 {dateOptions.length > 0
                   ? selectedDate
-                    ? selectedTournament === 'Octavos de final' || selectedTournament.includes('Repechaje')
+                    ? selectedTournament === 'Octavos de final' || selectedTournament.includes('Repechaje') || selectedTournament.includes('Cuartos')
                       ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
                       : `${selectedDate}`
                     : 'Selecciona una Fecha'

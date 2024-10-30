@@ -105,7 +105,7 @@ const KeysByCategory = ({ navigation }) => {
   const obtenerDatosEquipo = equipoId => {
     if (!tablaGeneral || !tablaGeneral.equipos) return null;
 
-    const equipo = tablaGeneral.equipos.find(e => e && e.nombre === equipoId);
+    const equipo = Object.values(tablaGeneral.equipos).find(e => e && e.nombre === equipoId);
     return equipo ? equipo : null;
   };
 
@@ -162,7 +162,7 @@ const KeysByCategory = ({ navigation }) => {
               } else if (equipo1Data.diferenciaGoles < equipo2Data.diferenciaGoles) {
                 winner = 'equipo2';
               } else {
-                // You can implement further criteria here
+                // Additional criteria can be implemented here
                 winner = 'empate';
               }
             }
@@ -265,7 +265,7 @@ const KeysByCategory = ({ navigation }) => {
       const mergedEncuentros = {};
 
       phases.forEach(fase => {
-        if (fase === 'Octavos de final') {
+        if (fase === 'Octavos de final' || fase === 'Cuartos de final' || fase === 'Semifinal') {
           const faseData = partidos[fase] || {};
           const faseIda = faseData.ida?.encuentros || [];
           const faseVuelta = faseData.vuelta?.encuentros || [];
@@ -273,7 +273,13 @@ const KeysByCategory = ({ navigation }) => {
           if (faseIda.length > 0 || faseVuelta.length > 0) {
             mergedEncuentros[fase] = mergeRounds(faseIda, faseVuelta);
           } else {
-            mergedEncuentros[fase] = Array(5).fill({
+            const expectedCounts = {
+              'Octavos de final': 5,
+              'Cuartos de final': 4,
+              'Semifinal': 2,
+            };
+            const expected = expectedCounts[fase];
+            const placeholders = Array(expected).fill({
               equipo1: 'Por Definir',
               equipo2: 'Por Definir',
               imagen1: DEFAULT_IMAGE,
@@ -282,35 +288,27 @@ const KeysByCategory = ({ navigation }) => {
               goles2: '-',
               fecha: 'Por Definir',
             });
+            mergedEncuentros[fase] = placeholders;
           }
         } else {
-          // Handle other phases without Ida and Vuelta
+          // Handle 'Final' without Ida and Vuelta
           const faseData =
-            partidos[fase] && partidos[fase].stage1 && partidos[fase].stage1.encuentros
-              ? partidos[fase].stage1.encuentros
-              : [];
-          const validEncuentros = faseData.filter(match => match !== null && match !== undefined);
-          mergedEncuentros[fase] = validEncuentros.map(match => ({
-            equipo1: equipos[match.equipo1]?.nombre || 'Por Definir',
-            equipo2: equipos[match.equipo2]?.nombre || 'Por Definir',
-            imagen1: equipos[match.equipo1]?.imagen || DEFAULT_IMAGE,
-            imagen2: equipos[match.equipo2]?.imagen || DEFAULT_IMAGE,
-            goles1: match.goles1,
-            goles2: match.goles2,
-            fecha: match.fecha,
-            winner: match.winner || null,
-            hasPlayed: match.hasPlayed || false,
-          }));
+            partidos[fase] && partidos[fase].ida && partidos[fase].vuelta
+              ? partidos[fase]
+              : null;
 
-          // Assign placeholders if there are no matches
-          if (mergedEncuentros[fase].length === 0) {
-            const expectedCounts = {
-              'Cuartos de final': 4,
-              'Semifinal': 2,
-              'Final': 1,
-            };
-            const expected = expectedCounts[fase] || 0;
-            const placeholders = Array(expected).fill({
+          if (faseData) {
+            const faseIda = faseData.ida?.encuentros || [];
+            const faseVuelta = faseData.vuelta?.encuentros || [];
+
+            if (faseIda.length > 0 || faseVuelta.length > 0) {
+              mergedEncuentros[fase] = mergeRounds(faseIda, faseVuelta);
+            }
+          }
+
+          // Asignar placeholders si no hay encuentros
+          if (!mergedEncuentros[fase] || mergedEncuentros[fase].length === 0) {
+            const placeholders = Array(1).fill({
               equipo1: 'Por Definir',
               equipo2: 'Por Definir',
               imagen1: DEFAULT_IMAGE,
