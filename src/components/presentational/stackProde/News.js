@@ -29,5 +29,16 @@ const styles = StyleSheet.create({
     },
     mainLandScape:{
         flexDirection: 'row'
+    },
+    containerText: {
+        width: '90%',
+        height: 20,
+        alignItems: 'center', 
+        justifyContent: 'center',
+        marginVertical: 10,
+    },
+    text: {
+        fontSize: 25,
+        textAlign: 'center',
     }
 })

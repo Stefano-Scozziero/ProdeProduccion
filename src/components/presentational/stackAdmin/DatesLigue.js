@@ -75,31 +75,31 @@ const DatesLigue = () => {
           setDatos(data);
           setTimeout(() => {
             setIsLoading(false);
-          }, 2000);
+          }, 1000);
         } else {
           setTimeout(() => {
             setIsLoading(false);
-          }, 2000);
+          }, 1000);
           setDatos(false);
         }
       } else {
         setTimeout(() => {
           setIsLoading(false);
-        }, 2000);
+        }, 1000);
         setIsError(true);
       }
     }, (error) => {
       console.error(error);
       setTimeout(() => {
         setIsLoading(false);
-      }, 2000);
+      }, 1000);
       setIsError(true);
     });
     return () => {
       db.ref('/datos/fixture/').off('value', onValueChange);
       setTimeout(() => {
         setIsLoading(false);
-      }, 2000);
+      }, 1000);
     };
   }, [categorySelected]);
 
@@ -118,19 +118,23 @@ const DatesLigue = () => {
       const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
       const subStagesAvailable = Object.keys(partidosDelTorneo).filter(key => key !== '0' && key !== 'lastMatchId');
   
-      // Priorizar 'ida' si está disponible
-      let defaultSubStage = null;
-      if (subStagesAvailable.includes('ida')) {
-        defaultSubStage = 'ida';
-      } else {
-        // Seleccionar la primera sub-etapa disponible que no ha sido jugada
-        defaultSubStage = subStagesAvailable.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed) || subStagesAvailable[0];
-      }
+      // Verificar si el selectedSubStage actual es válido
+      if (!selectedSubStage || !subStagesAvailable.includes(selectedSubStage)) {
+        // Priorizar 'ida' si está disponible
+        let defaultSubStage = null;
+        if (subStagesAvailable.includes('ida')) {
+          defaultSubStage = 'ida';
+        } else {
+          // Seleccionar la primera sub-etapa disponible que no ha sido jugada
+          defaultSubStage = subStagesAvailable.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed) || subStagesAvailable[0];
+        }
   
-      setSelectedSubStage(defaultSubStage || null);
+        setSelectedSubStage(defaultSubStage || null);
+      }
       setPickerDataLoaded(true);
     }
-  }, [categorySelected, datos, pickerDataLoaded, selectedDivision, selectedTournament]);
+  }, [categorySelected, datos, pickerDataLoaded, selectedDivision, selectedTournament, selectedSubStage]);
+  
   
   
 
@@ -149,27 +153,32 @@ const DatesLigue = () => {
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision && selectedTournament) {
-      if (selectedTournament.toLowerCase() === 'octavos de final') {
-        // Preseleccionar 'ida' al seleccionar 'Octavos de final'
-        setSelectedSubStage('ida');
-      } else {
-        // Para otros torneos, seleccionar la primera sub-etapa disponible no jugada o la primera sub-etapa
-        const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-        const subStagesAvailable = Object.keys(partidosDelTorneo).filter(key => key !== '0' && key !== 'lastMatchId'); // Excluir sub-etapas no válidas
+      const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+      const subStagesAvailable = Object.keys(partidosDelTorneo).filter(key => key !== '0' && key !== 'lastMatchId');
   
-        // Ordenar subStagesAvailable según dateOptions
-        const sortedSubStages = dateOptions
-          .map(option => option.key)
-          .filter(key => subStagesAvailable.includes(key));
+      // Verificar si el selectedSubStage actual es válido
+      if (!selectedSubStage || !subStagesAvailable.includes(selectedSubStage)) {
+        let newSelectedSubStage;
+        if (selectedTournament.toLowerCase() === 'octavos de final' || selectedTournament.toLowerCase() === 'cuartos de final') {
+          newSelectedSubStage = 'ida';
+        } else {
+          // Ordenar subStagesAvailable según dateOptions
+          const sortedSubStages = dateOptions
+            .map(option => option.key)
+            .filter(key => subStagesAvailable.includes(key));
   
-        // Encontrar la primera sub-etapa que no ha sido jugada
-        const primeraSubEtapaDisponibleNoJugada = sortedSubStages.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed);
+          // Encontrar la primera sub-etapa que no ha sido jugada
+          const primeraSubEtapaDisponibleNoJugada = sortedSubStages.find(subEtapa => partidosDelTorneo[subEtapa] && !partidosDelTorneo[subEtapa].hasPlayed);
   
-        // Seleccionar la sub-etapa disponible o la primera sub-etapa ordenada
-        setSelectedSubStage(primeraSubEtapaDisponibleNoJugada || sortedSubStages[0] || null);
+          // Seleccionar la sub-etapa disponible o la primera sub-etapa ordenada
+          newSelectedSubStage = primeraSubEtapaDisponibleNoJugada || sortedSubStages[0] || null;
+        }
+  
+        setSelectedSubStage(newSelectedSubStage);
       }
     }
-  }, [selectedTournament, categorySelected, datos, selectedDivision]);
+  }, [selectedTournament, categorySelected, datos, selectedDivision, selectedSubStage]);
+  
   
 
   const updateDate = (encounterId, newDate) => {
@@ -245,7 +254,7 @@ const DatesLigue = () => {
         // Actualizar en Firebase
         db.ref(`/datos/fixture/${categorySelected}/partidos/${selectedDivision}/${selectedTournament}/${subEtapaKey}/encuentros/${encuentroIndex}/${equipoKey}`)
           .set(encounter[equipoKey])
-          .then(() => console.log(`Goles del equipo ${teamNumber} actualizados exitosamente en Firebase.`))
+          //.then(() => console.log(`Goles del equipo ${teamNumber} actualizados exitosamente en Firebase.`))
           .catch(error => console.error('Error al actualizar goles en Firebase:', error));
       } else {
         console.error(`'encuentros' no existe o no es un array en la sub-etapa "${subEtapaKey}".`);
@@ -286,7 +295,7 @@ const DatesLigue = () => {
       // Actualizar en Firebase
       db.ref(`/datos/fixture/${categorySelected}/partidos/${selectedDivision}/${selectedTournament}/${subEtapaKey}/encuentros/${encuentroIndex}/duration`)
         .set(encounter.duration)
-        .then(() => console.log(`Duración del encuentro actualizada exitosamente en Firebase.`))
+        //.then(() => console.log(`Duración del encuentro actualizada exitosamente en Firebase.`))
         .catch(error => console.error('Error al actualizar la duración en Firebase:', error));
     } else {
       console.error('Encuentro no encontrado.');
