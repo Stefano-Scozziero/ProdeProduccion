@@ -1,19 +1,20 @@
 import React, { useContext, useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, FlatList, ImageBackground, Text, TouchableOpacity, Pressable } from 'react-native';
+import { View, StyleSheet, FlatList, ImageBackground, Text, TouchableOpacity } from 'react-native';
 import LoadingSpinner from '../LoadingSpinner';
 import EmptyListComponent from '../EmptyListComponent';
 import Error from '../Error';
-import DatesByCategory from '../DatesByCategory';
+import DatesByCategory from './DatesByCategory';
 import { OrientationContext } from '../../../utils/globals/context';
 import colors from '../../../utils/globals/colors';
 import ModalAlert from '../modal/ModalAlert';
 import { database, auth } from '../../../app/services/firebase/config';
 import { useSelector } from 'react-redux';
 import ModalSelector from 'react-native-modal-selector';
+import { Entypo, AntDesign } from '@expo/vector-icons';
 
 const PredictsByCategory = ({ navigation }) => {
   const [modalAlert, setModalAlert] = useState(false);
-  const categorySelected = useSelector(state => state.category.selectedCategory);
+  const categorySelected = useSelector((state) => state.category.selectedCategory);
   const [datos, setDatos] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -28,10 +29,12 @@ const PredictsByCategory = ({ navigation }) => {
   const db = database();
   const [guardarPronosticos, setGuardarPronosticos] = useState(false);
   const [partidosEditados, setPartidosEditados] = useState({});
-  const DEFAULT_IMAGE = 'https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2FiconEsc.png?alt=media&token=4c508bf7-059e-451e-b726-045eaf79beae';
+  const DEFAULT_IMAGE =
+    'https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2FiconEsc.png?alt=media&token=4c508bf7-059e-451e-b726-045eaf79beae';
   const divisionSelectorRef = useRef(null);
   const tournamentSelectorRef = useRef(null);
   const dateSelectorRef = useRef(null);
+  const [isEditable, setIsEditable] = useState(false);
 
   const [divisionOptions, setDivisionOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
@@ -43,137 +46,133 @@ const PredictsByCategory = ({ navigation }) => {
     'Octavos de final',
     'Cuartos de final',
     'Semifinal',
-    'Final'
+    'Final',
   ];
+  const tournamentsWithHomeAway = [
+    'Octavos de final',
+    'Cuartos de final',
+    'Semifinal',
+    'Repechaje Apertura',
+    'Repechaje Clausura',
+  ];
+  const tournamentsWithoutDate = ['Final'];
 
-  const tournamentsWithoutDate = [
-    'Final'
-  ];
-  
   useEffect(() => {
-    const onValueChange = db.ref('/datos/fixture').on('value', (snapshot) => {
-      if (snapshot.exists() && categorySelected !== null) {
-        const data = snapshot.val();
-        if (data[categorySelected]) {
-          setDatos(data);
+    const fixtureRef = db.ref('/datos/fixture');
+
+    const onValueChange = fixtureRef.on(
+      'value',
+      (snapshot) => {
+        if (snapshot.exists() && categorySelected !== null) {
+          const data = snapshot.val();
+          if (data[categorySelected]) {
+            setDatos(data);
+            setTimeout(() => {
+              setIsLoading(false);
+            }, 1000);
+          } else {
+            setDatos(false);
+            setTimeout(() => {
+              setIsLoading(false);
+            }, 1000);
+          }
         } else {
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 2000);
-          setDatos(false);
+          setIsError(true);
+          setIsLoading(false);
         }
-      } else {
+      },
+      (error) => {
+        console.error(error);
+        setIsError(true);
         setTimeout(() => {
           setIsLoading(false);
-        }, 2000);
-        setIsError(true);
+        }, 1000);
       }
-    }, (error) => {
-      console.error(error);
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 2000);
-      setIsError(true);
-    });
+    );
+
     return () => {
-      db.ref('/datos/fixture').off('value', onValueChange);
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 2000);
+      fixtureRef.off('value', onValueChange);
     };
   }, [categorySelected]);
+  
 
   const getEquipo = (id) => {
     if (id === 'Por definir') {
-      return { nombre: 'Por definir', imagen: DEFAULT_IMAGE }; // URL de una imagen por defecto
+      return { nombre: 'Por definir', imagen: DEFAULT_IMAGE };
     }
     if (datos && datos[categorySelected] && datos[categorySelected].equipos) {
-      return datos[categorySelected].equipos[id] || { nombre: 'Por definir', imagen: DEFAULT_IMAGE };
+      return datos[categorySelected].equipos[id] || {
+        nombre: 'Por definir',
+        imagen: DEFAULT_IMAGE,
+      };
     }
     return { nombre: 'Por definir', imagen: DEFAULT_IMAGE };
   };
 
- 
-
   const handleSumarPuntos = (equipo, id) => {
     setPartidosEditados(prev => ({ ...prev, [id]: true }));
-
-    const nuevosPuntosEq1 = { ...puntos.eq1 };
-    const nuevosPuntosEq2 = { ...puntos.eq2 };
-    if (nuevosPuntosEq1[id] === undefined && nuevosPuntosEq2[id] === undefined) {
-      nuevosPuntosEq1[id] = 0;
-      nuevosPuntosEq2[id] = 0;
-    } else {
-      if (equipo === 'equipo1') {
-        nuevosPuntosEq1[id] = (nuevosPuntosEq1[id] || 0) + 1;
-      } else {
-        nuevosPuntosEq2[id] = (nuevosPuntosEq2[id] || 0) + 1;
-      }
-    }
-    setPuntos({ eq1: nuevosPuntosEq1, eq2: nuevosPuntosEq2 });
+  
+    setPuntos(prev => {
+      const eq1 = { ...prev.eq1 };
+      const eq2 = { ...prev.eq2 };
+      eq1[id] = equipo === 'equipo1' ? (eq1[id] || 0) + 1 : (eq1[id] || 0);
+      eq2[id] = equipo === 'equipo2' ? (eq2[id] || 0) + 1 : (eq2[id] || 0);
+      return { eq1, eq2 };
+    });
   };
-
+  
   const handleRestarPuntos = (equipo, id) => {
     setPartidosEditados(prev => ({ ...prev, [id]: true }));
-
-    const nuevosPuntosEq1 = { ...puntos.eq1 };
-    const nuevosPuntosEq2 = { ...puntos.eq2 };
-
-    if (!nuevosPuntosEq1[id] && !nuevosPuntosEq2[id]) {
-      nuevosPuntosEq1[id] = 0;
-      nuevosPuntosEq2[id] = 0;
-    }
-
-    if (equipo === 'equipo1') {
-      nuevosPuntosEq1[id] = Math.max((nuevosPuntosEq1[id] || 0) - 1, 0);
-    } else {
-      nuevosPuntosEq2[id] = Math.max((nuevosPuntosEq2[id] || 0) - 1, 0);
-    }
-
-    setPuntos({ eq1: nuevosPuntosEq1, eq2: nuevosPuntosEq2 });
+  
+    setPuntos(prev => {
+      const eq1 = { ...prev.eq1 };
+      const eq2 = { ...prev.eq2 };
+      eq1[id] = equipo === 'equipo1' ? Math.max((eq1[id] || 0) - 1, 0) : (eq1[id] || 0);
+      eq2[id] = equipo === 'equipo2' ? Math.max((eq2[id] || 0) - 1, 0) : (eq2[id] || 0);
+      return { eq1, eq2 };
+    });
   };
+  
 
   const guardarPronosticosEnDB = async () => {
     if (!categorySelected || !selectedDate || !filteredPartidos) return;
-
+  
     try {
       let fechaKey;
-      if (selectedTournament === 'Octavos de final') {
-        // Para 'Octavos de final', usar 'ida' o 'vuelta'
-        fechaKey = selectedDate; // 'ida' o 'vuelta'
+      if (tournamentsWithHomeAway.includes(selectedTournament)) {
+        fechaKey = selectedDate;
       } else {
-        // Para otros torneos, usar 'Fecha X'
         fechaKey = `Fecha:${selectedDate}`;
       }
-
-      // Construye la ruta correctamente
+  
       const pronosticosRef = db.ref(
-        `/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/${selectedTournament === 'Octavos de final' ? fechaKey : fechaKey}`
+        `/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/${fechaKey}`
       );
-
+  
       const snapshot = await pronosticosRef.once('value');
       const pronosticosExistentes = snapshot.val() || {};
-
+  
       const pronosticosArray = filteredPartidos
-        .filter(partido =>
-          partido !== null &&
-          partido !== undefined &&
-          partido.equipo1.nombre !== 'Por definir' &&
-          partido.equipo2.nombre !== 'Por definir'
+        .filter(
+          (partido) =>
+            partido &&
+            partido.equipo1.nombre !== 'Por definir' &&
+            partido.equipo2.nombre !== 'Por definir'
         )
         .reduce((obj, partido) => {
           if (partidosEditados[partido.id]) {
             obj[partido.id.toString()] = {
               equipo1: {
                 nombre: partido.equipo1.nombre,
-                puntos: puntos.eq1.hasOwnProperty(partido.id) ? puntos.eq1[partido.id] : undefined
+                puntos: puntos.eq1[partido.id] || 0,
               },
               equipo2: {
                 nombre: partido.equipo2.nombre,
-                puntos: puntos.eq2.hasOwnProperty(partido.id) ? puntos.eq2[partido.id] : undefined
+                puntos: puntos.eq2[partido.id] || 0,
               },
               processed: false,
-              points: 0
+              points: 0,
+              save: true, // Guardamos el campo 'save' como true
             };
           } else {
             const pronosticoExistente = pronosticosExistentes[partido.id];
@@ -183,37 +182,35 @@ const PredictsByCategory = ({ navigation }) => {
           }
           return obj;
         }, {});
-
+  
       await pronosticosRef.set(pronosticosArray);
-
+  
       setGuardarPronosticos(false);
       setModalAlert(true);
-
+      setIsEditable(false); // Deshabilitamos la edición después de guardar
     } catch (error) {
       console.error('Error al guardar los pronósticos:', error);
     }
   };
+  
+  
 
   useEffect(() => {
-    // Reiniciar los estados al iniciar el efecto
     setPuntos({ eq1: {}, eq2: {} });
     setPuntosWin({});
     setIsLoading(true);
 
-    // Determinar la clave de fecha según el torneo seleccionado
     let fechaKey;
-    if (selectedTournament.toLowerCase() === 'octavos de final') {
-      fechaKey = selectedDate; // 'ida' o 'vuelta'
+    if (tournamentsWithHomeAway.includes(selectedTournament)) {
+      fechaKey = selectedDate;
     } else {
       fechaKey = `Fecha:${selectedDate}`;
     }
 
-    // Construir la ruta correctamente
     const pronosticosRef = db.ref(
       `/profiles/${user.uid}/prode/predicts/${categorySelected}/${selectedDivision}/${selectedTournament}/${fechaKey}`
     );
 
-    // Escuchar cambios en los datos
     const onValueChange = pronosticosRef.on(
       'value',
       (snapshot) => {
@@ -221,112 +218,100 @@ const PredictsByCategory = ({ navigation }) => {
         if (pronosticosObj) {
           const nuevosPuntosEq1 = {};
           const nuevosPuntosEq2 = {};
-          const nuevosPuntosWin = {}; // Objeto para almacenar puntos ganados por partido
-
-          // Iterar sobre cada pronóstico
+          const nuevosPuntosWin = {};
+          let save = false;
+  
           Object.keys(pronosticosObj).forEach((id) => {
             const pronostico = pronosticosObj[id];
             if (pronostico) {
-              // Obtener los puntos predichos para cada equipo
               nuevosPuntosEq1[id] = pronostico.equipo1.puntos || 0;
               nuevosPuntosEq2[id] = pronostico.equipo2.puntos || 0;
-
-              // Obtener y asignar los puntos ganados para este pronóstico
               nuevosPuntosWin[id] = pronostico.points || 0;
+              if (pronostico.save) {
+                save = true;
+              }
             }
           });
-
-          // Actualizar los estados con los nuevos valores
+  
           setPuntos({ eq1: nuevosPuntosEq1, eq2: nuevosPuntosEq2 });
           setPuntosWin(nuevosPuntosWin);
           setGuardarPronosticos(false);
+          setIsEditable(!save); // Si 'save' es true, 'isEditable' es false
         } else {
-          // Si no hay pronósticos, asegurar que los estados están vacíos
           setPuntos({ eq1: {}, eq2: {} });
           setPuntosWin({});
+          setIsEditable(true); // Si no hay pronósticos, permitimos la edición
         }
-
-        // Finalizar el loading después de un tiempo
         setTimeout(() => {
           setIsLoading(false);
-        }, 1500);
-        setGuardarPronosticos(false);
+        }, 1000);
       },
       (error) => {
         console.error('Error al cargar los pronósticos desde la base de datos:', error);
-        setIsLoading(false);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000);
       }
     );
-
-    // Limpiar el listener cuando el componente se desmonte o las dependencias cambien
+  
     return () => pronosticosRef.off('value', onValueChange);
   }, [
     user.uid,
     categorySelected,
     selectedDate,
     selectedDivision,
-    selectedTournament
+    selectedTournament,
   ]);
-
-
 
   useEffect(() => {
     const puntosEq1Definidos = Object.values(puntos.eq1).length > 0;
     const puntosEq2Definidos = Object.values(puntos.eq2).length > 0;
 
-    if (puntosEq1Definidos || puntosEq2Definidos) {
-      setGuardarPronosticos(true);
-    } else {
-      setGuardarPronosticos(false);
-    }
+    setGuardarPronosticos(puntosEq1Definidos || puntosEq2Definidos);
   }, [puntos]);
 
   useEffect(() => {
     if (datos && categorySelected) {
       const divisions = Object.keys(datos?.[categorySelected]?.partidos || {})
-        .map(key => ({ key, label: key }))
+        .map((key) => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
 
-      // Solo actualizar selectedDivision si no está establecido o ya no es válido
-      if (!selectedDivision || !divisions.find(d => d.key === selectedDivision)) {
+      if (!selectedDivision || !divisions.find((d) => d.key === selectedDivision)) {
         setSelectedDivision(divisions.length > 0 ? divisions[0].key : null);
       }
     }
   }, [datos, categorySelected]);
 
   const dateOptions =
-  categorySelected &&
-  datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
-    ? Object.keys(
-        datos[categorySelected].partidos[selectedDivision][selectedTournament]
-      )
-        .filter((fecha) => fecha !== '0') // Excluir fechas inválidas
-        .sort((a, b) => {
-          // Dar prioridad a 'ida'
-          if (a === 'ida') return -1;
-          if (b === 'ida') return 1;
+    categorySelected &&
+    datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament]
+      ? Object.keys(
+          datos[categorySelected].partidos[selectedDivision][selectedTournament]
+        )
+          .filter((fecha) => fecha !== '0')
+          .sort((a, b) => {
+            if (a === 'ida') return -1;
+            if (b === 'ida') return 1;
 
-          // Ordenar numéricamente las demás fechas
-          const numA = parseInt(a.match(/\d+/)?.[0] || 0);
-          const numB = parseInt(b.match(/\d+/)?.[0] || 0);
-          return numA - numB;
-        })
-        .map((key) => ({
-          key,
-          label: key.charAt(0).toUpperCase() + key.slice(1), // Capitalizar 'ida' y 'vuelta'
-        }))
-    : [];
-
-
-
+            const numA = parseInt(a.match(/\d+/)?.[0] || 0);
+            const numB = parseInt(b.match(/\d+/)?.[0] || 0);
+            return numA - numB;
+          })
+          .map((key) => ({
+            key,
+            label: key.charAt(0).toUpperCase() + key.slice(1),
+          }))
+      : [];
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision) {
-      const torneosExcluidos = ['lastMatchId']; // Lista de torneos a excluir
+      const torneosExcluidos = ['lastMatchId'];
 
-      const tournaments = Object.keys(datos?.[categorySelected]?.partidos[selectedDivision] || {})
-        .filter((key) => !torneosExcluidos.includes(key)) // Filtramos los torneos no deseados
+      const tournaments = Object.keys(
+        datos?.[categorySelected]?.partidos[selectedDivision] || {}
+      )
+        .filter((key) => !torneosExcluidos.includes(key))
         .map((key) => ({ key, label: key }))
         .sort((a, b) => {
           const indexA = stagesOrder.indexOf(a.key);
@@ -344,7 +329,10 @@ const PredictsByCategory = ({ navigation }) => {
 
       setTournamentOptions(tournaments);
 
-      if (!selectedTournament || !tournaments.find((t) => t.key === selectedTournament)) {
+      if (
+        !selectedTournament ||
+        !tournaments.find((t) => t.key === selectedTournament)
+      ) {
         setSelectedTournament(tournaments.length > 0 ? tournaments[0].key : null);
       }
     }
@@ -352,54 +340,37 @@ const PredictsByCategory = ({ navigation }) => {
 
   useEffect(() => {
     if (datos && categorySelected && selectedDivision && selectedTournament) {
-      if (selectedTournament.toLowerCase() === 'octavos de final') {
+      if (tournamentsWithHomeAway.includes(selectedTournament)) {
         if (selectedDate !== 'ida' && selectedDate !== 'vuelta') {
           setSelectedDate('ida');
         }
       } else {
-        const partidosDelTorneo = datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-        const fechasDisponibles = Object.keys(partidosDelTorneo).filter(fecha => fecha !== '0');
-        const primeraFechaDisponibleNoJugada = fechasDisponibles.find(fecha => partidosDelTorneo[fecha] && !partidosDelTorneo[fecha].hasPlayed);
-  
+        const partidosDelTorneo =
+          datos[categorySelected]?.partidos?.[selectedDivision]?.[
+            selectedTournament
+          ] || {};
+        const fechasDisponibles = Object.keys(partidosDelTorneo)
+          .filter((fecha) => fecha !== '0')
+          .sort((a, b) => {
+            const numA = parseInt(a.match(/\d+/)?.[0] || 0);
+            const numB = parseInt(b.match(/\d+/)?.[0] || 0);
+            return numA - numB;
+          });
         if (!fechasDisponibles.includes(selectedDate)) {
-          setSelectedDate(primeraFechaDisponibleNoJugada || fechasDisponibles[0]);
+          setSelectedDate(fechasDisponibles[0]);
         }
       }
     }
   }, [selectedTournament, categorySelected, datos, selectedDivision]);
-  
-
-
-  useEffect(() => {
-    if (datos && categorySelected && selectedDivision && selectedTournament) {
-      const partidosDelTorneo = datos[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
-      const fechasDisponibles = Object.keys(partidosDelTorneo)
-        .filter(fecha => fecha !== '0')
-        .sort((a, b) => {
-          // Dar prioridad a 'ida' y luego ordenar las demás fechas numéricamente
-          if (a === 'ida') return -1;
-          if (b === 'ida') return 1;
-  
-          const numA = parseInt(a.match(/\d+/)?.[0] || 0);
-          const numB = parseInt(b.match(/\d+/)?.[0] || 0);
-          return numA - numB;
-        });
-  
-        if (fechasDisponibles.length > 0) {
-          if (!fechasDisponibles.includes(selectedDate)) {
-            setSelectedDate(fechasDisponibles[0]);
-          }
-        }
-      }
-    }, [datos, categorySelected, selectedDivision, selectedTournament]);
-  
-  
 
   useEffect(() => {
     if (selectedDate !== null && datos && categorySelected) {
-      const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+      const partidosDelTorneo =
+        datos?.[categorySelected]?.partidos?.[selectedDivision]?.[
+          selectedTournament
+        ] || {};
       const encuentrosDeLaFecha = partidosDelTorneo?.[selectedDate]?.encuentros || [];
-      const partidosConEquipos = encuentrosDeLaFecha.map(partido => ({
+      const partidosConEquipos = encuentrosDeLaFecha.map((partido) => ({
         ...partido,
         equipo1: getEquipo(partido.equipo1),
         equipo2: getEquipo(partido.equipo2),
@@ -409,12 +380,21 @@ const PredictsByCategory = ({ navigation }) => {
   }, [selectedDate, datos, categorySelected, selectedDivision, selectedTournament]);
 
   if (isLoading) return <LoadingSpinner message={'Cargando Datos...'} />;
-  if (isError) return <Error message="¡Ups! Algo salió mal." textButton="Recargar" onRetry={() => navigation.navigate('Home')} />;
-  if (!datos) return <EmptyListComponent message="No hay datos disponibles" />
-
+  if (isError)
+    return (
+      <Error
+        message="¡Ups! Algo salió mal."
+        textButton="Recargar"
+        onRetry={() => navigation.navigate('Home')}
+      />
+    );
+  if (!datos) return <EmptyListComponent message="No hay datos disponibles" />;
 
   return (
-    <ImageBackground source={require('../../../../assets/fondodefinitivo.png')} style={[styles.container, !portrait && styles.landScape]}>
+    <ImageBackground
+      source={require('../../../../assets/fondodefinitivo.png')}
+      style={[styles.container, !portrait && styles.landScape]}
+    >
       {modalAlert && (
         <ModalAlert
           text="¡Pronósticos guardados exitosamente!"
@@ -431,8 +411,8 @@ const PredictsByCategory = ({ navigation }) => {
           optionTextStyle={styles.pickerText}
           selectedItemTextStyle={styles.selectedItem}
           initValueTextStyle={styles.initValueTextStyle}
-          animationType='fade'
-          cancelText='Salir'
+          animationType="fade"
+          cancelText="Salir"
           cancelTextStyle={{ color: colors.black }}
           ref={divisionSelectorRef}
           accessible={true}
@@ -444,7 +424,6 @@ const PredictsByCategory = ({ navigation }) => {
           </TouchableOpacity>
         </ModalSelector>
 
-
         <ModalSelector
           data={tournamentOptions}
           initValue={selectedTournament}
@@ -453,8 +432,8 @@ const PredictsByCategory = ({ navigation }) => {
           optionTextStyle={styles.pickerText}
           selectedItemTextStyle={styles.selectedItem}
           initValueTextStyle={styles.initValueTextStyle}
-          animationType='fade'
-          cancelText='Salir'
+          animationType="fade"
+          cancelText="Salir"
           cancelTextStyle={{ color: colors.black }}
           ref={tournamentSelectorRef}
           accessible={true}
@@ -466,14 +445,13 @@ const PredictsByCategory = ({ navigation }) => {
           </TouchableOpacity>
         </ModalSelector>
 
-
         {!tournamentsWithoutDate.includes(selectedTournament) && (
           <ModalSelector
             data={dateOptions}
             initValue={
               dateOptions.length > 0
                 ? selectedDate
-                  ? selectedTournament === 'Octavos de final' || selectedTournament.includes('Repechaje') || selectedTournament.includes('Cuartos')
+                  ? tournamentsWithHomeAway.includes(selectedTournament)
                     ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
                     : `${selectedDate}`
                   : 'Selecciona una Fecha'
@@ -501,7 +479,7 @@ const PredictsByCategory = ({ navigation }) => {
               <Text style={styles.selectedItemText}>
                 {dateOptions.length > 0
                   ? selectedDate
-                    ? selectedTournament === 'Octavos de final' || selectedTournament.includes('Repechaje') || selectedTournament.includes('Cuartos')
+                    ? tournamentsWithHomeAway.includes(selectedTournament)
                       ? `${selectedDate.charAt(0).toUpperCase() + selectedDate.slice(1)}`
                       : `${selectedDate}`
                     : 'Selecciona una Fecha'
@@ -512,7 +490,21 @@ const PredictsByCategory = ({ navigation }) => {
               )}
             </TouchableOpacity>
           </ModalSelector>
-
+        )}
+        {!isEditable && (
+        <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.editarButton}
+            onPress={() => setIsEditable(true)}
+          >
+            <View style={styles.editarView}>
+              <Entypo
+              name='edit'
+              size={25}
+              color={colors.black}
+              />
+            </View>
+        </TouchableOpacity>
         )}
       </View>
 
@@ -525,26 +517,34 @@ const PredictsByCategory = ({ navigation }) => {
               encuentros={item}
               onSumarPuntos={(equipo) => handleSumarPuntos(equipo, item.id)}
               onRestarPuntos={(equipo) => handleRestarPuntos(equipo, item.id)}
-              puntosEq1={puntos.eq1.hasOwnProperty(item.id) ? puntos.eq1[item.id] : undefined}
-              puntosEq2={puntos.eq2.hasOwnProperty(item.id) ? puntos.eq2[item.id] : undefined}
+              puntosEq1={puntos.eq1[item.id]}
+              puntosEq2={puntos.eq2[item.id]}
               puntosWin={puntosWin[item.id] || 0}
+              isEditable={isEditable} // Pasamos isEditable al hijo
             />
           )}
-          ListEmptyComponent={<Text style={{ fontSize: 20 }}>No hay encuentros disponibles</Text>}
+          ListEmptyComponent={
+            <Text style={{ fontSize: 20, alignItems: 'center', justifyContent: 'center' }}>No hay encuentros disponibles</Text>
+          }
           initialNumToRender={8}
           maxToRenderPerBatch={8}
           windowSize={8}
         />
 
-        {guardarPronosticos && Object.keys(partidosEditados).length > 0 &&
-          <TouchableOpacity activeOpacity={0.8} style={styles.guardarButton} onPress={guardarPronosticosEnDB}>
+        {guardarPronosticos && Object.keys(partidosEditados).length > 0 && (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.guardarButton}
+            onPress={guardarPronosticosEnDB}
+          >
             <Text style={styles.guardarButtonText}>Guardar Pronósticos</Text>
           </TouchableOpacity>
-        }
+        )}
+
       </View>
     </ImageBackground>
   );
-}
+};
 
 export default PredictsByCategory;
 
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    padding: 15,
+    padding: 10,
     borderRadius: 10,
     backgroundColor: colors.white,
     shadowColor: colors.black,
@@ -604,12 +604,6 @@ const styles = StyleSheet.create({
     color: colors.black,
     fontSize: 15,
   },
-  containerFlatlist: {
-    flex: 1,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   guardarButton: {
     width: '90%',
     alignSelf: 'center',
@@ -623,7 +617,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    marginVertical: 10
+    marginVertical: 10,
   },
   guardarButtonText: {
     textAlign: 'center',
@@ -636,4 +630,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.gray,
   },
+  editarButton: {
+    width: '100%',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  editarView: {
+    padding: 5,
+    borderWidth: 1,
+    borderRadius: 10,
+    alignItems: 'center',
+    textAlign: 'center'
+  }
 });

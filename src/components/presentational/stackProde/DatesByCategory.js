@@ -1,21 +1,31 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import FastImage from 'react-native-fast-image';
-import colors from '../../utils/globals/colors';
+import colors from '../../../utils/globals/colors';
 import { parseISO, format, differenceInHours } from 'date-fns';
 import { es } from 'date-fns/locale';
-import BallAnimation from './animation/BallAnimation';
+import BallAnimation from '../animation/BallAnimation';
 
-const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1, puntosEq2, puntosWin }) => {
+const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1, puntosEq2, puntosWin, isEditable }) => {
   const fechaPartido = parseISO(encuentros.fecha);
   const ahora = new Date();
   const diferenciaHoras = differenceInHours(fechaPartido, ahora);
   const isEquipoDefinido = encuentros.equipo1.nombre !== 'Por definir' && encuentros.equipo2.nombre !== 'Por definir';
 
   // Combinar condiciones para deshabilitar botones
-  const botonesDeshabilitados = encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying || !isEquipoDefinido;
-  const tarjetaDeshabilitada = encuentros.hasPlayed || encuentros.isUpComing || encuentros.isPlaying || !isEquipoDefinido;
+  const botonesDeshabilitados =
+    !isEditable ||
+    encuentros.hasPlayed ||
+    encuentros.isUpComing ||
+    encuentros.isPlaying ||
+    !isEquipoDefinido;
 
+  const tarjetaDeshabilitada =
+    !isEditable ||
+    encuentros.hasPlayed ||
+    encuentros.isUpComing ||
+    encuentros.isPlaying ||
+    !isEquipoDefinido;
   const formatoFechaPersonalizado = (fecha) => {
     const diaAbreviado = format(fecha, "eee", { locale: es });
     const diaCapitalizado = diaAbreviado.charAt(0).toUpperCase() + diaAbreviado.slice(1);
@@ -46,9 +56,9 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
     } else if (isMatchAboutToStart) {
       return (
         <View style={styles.containerMatching}>
-          <Image style={styles.icon} source={require('../../../assets/pelota.png')} />
+          <Image style={styles.icon} source={require('../../../../assets/pelota.png')} />
           <Text style={styles.headerLabel}>POR COMENZAR:</Text>
-          <View style={{width: '55%', flexDirection: 'row', alignItems: 'center', justifyContent: 'left'}}>
+          <View style={{ width: '55%', flexDirection: 'row', alignItems: 'center', justifyContent: 'left' }}>
             <Text style={styles.headerValue}>{format(fechaPartido, 'HH:mm')}</Text>
           </View>
         </View>
@@ -58,7 +68,7 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
         <View style={styles.containerMatching}>
           <BallAnimation />
           <View style={styles.containerResult}>
-            <View style={{backgroundColor: colors.green, padding: 2, borderRadius: 5}}>
+            <View style={{ backgroundColor: colors.green, padding: 2, borderRadius: 5 }}>
               <Text style={styles.headerLabel}>{puntosWin} pts.</Text>
             </View>
           </View>
@@ -68,7 +78,7 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
       return (
         <View style={styles.containerResult}>
           <Text style={styles.headerLabel}>Finalizado.</Text>
-          <View style={{backgroundColor: colors.green, padding: 2, borderRadius: 5}}>
+          <View style={{ backgroundColor: colors.green, padding: 2, borderRadius: 5 }}>
             <Text style={styles.headerLabel}>{puntosWin} pts.</Text>
           </View>
         </View>
@@ -85,7 +95,7 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
           {/* Opcional: Usar una imagen por defecto */}
           <FastImage
             style={styles.teamImage}
-            source={require('../../../assets/iconEsc.png')} // Asegúrate de tener esta imagen
+            source={require('../../../../assets/iconEsc.png')} // Asegúrate de tener esta imagen
             resizeMode='contain'
           />
           <Text style={styles.teamName}>{equipo.nombre.toUpperCase()}</Text>
@@ -103,7 +113,7 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
       </View>
     );
   };
-  
+
   const ScoreButtons = ({ team, onSumarPuntos, onRestarPuntos, puntos }) => (
     <View style={team === 'equipo1' ? styles.scoreBoxLeft : styles.scoreBoxRight}>
       <TouchableOpacity
@@ -234,7 +244,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   containerMatch: {
-    flex: 1, 
+    flex: 1,
     alignItems: 'center'
   },
   teamContainer: {

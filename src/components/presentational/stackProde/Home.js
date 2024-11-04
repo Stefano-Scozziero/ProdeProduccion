@@ -135,7 +135,7 @@ const Home = React.memo(({ navigation }) => {
         />
       </View>
 
-      <View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
+      {/*<View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
         <ImageLoader
           uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fnoticias.png?alt=media&token=b6a17432-35b6-4845-9548-f4b8173c9401"
           style={[styles.predictionImage, !portrait && styles.predictionImageLandScape]}
@@ -143,7 +143,7 @@ const Home = React.memo(({ navigation }) => {
           loading={loading}
           setLoading={setLoading}
         />
-      </View>
+      </View>*/}
 
       {/* Reemplazo del Modal por CustomModal */}
       <CustomModal
