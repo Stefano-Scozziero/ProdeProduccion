@@ -6,7 +6,7 @@ import { parseISO, format, differenceInHours } from 'date-fns';
 import { es } from 'date-fns/locale';
 import BallAnimation from '../animation/BallAnimation';
 
-const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1, puntosEq2, puntosWin, isEditable }) => {
+const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1, puntosEq2, puntosWin, isEditable, faseHasPlayed }) => {
   const fechaPartido = parseISO(encuentros.fecha);
   const ahora = new Date();
   const diferenciaHoras = differenceInHours(fechaPartido, ahora);
@@ -15,17 +15,14 @@ const DatesByCategory = ({ encuentros, onSumarPuntos, onRestarPuntos, puntosEq1,
   // Combinar condiciones para deshabilitar botones
   const botonesDeshabilitados =
     !isEditable ||
+    faseHasPlayed ||
     encuentros.hasPlayed ||
     encuentros.isUpComing ||
     encuentros.isPlaying ||
     !isEquipoDefinido;
 
-  const tarjetaDeshabilitada =
-    !isEditable ||
-    encuentros.hasPlayed ||
-    encuentros.isUpComing ||
-    encuentros.isPlaying ||
-    !isEquipoDefinido;
+  const tarjetaDeshabilitada = botonesDeshabilitados
+  
   const formatoFechaPersonalizado = (fecha) => {
     const diaAbreviado = format(fecha, "eee", { locale: es });
     const diaCapitalizado = diaAbreviado.charAt(0).toUpperCase() + diaAbreviado.slice(1);

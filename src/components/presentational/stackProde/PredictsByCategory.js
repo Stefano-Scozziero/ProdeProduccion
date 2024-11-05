@@ -35,7 +35,7 @@ const PredictsByCategory = ({ navigation }) => {
   const tournamentSelectorRef = useRef(null);
   const dateSelectorRef = useRef(null);
   const [isEditable, setIsEditable] = useState(false);
-
+  const [faseHasPlayed, setFaseHasPlayed] = useState(false);
   const [divisionOptions, setDivisionOptions] = useState([]);
   const [tournamentOptions, setTournamentOptions] = useState([]);
   const stagesOrder = [
@@ -236,7 +236,7 @@ const PredictsByCategory = ({ navigation }) => {
           setPuntos({ eq1: nuevosPuntosEq1, eq2: nuevosPuntosEq2 });
           setPuntosWin(nuevosPuntosWin);
           setGuardarPronosticos(false);
-          setIsEditable(!save); // Si 'save' es true, 'isEditable' es false
+          setIsEditable(!save && !faseHasPlayed); // Si 'save' es true, 'isEditable' es false
         } else {
           setPuntos({ eq1: {}, eq2: {} });
           setPuntosWin({});
@@ -263,6 +263,31 @@ const PredictsByCategory = ({ navigation }) => {
     selectedTournament,
   ]);
 
+  useEffect(() => {
+    if (datos && categorySelected && selectedDivision && selectedTournament) {
+      let hasPlayed = false;
+      const partidosDelTorneo = datos?.[categorySelected]?.partidos?.[selectedDivision]?.[selectedTournament] || {};
+  
+      if (tournamentsWithHomeAway.includes(selectedTournament)) {
+        // Torneos con 'ida' y 'vuelta'
+        const fases = ['ida', 'vuelta'];
+        hasPlayed = fases.every(fase => {
+          const faseData = partidosDelTorneo[fase];
+          return faseData?.hasPlayed || false;
+        });
+      } else {
+        // Torneos con fechas
+        const fechas = Object.keys(partidosDelTorneo).filter(fecha => fecha !== '0');
+        hasPlayed = fechas.every(fecha => {
+          const faseData = partidosDelTorneo[fecha];
+          return faseData?.hasPlayed || false;
+        });
+      }
+      setFaseHasPlayed(hasPlayed);
+    }
+  }, [datos, categorySelected, selectedDivision, selectedTournament]);
+  
+  
   useEffect(() => {
     const puntosEq1Definidos = Object.values(puntos.eq1).length > 0;
     const puntosEq2Definidos = Object.values(puntos.eq2).length > 0;
@@ -491,20 +516,16 @@ const PredictsByCategory = ({ navigation }) => {
             </TouchableOpacity>
           </ModalSelector>
         )}
-        {!isEditable && (
-        <TouchableOpacity
+        {!isEditable && !faseHasPlayed && (
+          <TouchableOpacity
             activeOpacity={0.8}
             style={styles.editarButton}
             onPress={() => setIsEditable(true)}
           >
             <View style={styles.editarView}>
-              <Entypo
-              name='edit'
-              size={25}
-              color={colors.black}
-              />
+              <Entypo name='edit' size={25} color={colors.black} />
             </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -521,6 +542,7 @@ const PredictsByCategory = ({ navigation }) => {
               puntosEq2={puntos.eq2[item.id]}
               puntosWin={puntosWin[item.id] || 0}
               isEditable={isEditable} // Pasamos isEditable al hijo
+              faseHasPlayed={faseHasPlayed} // Pasamos isEditable al hijo
             />
           )}
           ListEmptyComponent={
@@ -570,7 +592,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    padding: 10,
+    padding: 15,
     borderRadius: 10,
     backgroundColor: colors.white,
     shadowColor: colors.black,
