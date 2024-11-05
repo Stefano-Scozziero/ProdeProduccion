@@ -48,23 +48,31 @@ const DatesByKeys = ({ encuentros }) => {
                     if (!match) return null; // Ignorar encuentros nulos
                     const team1Style = match.winner === 'equipo1' ? styles.winningTeam : styles.losingTeam;
                     const team2Style = match.winner === 'equipo2' ? styles.winningTeam : styles.losingTeam;
-
+    
                     return (
                         <View key={idx} style={styles.matchContainer}>
                             <Card style={styles.card}>
+                                {/* Fila del Equipo 1 */}
                                 <View style={[styles.teamRow, team1Style]}>
-                                    <ImageLoader uri={match.imagen1} style={styles.teamImage} />
-                                    <Text numberOfLines={1} style={styles.teamName}>
-                                        {match.equipo1 || 'Por Definir'}
-                                    </Text>
+                                    <View style={styles.teamInfo}>
+                                        <ImageLoader uri={match.imagen1} style={styles.teamImage} />
+                                        <Text numberOfLines={1} style={styles.teamName}>
+                                            {match.equipo1 || 'Por Definir'}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.score}>{match.goles1}</Text>
                                 </View>
+    
+                                {/* Fila del Equipo 2 */}
                                 <View style={[styles.teamRow, team2Style]}>
-                                    <ImageLoader uri={match.imagen2} style={styles.teamImage} />
-                                    <Text numberOfLines={1} style={styles.teamName}>
-                                        {match.equipo2 || 'Por Definir'}
-                                    </Text>
+                                    <View style={styles.teamInfo}>
+                                        <ImageLoader uri={match.imagen2} style={styles.teamImage} />
+                                        <Text numberOfLines={1} style={styles.teamName}>
+                                            {match.equipo2 || 'Por Definir'}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.score}>{match.goles2}</Text>
                                 </View>
-                                <Text style={styles.score}>{`${match.goles1} - ${match.goles2}`}</Text>
                             </Card>
                         </View>
                     );
@@ -72,6 +80,7 @@ const DatesByKeys = ({ encuentros }) => {
             </ScrollView>
         </View>
     );
+    
 
     return (
         <FlatList
@@ -115,7 +124,6 @@ const styles = StyleSheet.create({
     },
     card: {
         width: 250,
-        height: 130, // Ajuste de altura para consistencia
         marginBottom: 10,
         padding: 10,
         backgroundColor: colors.white,
@@ -130,10 +138,16 @@ const styles = StyleSheet.create({
     },
     teamRow: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 5,
         padding: 5,
-        borderRadius: 5
+        borderRadius: 5,
+    },
+    teamInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1, // Permite que el contenido ocupe el espacio disponible
     },
     teamImage: {
         width: 30, // Aumentamos el tamaño para verificar
@@ -146,10 +160,10 @@ const styles = StyleSheet.create({
         flexShrink: 1, // Evitar que el texto desborde
     },
     score: {
-        textAlign: 'center',
-        fontSize: 24,
+        fontSize: 16,
         fontWeight: 'bold',
         color: colors.black,
+        marginLeft: 10, // Espacio entre el nombre y el puntaje
     },
     line: {
         marginLeft: 10,
