@@ -126,10 +126,10 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file(MYAPP_RELEASE_STORE_FILE)
-            storePassword MYAPP_RELEASE_STORE_PASSWORD
-            keyAlias MYAPP_RELEASE_KEY_ALIAS
-            keyPassword MYAPP_RELEASE_KEY_PASSWORD
+            storeFile file(System.getenv("MYAPP_RELEASE_STORE_FILE"))
+            storePassword System.getenv("MYAPP_RELEASE_STORE_PASSWORD")
+            keyAlias System.getenv("MYAPP_RELEASE_KEY_ALIAS")
+            keyPassword System.getenv("MYAPP_RELEASE_KEY_PASSWORD")
         }
     }
     buildTypes {
@@ -205,6 +205,9 @@ dependencies {
         implementation jscFlavor
     }
     implementation("com.google.android.gms:play-services-auth:21.2.0")
+    // Añadir las dependencias de Firebase Messaging
+    implementation platform('com.google.firebase:firebase-bom:33.5.1')
+    implementation 'com.google.firebase:firebase-messaging'
 }
 
 if (rnVersion < versionToNumber(0, 75, 0)) {

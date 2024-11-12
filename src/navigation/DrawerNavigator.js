@@ -4,6 +4,7 @@ import ProfileStack from './ProfileStack'
 import ProdeStack from './ProdeStack'
 import CustomDrawerContent from '../components/presentational/drawer/CustomDrawerContent'
 import HowToPlayStack from './HowToPlayStack'
+import NotificationStack from './NotificationStack'
 import Administrador from './AdministradorStack'
 
 const Drawer = createDrawerNavigator()
@@ -31,6 +32,10 @@ const DrawerNavigator = () => {
                 <Drawer.Screen 
                     name='¿Como Jugar?' 
                     component={HowToPlayStack}
+                />
+                <Drawer.Screen 
+                    name='Notificaciones' 
+                    component={NotificationStack}
                 />
                 <Drawer.Screen 
                     name='Administrador' 

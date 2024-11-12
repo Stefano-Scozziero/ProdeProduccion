@@ -1,4 +1,5 @@
 // src/store.js
+
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { persistStore, persistReducer } from 'redux-persist';
@@ -15,11 +16,14 @@ import { profileApi } from './services/profile';
 // Importa el reducer de preferencias
 import preferencesReducer from '../features/preferences/preferencesSlice';
 
+// **Importa el reducer de suscripciones**
+import subscriptionReducer from '../features/subscriptions/subscriptionSlice';
+
 // Configuración de persistencia
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['preferences'], // Especifica qué reducers se deben persistir
+  whitelist: ['preferences', 'subscription'], // Añade 'subscription' a la whitelist
 };
 
 // Combina todos los reducers de la aplicación
@@ -29,6 +33,7 @@ const rootReducer = combineReducers({
   preferences: preferencesReducer, 
   ui: uiReducer,
   [profileApi.reducerPath]: profileApi.reducer,
+  subscription: subscriptionReducer,
 });
 
 // Aplica persistReducer al rootReducer

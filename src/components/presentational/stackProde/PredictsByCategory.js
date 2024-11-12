@@ -517,15 +517,11 @@ const PredictsByCategory = ({ navigation }) => {
           </ModalSelector>
         )}
         {!isEditable && !faseHasPlayed && (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.editarButton}
-            onPress={() => setIsEditable(true)}
-          >
-            <View style={styles.editarView}>
+          <View style={styles.editarButton} >
+            <TouchableOpacity style={styles.editarView} onPress={() => setIsEditable(true)} activeOpacity={1}>
               <Entypo name='edit' size={25} color={colors.black} />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 

@@ -1,3 +1,5 @@
+// Home.js
+
 import React, { useState, useContext, useEffect } from 'react';
 import {
   TouchableOpacity,
@@ -8,7 +10,9 @@ import {
   Dimensions,
   FlatList,
   Text,
-  ActivityIndicator
+  ActivityIndicator,
+  Switch,
+  Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCategories, setSelectedCategory } from '../../../features/category/categorySlice';
@@ -18,6 +22,10 @@ import colors from '../../../utils/globals/colors';
 import ImageAnimation from '../animation/ImageAnimation';
 import CustomModal from '../modal/CustomModal';
 import { CheckBox } from 'react-native-elements';
+
+import { subscribeToTopic, unsubscribeFromTopic } from '../../logical/handlerNotification';
+import { setSubscription } from '../../../features/subscriptions/subscriptionSlice';
+import messaging from '@react-native-firebase/messaging';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,6 +49,10 @@ const Home = React.memo(({ navigation }) => {
   const categoriesStatus = useSelector(state => state.category.status);
   const categoriesError = useSelector(state => state.category.error);
   const isCategoriesModalVisible = useSelector(state => state.ui.isCategoriesModalVisible);
+
+  // Obtiene las suscripciones desde el estado de Redux
+  const subscriptions = useSelector(state => state.subscription.topics);
+
   const [loading, setLoading] = useState(true);
   const [intendedNavigation, setIntendedNavigation] = useState(null);
 
@@ -50,12 +62,55 @@ const Home = React.memo(({ navigation }) => {
     }
   }, [categoriesStatus, dispatch]);
 
-  // **Nuevo useEffect para seleccionar la primera categoría automáticamente**
+  // Selecciona automáticamente la primera categoría si no hay una seleccionada
   useEffect(() => {
     if (categoriesStatus === 'succeeded' && categories.length > 0 && !selectedCategory) {
       dispatch(setSelectedCategory(categories[0].title));
     }
   }, [categoriesStatus, categories, selectedCategory, dispatch]);
+
+  const handleSubscriptionToggle = async (topic, isSubscribed) => {
+    // Optimistic update: Actualiza el estado inmediatamente
+    dispatch(setSubscription({ topic, isSubscribed }));
+  
+    try {
+      // Verifica permisos de notificación
+      const authorizationStatus = await messaging().hasPermission();
+      const permissionGranted =
+        authorizationStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authorizationStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  
+      if (!permissionGranted && isSubscribed) {
+        // Solicita permisos de notificación
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  
+        if (!enabled) {
+          Alert.alert(
+            'Permiso necesario',
+            'Para suscribirte a las notificaciones necesitas otorgar permisos de notificaciones.'
+          );
+          // Revertir el estado si el usuario no otorga permisos
+          dispatch(setSubscription({ topic, isSubscribed: false }));
+          return;
+        }
+      }
+  
+      // Realiza la suscripción o desuscripción
+      if (isSubscribed) {
+        await subscribeToTopic(topic);
+      } else {
+        await unsubscribeFromTopic(topic);
+      }
+    } catch (error) {
+      // En caso de error, revierte el estado y notifica al usuario
+      dispatch(setSubscription({ topic, isSubscribed: !isSubscribed }));
+      Alert.alert('Error', 'Hubo un problema al actualizar la suscripción.');
+    }
+  };
+  
 
   const onRetry = () => {
     dispatch(fetchCategories());
@@ -135,17 +190,7 @@ const Home = React.memo(({ navigation }) => {
         />
       </View>
 
-      {/*<View style={[styles.predictionContainer, !portrait && styles.predictionContainerLandScape]}>
-        <ImageLoader
-          uri="https://firebasestorage.googleapis.com/v0/b/prodesco-6910f.appspot.com/o/ClubesLigaCas%2Fnoticias.png?alt=media&token=b6a17432-35b6-4845-9548-f4b8173c9401"
-          style={[styles.predictionImage, !portrait && styles.predictionImageLandScape]}
-          onPress={() => navigation.navigate('News')}
-          loading={loading}
-          setLoading={setLoading}
-        />
-      </View>*/}
-
-      {/* Reemplazo del Modal por CustomModal */}
+      {/* Modal para selección de categorías */}
       <CustomModal
         modalVisible={isCategoriesModalVisible}
         onClose={() => dispatch(closeCategoriesModal())}
@@ -168,24 +213,28 @@ const Home = React.memo(({ navigation }) => {
             keyExtractor={item => item.id.toString()}
             renderItem={({ item }) => {
               const isSelected = selectedCategory === item.title;
+              const topicName = item.title.replace(/\s+/g, '').toLowerCase(); // Asegura un nombre de tópico válido
+              const isSubscribed = subscriptions[topicName] || false;
+
               return (
-                <TouchableOpacity
-                  onPress={() => handleCategorySelect(item)}
-                  style={styles.categoryItemContainer}
-                >
+                <View style={styles.categoryItemContainer}>
                   <CheckBox
                     checked={isSelected}
                     onPress={() => handleCategorySelect(item)}
                     containerStyle={styles.checkboxContainer}
                     checkedColor={colors.orange}
-                    uncheckedIcon="circle-o"       // Icono circular deseleccionado
-                    checkedIcon="dot-circle-o"     // Icono circular seleccionado
-                    iconType="font-awesome"        // Tipo de icono
+                    uncheckedIcon="circle-o"
+                    checkedIcon="dot-circle-o"
+                    iconType="font-awesome"
                   />
                   <Text style={[styles.categoryText, isSelected && styles.selectedCategoryText]}>
                     {item.title}
                   </Text>
-                </TouchableOpacity>
+                  <Switch
+                    value={isSubscribed}
+                    onValueChange={(value) => handleSubscriptionToggle(topicName, value)}
+                  />
+                </View>
               );
             }}
             ListEmptyComponent={<Text>No hay Competencias disponibles.</Text>}
@@ -206,13 +255,13 @@ const styles = StyleSheet.create({
   predictionContainer: {
     width: width * 0.95,
     height: height * 0.20,
-    marginTop: 10
+    marginTop: 10,
   },
   predictionContainerRow: {
     width: width * 0.95,
     flexDirection: 'row',
     marginTop: 10,
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   predictionImage: {
     width: width * 0.95,

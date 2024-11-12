@@ -44,12 +44,16 @@ const KeysByCategory = ({ navigation }) => {
           } else {
             setDatos(false);
           }
-          setIsLoading(false);
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 1000);
         },
         error => {
           console.error(error);
           setIsError(true);
-          setIsLoading(false);
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 1000);
         }
       );
 
@@ -57,7 +61,9 @@ const KeysByCategory = ({ navigation }) => {
         fixtureRef.off('value', onValueChangeFixture);
       };
     } else {
-      setIsLoading(false);
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
     }
   }, [categorySelected]);
 

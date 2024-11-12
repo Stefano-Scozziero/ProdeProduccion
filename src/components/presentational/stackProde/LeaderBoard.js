@@ -17,7 +17,6 @@ const LeaderBoard = ({ navigation }) => {
 
   // Estados para los datos
   const [positionsData, setPositionsData] = useState(null);
-  const [fixtureData, setFixtureData] = useState(null);
   const [teams, setTeams] = useState({});
 
   // Estados para la UI
@@ -49,20 +48,24 @@ const LeaderBoard = ({ navigation }) => {
       const posicionesRef = db.ref('/datos/positions');
       const equiposRef = db.ref(`/datos/fixture/${categorySelected}/equipos`);
       const fixtureRef = db.ref('/datos/fixture');
-
+  
       const [posicionesSnapshot, equiposSnapshot, fixtureSnapshot] = await Promise.all([
         posicionesRef.once('value'),
         equiposRef.once('value'),
         fixtureRef.once('value'),
       ]);
-
-      if (posicionesSnapshot.exists() && categorySelected && fixtureSnapshot.exists()) {
-        setPositionsData(posicionesSnapshot.val());
+  
+      const posicionesData = posicionesSnapshot.val();
+      if (
+        posicionesSnapshot.exists() &&
+        categorySelected &&
+        posicionesData[categorySelected] &&
+        fixtureSnapshot.exists()
+      ) {
+        setPositionsData(posicionesData);
         setTeams(equiposSnapshot.val() || {});
-        setFixtureData(fixtureSnapshot.val());
       } else {
         setPositionsData(null);
-        setFixtureData(null);
         setTeams({});
       }
     } catch (error) {
@@ -72,6 +75,7 @@ const LeaderBoard = ({ navigation }) => {
       setIsLoading(false);
     }
   }, [db, categorySelected]);
+  
 
   // Efecto para obtener datos cuando cambia la categoría
   useEffect(() => {
@@ -79,7 +83,6 @@ const LeaderBoard = ({ navigation }) => {
       fetchData();
     } else {
       setPositionsData(null);
-      setFixtureData(null);
       setTeams({});
       setIsLoading(false);
     }
@@ -87,9 +90,13 @@ const LeaderBoard = ({ navigation }) => {
 
   // Efecto para actualizar las opciones de torneos
   useEffect(() => {
-    if (positionsData && categorySelected) {
-      const tournaments = Object.keys(positionsData[categorySelected][selectedDivision] || {})
-      
+    if (
+      positionsData &&
+      categorySelected &&
+      positionsData[categorySelected] &&
+      positionsData[categorySelected][selectedDivision]
+    ) {
+      const tournaments = Object.keys(positionsData[categorySelected][selectedDivision])
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setTournamentOptions(tournaments);
@@ -98,13 +105,16 @@ const LeaderBoard = ({ navigation }) => {
       } else {
         setSelectedTournament(null);
       }
+    } else {
+      setTournamentOptions([]);
+      setSelectedTournament(null);
     }
-  }, [positionsData, categorySelected]);
+  }, [positionsData, categorySelected, selectedDivision]);
 
   // Efecto para actualizar las opciones de divisiones
   useEffect(() => {
-    if (positionsData && categorySelected && selectedDivision) {
-      const divisions = Object.keys(positionsData[categorySelected] || {})
+    if (positionsData && categorySelected && positionsData[categorySelected]) {
+      const divisions = Object.keys(positionsData[categorySelected])
         .map(key => ({ key, label: key }))
         .sort((a, b) => a.label.localeCompare(b.label));
       setDivisionOptions(divisions);
@@ -113,12 +123,22 @@ const LeaderBoard = ({ navigation }) => {
       } else {
         setSelectedDivision(null);
       }
+    } else {
+      setDivisionOptions([]);
+      setSelectedDivision(null);
     }
-  }, [positionsData, categorySelected, selectedDivision]);
+  }, [positionsData, categorySelected]);
+  
 
   // Efecto para ordenar y combinar posiciones
 useEffect(() => {
-  if (positionsData && categorySelected && teams && selectedDivision && selectedTournament) {
+  if (
+    positionsData &&
+    categorySelected &&
+    positionsData[categorySelected] &&
+    positionsData[categorySelected][selectedDivision] &&
+    positionsData[categorySelected][selectedDivision][selectedTournament]
+  ) {
     const posiciones = positionsData[categorySelected]?.[selectedDivision]?.[selectedTournament]?.equipos || {};
 
     // Get the keys and sort them numerically
