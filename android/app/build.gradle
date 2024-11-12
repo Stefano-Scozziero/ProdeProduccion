@@ -201,6 +201,9 @@ dependencies {
         implementation jscFlavor
     }
     implementation("com.google.android.gms:play-services-auth:21.2.0")
+    // Añadir las dependencias de Firebase Messaging
+    implementation platform('com.google.firebase:firebase-bom:33.5.1')
+    implementation 'com.google.firebase:firebase-messaging'
 }
 
 if (rnVersion < versionToNumber(0, 75, 0)) {

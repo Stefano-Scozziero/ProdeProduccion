@@ -147,7 +147,7 @@ const CustomDrawerContent = (props) => {
           <Text style={[styles.text, activeRoute === 'Inicio' ? styles.activeText : styles.inactiveText]}>Inicio</Text>
         </Pressable>
         <DrawerItem navigation={navigation} activeRoute={activeRoute} route='¿Como Jugar?' icon='help' title='¿Como Jugar?' />
-        <DrawerItem navigation={navigation} activeRoute={activeRoute} route='Mensajes' icon='paper-plane' title='Notificaciones' />
+        <DrawerItem navigation={navigation} activeRoute={activeRoute} route='Notificaciones' icon='paper-plane' title='Notificaciones' />
       </Drawer.Section>
 
       <Drawer.Section>

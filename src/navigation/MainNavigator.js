@@ -74,9 +74,11 @@ const MainNavigator = () => {
   )
   }
   return (
-    <NavigationContainer>
+    <>
       {user.emailVerified && user.idToken ? <DrawerNavigator /> : <AuthStack />}
-    </NavigationContainer>
+    </>
+      
+   
   )
 }
 
